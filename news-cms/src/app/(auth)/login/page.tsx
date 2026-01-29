@@ -52,7 +52,7 @@ export default function LoginPage() {
                             />
                         </div>
                     </CardContent>
-                    <CardFooter>
+                    <CardFooter className="pt-2 mt-4">
                         <Button className="w-full h-11 text-base" type="submit" disabled={isPending}>
                             {isPending ? (
                                 <>

@@ -35,7 +35,7 @@ export default function ArticlePage() {
     return (
         <Layout>
             <article className="max-w-[850px] mx-auto py-6 md:py-10">
-                <Link href={`/category/${article.category_slug}`} className="text-primary font-bold text-sm md:text-base mb-6 inline-block hover:underline uppercase tracking-widest">
+                <Link href={`/${article.category_slug}`} className="text-primary font-bold text-sm md:text-base mb-6 inline-block hover:underline uppercase tracking-widest">
                     {article.category_name}
                 </Link>
 
@@ -48,7 +48,9 @@ export default function ArticlePage() {
                         {article.author_name?.charAt(0) || 'A'}
                     </div>
                     <div>
-                        <p className="font-black text-gray-900 text-lg">{article.author_name}</p>
+                        <Link href={`/author/${article.author_id}`} className="font-black text-gray-900 text-lg hover:border-b-2 border-gray-900 transition-all block w-fit">
+                            {article.author_name}
+                        </Link>
                         <p className="text-sm text-gray-500 font-bold uppercase tracking-wider">{formattedDate}</p>
                     </div>
                 </div>

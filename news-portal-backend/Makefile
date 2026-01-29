@@ -24,4 +24,4 @@ create-admin:
 	go run cmd/admin/main.go -name="$(NAME)" -email="$(EMAIL)" -password="$(PASSWORD)"
 
 run:
-	go run cmd/api/main.go
+	go run cmd/api/*.go

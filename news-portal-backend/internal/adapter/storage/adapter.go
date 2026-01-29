@@ -311,7 +311,7 @@ func (a *Adapter) ListNews(ctx context.Context, limit, offset int32, categoryID 
 		searchPtr = &pattern
 	}
 
-	query := `SELECT n.id, n.title, n.thumbnail, n.slug, n.status, n.is_featured, n.views_count, n.published_at, n.created_at, n.updated_at,
+	query := `SELECT n.id, n.author_id, n.title, n.thumbnail, n.slug, n.status, n.is_featured, n.views_count, n.published_at, n.created_at, n.updated_at,
 	                 c.name as category_name, c.slug as category_slug, o.name as author_name
 	          FROM news n
 	          LEFT JOIN categories c ON n.category_id = c.id
@@ -333,7 +333,7 @@ func (a *Adapter) ListNews(ctx context.Context, limit, offset int32, categoryID 
 	for rows.Next() {
 		n := &domain.News{}
 		if err := rows.Scan(
-			&n.ID, &n.Title, &n.Thumbnail, &n.Slug, &n.Status, &n.IsFeatured, &n.ViewsCount, &n.PublishedAt, &n.CreatedAt, &n.UpdatedAt,
+			&n.ID, &n.AuthorID, &n.Title, &n.Thumbnail, &n.Slug, &n.Status, &n.IsFeatured, &n.ViewsCount, &n.PublishedAt, &n.CreatedAt, &n.UpdatedAt,
 			&n.CategoryName, &n.CategorySlug, &n.AuthorName,
 		); err != nil {
 			return nil, err
