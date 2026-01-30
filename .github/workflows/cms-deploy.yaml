@@ -1,0 +1,20 @@
+name: Deploy CMS
+on:
+  push:
+    paths:
+      - 'news-cms/**'
+      - '.github/workflows/cms-deploy.yaml'
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/news_portal
+            git pull origin main
+            docker compose up -d --build cms
