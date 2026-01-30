@@ -21,7 +21,7 @@ TOKEN=$(echo $LOGIN_RESPONSE | grep -oP '(?<="token":")[^"]+')
 if [ -z "$TOKEN" ]; then
     echo "❌ Error: Could not get auth token."
     echo "Response from server: $LOGIN_RESPONSE"
-    echo "Did you run 'make create-admin' with admin@news.com/password123?"
+    echo "Did you run 'make create-admin' with admin@newsportal.com/password321123?"
     exit 1
 fi
 

@@ -22,10 +22,20 @@ type NewsService struct {
 
 func NewNewsService(repo port.NewsRepository, categoryRepo port.CategoryRepository) *NewsService {
 	p := bluemonday.UGCPolicy()
-	// Allow TipTap alignment classes and the tiptap class itself
+
+	// Allow manual spacing and line breaks
+	p.AllowElements("br")
+
+	// CRITICAL: Allow empty paragraphs and divs because TipTap uses them for manual spacing
+	// Without this, bluemonday strips "<p></p>" or "<p><br></p>"
+	p.AllowElements("p", "div").AllowAttrs("class", "style").OnElements("p", "div")
+	p.AllowStandardAttributes()
+
+	// Allow TipTap alignment classes
 	p.AllowAttrs("class").Matching(regexp.MustCompile(`^(text-align-(left|center|right|justify)|tiptap)$`)).OnElements("p", "h1", "h2", "h3", "h4", "h5", "h6", "div", "span")
-	// Allow inline styles for colors
-	p.AllowAttrs("style").OnElements("span", "p", "h1", "h2", "h3", "h4", "h5", "h6")
+
+	// Allow inline styles for colors and fonts
+	p.AllowAttrs("style").OnElements("span", "p", "h1", "h2", "h3", "h4", "h5", "h6", "div")
 
 	return &NewsService{
 		repo:         repo,

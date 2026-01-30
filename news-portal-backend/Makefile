@@ -21,7 +21,7 @@ sqlc:
 	docker run --rm -v $(PWD):/src -w /src sqlc/sqlc generate
 
 create-admin:
-	go run cmd/admin/main.go -name="$(NAME)" -email="$(EMAIL)" -password="$(PASSWORD)"
+	go run cmd/admin/main.go -name="$(if $(NAME),$(NAME),$(INITIAL_ADMIN_NAME))" -email="$(if $(EMAIL),$(EMAIL),$(INITIAL_ADMIN_EMAIL))" -password="$(if $(PASSWORD),$(PASSWORD),$(INITIAL_ADMIN_PASSWORD))"
 
 run:
 	go run cmd/api/*.go

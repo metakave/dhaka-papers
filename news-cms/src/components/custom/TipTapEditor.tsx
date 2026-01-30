@@ -156,7 +156,7 @@ export function TipTapEditor({ content, onChange }: TipTapEditorProps) {
         },
         editorProps: {
             attributes: {
-                class: 'prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl m-5 focus:outline-none min-h-[200px]',
+                class: 'tiptap prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl m-5 focus:outline-none min-h-[200px]',
             },
         },
         immediatelyRender: false,

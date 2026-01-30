@@ -55,7 +55,20 @@
   }
 }
 
-/* TipTap Content Styles */
+.tiptap p {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  min-height: 1.2em;
+  @apply leading-relaxed;
+}
+
+.tiptap h1,
+.tiptap h2,
+.tiptap h3,
+.tiptap h4 {
+  @apply mt-8 mb-4 font-black;
+}
+
 .tiptap .text-align-left,
 .prose .text-align-left {
   text-align: left;
