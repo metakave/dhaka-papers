@@ -1,9 +1,14 @@
-name: Deploy Backend
+name: Deploy News Portal
 on:
   push:
+    branches: [ main ]
     paths:
       - 'news-portal-backend/**'
-      - '.github/workflows/backend-deploy.yaml'
+      - 'frontend/**'
+      - 'news-cms/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/deploy.yaml'
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -18,4 +23,4 @@ jobs:
             cd ~/news_portal
             git fetch origin main
             git reset --hard origin/main
-            docker compose up -d --build --remove-orphans backend
+            docker compose up -d --build --remove-orphans
