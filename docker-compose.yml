@@ -17,6 +17,7 @@ services:
       context: ./news-portal-backend
       dockerfile: Dockerfile
     container_name: news_portal_backend
+    stop_grace_period: 1m
     environment:
       - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-news_portal}?sslmode=disable
       - APP_ENV=${APP_ENV:-production}
@@ -45,6 +46,7 @@ services:
         - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
       dockerfile: Dockerfile
     container_name: news_portal_cms
+    stop_grace_period: 1m
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
       - INTERNAL_API_URL=${INTERNAL_API_URL}
@@ -62,6 +64,7 @@ services:
         - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
       dockerfile: Dockerfile
     container_name: news_portal_frontend
+    stop_grace_period: 1m
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
       - INTERNAL_API_URL=${INTERNAL_API_URL}
