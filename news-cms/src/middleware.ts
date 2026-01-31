@@ -7,7 +7,7 @@ export function middleware(request: NextRequest) {
 
     // If trying to access login page while authenticated, redirect to dashboard
     if (isLoginPage && token) {
-        return NextResponse.redirect(new URL('/', request.url));
+        return NextResponse.redirect(new URL('/admin', request.url));
     }
 
     // If trying to access protected routes (everything except login and public assets)
@@ -15,7 +15,7 @@ export function middleware(request: NextRequest) {
     if (!isLoginPage && !token) {
         // Exclude static files, images, etc.
         if (!request.nextUrl.pathname.match(/\.(.*)$/)) {
-            return NextResponse.redirect(new URL('/login', request.url));
+            return NextResponse.redirect(new URL('/admin/login', request.url));
         }
     }
 
