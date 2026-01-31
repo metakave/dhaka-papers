@@ -22,6 +22,7 @@ import { Category, News } from '@/types';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
     title: z.string().min(5, 'Title must be at least 5 characters'),
@@ -43,6 +44,7 @@ export function NewsForm({ categories, initialData, action: serverAction }: News
     const [uploading, setUploading] = useState(false);
     const [isPending, setIsPending] = useState(false);
     const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(initialData?.thumbnail || null);
+    const router = useRouter();
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -111,7 +113,7 @@ export function NewsForm({ categories, initialData, action: serverAction }: News
                 toast.success(initialData ? 'News updated successfully' : 'News published successfully');
                 // Navigate to news list after short delay
                 setTimeout(() => {
-                    window.location.href = '/news';
+                    router.push('/admin/news');
                 }, 500);
             }
         } catch (error) {
