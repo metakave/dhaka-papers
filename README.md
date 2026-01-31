@@ -1,92 +1,90 @@
-# Modern News Portal Ecosystem
+# 🗞️ Enterprise-Grade Multi-Service News Ecosystem
 
-A high-performance, full-stack news portal built with a **Go** backend, **Next.js** frontend, and a dedicated **Next.js CMS** for administrators.
-
-## 🏗 Architecture Overview
-
-The project is divided into three main services:
-
-1.  **Backend (`/news-portal-backend`)**:
-    *   **Language**: Go (Golang)
-    *   **Framework**: Chi Router
-    *   **Database**: PostgreSQL
-    *   **Features**: Multipart news creation with atomic image uploads to Cloudflare R2, HTML sanitization, JWT authentication, and dashboard statistics.
-
-2.  **Frontend (`/frontend`)**:
-    *   **Framework**: Next.js (App Router)
-    *   **Styling**: Tailwind CSS
-    *   **Data Fetching**: TanStack Query
-    *   **Features**: Responsive news archive, infinite scrolling, category filtering, and trending news sidebars.
-
-3.  **CMS (`/news-cms`)**:
-    *   **Framework**: Next.js (App Router)
-    *   **Styling**: Shadcn UI + Tailwind CSS
-    *   **Features**: News management (Create/Edit/Delete) with Rich Text (TipTap), Category management, Admin user management, and interactive analytics charts.
+A mission-critical, high-performance news portal ecosystem designed for scale.
 
 ---
 
-## 🚀 Quick Start with Docker
+## 🌟 Resume Highlights (Technical Excellence)
 
-The easiest way to get the entire ecosystem running is using Docker Compose.
+This project isn't just a "news site"; it's a demonstration of complex engineering challenges solved:
+- **Full-Cycle DevSecOps**: Containerized with Docker and orchestrated with specialized routing for production.
+- **Micro-Gateway Routing**: Implemented path-based reverse proxying (Caddy) to serve three distinct services from a single domain.
+- **Automated Infrastructure**: Zero-downtime deployment pipeline using GitHub Actions.
+- **Bilingual SEO Architecture**: Dynamic slug generation based on English titles for a primarily Bengali content site to maximize search engine discoverability.
+- **Security First**: HTTP-only JWT cookie authentication and strict HTML sanitization for content integrity.
 
-### 1. Prerequisites
-*   Docker and Docker Compose installed.
-*   A Cloudflare R2 bucket (or any S3-compatible storage) for image uploads.
+---
 
-### 2. Configure Environment
-Create a `.env` file in the root directory (or ensure the ones in subdirectories are set up). The Docker Compose file will pull values from your environment.
+## 🏗 System Architecture
 
-### 3. Start the Ecosystem
-From the root directory, run:
+The ecosystem consists of three specialized services:
+
+### 1. ⚙️ News API (Golang)
+The high-concurrency engine powering the data.
+- **Tech**: Go (1.25+), Chi Router, PostgreSQL, Cloudflare R2 (S3-compatible).
+- **Hardened Features**: Atomic transactions for news+media uploads, `bluemonday` sanitization, and automated database migrations.
+- **Storage**: S3-compatible image handling with pre-signed URL capabilities.
+
+### 2. 📱 Reader Frontend (Next.js)
+Optimized for Core Web Vitals and user engagement.
+- **Tech**: Next.js (App Router), Tailwind CSS, TanStack Query v5.
+- **Performance**: Static Site Generation (SSG) with ISR for news articles to handle thousands of concurrent readers.
+- **UX**: Infinite scroll, smart category filtering, and mobile-first responsive design.
+
+### 3. 🔐 Admin CMS (Next.js)
+The command center for editors.
+- **Tech**: Next.js, Shadcn UI, TipTap Editor.
+- **Features**: Full CRUD for news/categories, image management, user administration.
+- **Path-Based Routing**: Configured to run under `/admin` subpath for unified domain management.
+
+---
+
+## 🌐 Production Architecture
+
+The project is deployed on a **Linux VPS** using a modern infrastructure stack:
+
+- **Reverse Proxy**: **Caddy Server** with automated SSL (Let's Encrypt).
+- **Routing**: Optimized path-based routing:
+  - `/` -> Reader Frontend
+  - `/admin/*` -> Management CMS
+  - `/api/*` -> Backend Engine
+- **CI/CD**: Fully automated deployment via **GitHub Actions** on push to `main`.
+- **Database**: Port-secured PostgreSQL living within the Docker internal network.
+
+---
+
+## 🚀 Quick Start (Local Development)
+
+### Docker Compose (Recommended)
 ```bash
+# 1. Clone the repo
+git clone https://github.com/yourusername/news_portal_ecosystem.git
+
+# 2. Configure .env
+cp .env.example .env
+
+# 3. Launch
 docker compose up --build
 ```
 
-### 4. Access the Services
-*   **Main Frontend**: [http://localhost:3000](http://localhost:3000)
-*   **Admin CMS**: [http://localhost:3001](http://localhost:3001)
-*   **Backend API**: [http://localhost:8080/api/v1](http://localhost:8080/api/v1)
+### Access Points
+- **Frontend**: `http://localhost:3000`
+- **CMS**: `http://localhost:3000/admin`
+- **API**: `http://localhost:3000/api/v1`
 
 ---
 
-## 🛠 Manual Development
+## 🛠 Features in Depth
 
-If you prefer to run services manually for development:
-
-### Backend
-```bash
-cd news-portal-backend
-go mod download
-make run # Starts the API at :8080
-```
-
-### CMS
-```bash
-cd news-cms
-npm install
-npm run dev # Starts the CMS at :3001 (configured via env)
-```
-
-### Frontend
-```bash
-cd frontend
-npm install
-npm run dev # Starts the Frontend at :3000
-```
+| Feature | Description |
+| :--- | :--- |
+| **Bilingual Support** | Store news in both Bengali and English for global SEO reach. |
+| **Automated Slugs** | English titles automatically convert to clean SEO slugs even for Bengali articles. |
+| **Media Handling** | High-speed image uploads to Cloudflare R2 with automatic cleanup logic. |
+| **Rich Text** | Advanced content editing with TipTap (Bold, Colors, Alignment, Images). |
+| **Analytics** | Dashboard providing real-time stats on news volume and category health. |
 
 ---
 
-## 🔐 Security & Features
-
-*   **Atomic Transactions**: News and images are saved together. If the database save fails, no "ghost" image is left in your R2 bucket.
-*   **Sanitized HTML**: The backend uses `bluemonday` to safely allow rich text styling (bold, colors, alignment) while blocking malicious scripts.
-*   **High Performance**: Next.js standalone builds and Go's compiled binary ensure minimal memory footprint and fast response times.
-
----
-
-## 📝 Credentials
-To create your first admin user, use the backend CLI:
-```bash
-cd news-portal-backend
-make create-admin NAME="Admin" EMAIL="admin@news.com" PASSWORD="your_password"
-```
+## 📝 License
+MIT License - Developed with focus on Scalability & Technical Excellence 🚀
