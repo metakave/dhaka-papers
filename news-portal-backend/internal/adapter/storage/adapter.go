@@ -214,9 +214,9 @@ func (a *Adapter) CreateNews(ctx context.Context, news *domain.News) (*domain.Ne
 		}
 	}
 
-	query := `INSERT INTO news (author_id, category_id, title, excerpt, content, thumbnail, slug, is_featured, published_at, status, meta_title, meta_description)
-	          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), 'published', $9, $10) RETURNING id, published_at, created_at, updated_at`
-	err = tx.QueryRow(ctx, query, news.AuthorID, news.CategoryID, news.Title, news.Excerpt, news.Content, news.Thumbnail, news.Slug, news.IsFeatured, news.MetaTitle, news.MetaDescription).
+	query := `INSERT INTO news (author_id, category_id, title, title_en, excerpt, content, thumbnail, slug, is_featured, published_at, status, meta_title, meta_description)
+	          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), 'published', $10, $11) RETURNING id, published_at, created_at, updated_at`
+	err = tx.QueryRow(ctx, query, news.AuthorID, news.CategoryID, news.Title, news.TitleEn, news.Excerpt, news.Content, news.Thumbnail, news.Slug, news.IsFeatured, news.Title, news.Excerpt).
 		Scan(&news.ID, &news.PublishedAt, &news.CreatedAt, &news.UpdatedAt)
 	if err != nil {
 		return nil, err
@@ -244,8 +244,8 @@ func (a *Adapter) UpdateNews(ctx context.Context, news *domain.News) error {
 		}
 	}
 
-	query := `UPDATE news SET category_id = $2, title = $3, excerpt = $4, content = $5, thumbnail = $6, is_featured = $7, updated_at = NOW() WHERE id = $1`
-	tag, err := tx.Exec(ctx, query, news.ID, news.CategoryID, news.Title, news.Excerpt, news.Content, news.Thumbnail, news.IsFeatured)
+	query := `UPDATE news SET category_id = $2, title = $3, title_en = $4, excerpt = $5, content = $6, thumbnail = $7, is_featured = $8, updated_at = NOW() WHERE id = $1`
+	tag, err := tx.Exec(ctx, query, news.ID, news.CategoryID, news.Title, news.TitleEn, news.Excerpt, news.Content, news.Thumbnail, news.IsFeatured)
 	if err != nil {
 		return err
 	}
@@ -268,7 +268,7 @@ func (a *Adapter) DeleteNews(ctx context.Context, id uuid.UUID) error {
 }
 
 func (a *Adapter) GetNewsBySlug(ctx context.Context, slug string) (*domain.News, error) {
-	query := `SELECT n.id, n.author_id, n.category_id, n.title, n.excerpt, n.content, n.thumbnail, n.slug, n.status, n.is_featured, n.meta_title, n.meta_description, n.views_count, n.published_at, n.created_at, n.updated_at,
+	query := `SELECT n.id, n.author_id, n.category_id, n.title, n.title_en, n.excerpt, n.content, n.thumbnail, n.slug, n.status, n.is_featured, n.meta_title, n.meta_description, n.views_count, n.published_at, n.created_at, n.updated_at,
 	                 c.name as category_name, c.slug as category_slug, o.name as author_name
 	          FROM news n
 	          LEFT JOIN categories c ON n.category_id = c.id
@@ -278,7 +278,7 @@ func (a *Adapter) GetNewsBySlug(ctx context.Context, slug string) (*domain.News,
 	n := &domain.News{}
 	var authorID, categoryID uuid.UUID
 	err := a.db.QueryRow(ctx, query, slug).Scan(
-		&n.ID, &authorID, &categoryID, &n.Title, &n.Excerpt, &n.Content, &n.Thumbnail, &n.Slug, &n.Status, &n.IsFeatured, &n.MetaTitle, &n.MetaDescription, &n.ViewsCount, &n.PublishedAt, &n.CreatedAt, &n.UpdatedAt,
+		&n.ID, &authorID, &categoryID, &n.Title, &n.TitleEn, &n.Excerpt, &n.Content, &n.Thumbnail, &n.Slug, &n.Status, &n.IsFeatured, &n.MetaTitle, &n.MetaDescription, &n.ViewsCount, &n.PublishedAt, &n.CreatedAt, &n.UpdatedAt,
 		&n.CategoryName, &n.CategorySlug, &n.AuthorName,
 	)
 	if err != nil {
@@ -311,7 +311,7 @@ func (a *Adapter) ListNews(ctx context.Context, limit, offset int32, categoryID 
 		searchPtr = &pattern
 	}
 
-	query := `SELECT n.id, n.author_id, n.title, n.thumbnail, n.slug, n.status, n.is_featured, n.views_count, n.published_at, n.created_at, n.updated_at,
+	query := `SELECT n.id, n.author_id, n.title, n.title_en, n.thumbnail, n.slug, n.status, n.is_featured, n.views_count, n.published_at, n.created_at, n.updated_at,
 	                 c.name as category_name, c.slug as category_slug, o.name as author_name
 	          FROM news n
 	          LEFT JOIN categories c ON n.category_id = c.id
@@ -333,7 +333,7 @@ func (a *Adapter) ListNews(ctx context.Context, limit, offset int32, categoryID 
 	for rows.Next() {
 		n := &domain.News{}
 		if err := rows.Scan(
-			&n.ID, &n.AuthorID, &n.Title, &n.Thumbnail, &n.Slug, &n.Status, &n.IsFeatured, &n.ViewsCount, &n.PublishedAt, &n.CreatedAt, &n.UpdatedAt,
+			&n.ID, &n.AuthorID, &n.Title, &n.TitleEn, &n.Thumbnail, &n.Slug, &n.Status, &n.IsFeatured, &n.ViewsCount, &n.PublishedAt, &n.CreatedAt, &n.UpdatedAt,
 			&n.CategoryName, &n.CategorySlug, &n.AuthorName,
 		); err != nil {
 			return nil, err

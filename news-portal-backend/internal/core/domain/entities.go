@@ -29,6 +29,7 @@ type News struct {
 	AuthorID        uuid.UUID `json:"author_id"`
 	CategoryID      uuid.UUID `json:"category_id"`
 	Title           string    `json:"title"`
+	TitleEn         string    `json:"title_en"` // Bengali title is Title, English title is TitleEn
 	Excerpt         *string   `json:"excerpt"`
 	Content         string    `json:"content,omitempty"`
 	Thumbnail       string    `json:"thumbnail"`

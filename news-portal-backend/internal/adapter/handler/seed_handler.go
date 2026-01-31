@@ -23,6 +23,7 @@ func NewSeedHandler(svc port.NewsService) *SeedHandler {
 type SeedNewsRequest struct {
 	CategoryID   string `json:"category_id"`
 	Title        string `json:"title"`
+	TitleEn      string `json:"title_en"` // Added for seeding
 	Excerpt      string `json:"excerpt"`
 	Content      string `json:"content"`
 	ThumbnailURL string `json:"thumbnail_url"`
@@ -61,7 +62,13 @@ func (h *SeedHandler) SEED_CreateNews(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	news, err := h.svc.CreateNews(r.Context(), authorID, categoryID, req.Title, req.Excerpt, req.Content, req.ThumbnailURL, req.IsFeatured)
+	// For seeding, if TitleEn is missing, use Title (or a slugified version if you prefer)
+	titleEn := req.TitleEn
+	if titleEn == "" {
+		titleEn = req.Title // Fallback for seeds
+	}
+
+	news, err := h.svc.CreateNews(r.Context(), authorID, categoryID, req.Title, titleEn, req.Excerpt, req.Content, req.ThumbnailURL, req.IsFeatured)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

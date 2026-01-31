@@ -25,6 +25,7 @@ import Image from 'next/image';
 
 const formSchema = z.object({
     title: z.string().min(5, 'Title must be at least 5 characters'),
+    title_en: z.string().min(5, 'English Title must be at least 5 characters'),
     category_id: z.string().min(1, 'Category is required'),
     excerpt: z.string().min(10, 'Excerpt must be at least 10 characters'),
     content: z.string().min(20, 'Content must be at least 20 characters'),
@@ -47,6 +48,7 @@ export function NewsForm({ categories, initialData, action: serverAction }: News
         resolver: zodResolver(formSchema),
         defaultValues: {
             title: initialData?.title || '',
+            title_en: initialData?.title_en || '',
             category_id: initialData?.category_id || '',
             excerpt: initialData?.excerpt || '',
             content: initialData?.content || '',
@@ -88,6 +90,7 @@ export function NewsForm({ categories, initialData, action: serverAction }: News
 
             // Append all fields to FormData
             formData.append('title', values.title);
+            formData.append('title_en', values.title_en);
             formData.append('category_id', values.category_id);
             formData.append('excerpt', values.excerpt);
             formData.append('content', values.content);
@@ -127,9 +130,24 @@ export function NewsForm({ categories, initialData, action: serverAction }: News
                     name="title"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Title</FormLabel>
+                            <FormLabel>Title (Bangla)</FormLabel>
                             <FormControl>
-                                <Input placeholder="News Headline" {...field} />
+                                <Input placeholder="News Headline in Bangla" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    control={form.control}
+                    name="title_en"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Title (English)</FormLabel>
+                            <FormDescription>Used for generating SEO-friendly URL slug</FormDescription>
+                            <FormControl>
+                                <Input placeholder="News Headline in English" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>

@@ -163,6 +163,7 @@ func (h *NewsHandler) CreateNews(w http.ResponseWriter, r *http.Request) {
 	}
 
 	title := r.FormValue("title")
+	titleEn := r.FormValue("title_en")
 	categoryIDStr := r.FormValue("category_id")
 	excerpt := r.FormValue("excerpt")
 	content := r.FormValue("content")
@@ -210,7 +211,7 @@ func (h *NewsHandler) CreateNews(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	news, err := h.svc.CreateNews(r.Context(), authorID, categoryID, title, excerpt, content, thumbnail, isFeatured)
+	news, err := h.svc.CreateNews(r.Context(), authorID, categoryID, title, titleEn, excerpt, content, thumbnail, isFeatured)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -237,6 +238,7 @@ func (h *NewsHandler) UpdateNews(w http.ResponseWriter, r *http.Request) {
 	}
 
 	title := r.FormValue("title")
+	titleEn := r.FormValue("title_en")
 	categoryIDStr := r.FormValue("category_id")
 	excerpt := r.FormValue("excerpt")
 	content := r.FormValue("content")
@@ -272,7 +274,7 @@ func (h *NewsHandler) UpdateNews(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if err := h.svc.UpdateNews(r.Context(), id, categoryID, title, excerpt, content, thumbnail, isFeatured); err != nil {
+	if err := h.svc.UpdateNews(r.Context(), id, categoryID, title, titleEn, excerpt, content, thumbnail, isFeatured); err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
 			http.Error(w, "News not found", http.StatusNotFound)
 			return

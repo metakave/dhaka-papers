@@ -1,6 +1,7 @@
 export interface News {
     id: string;
     title: string;
+    title_en?: string;
     slug: string;
     excerpt?: string;
     content?: string;

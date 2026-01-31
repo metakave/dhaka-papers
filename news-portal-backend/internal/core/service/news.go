@@ -44,14 +44,16 @@ func NewNewsService(repo port.NewsRepository, categoryRepo port.CategoryReposito
 	}
 }
 
-func (s *NewsService) CreateNews(ctx context.Context, authorID, categoryID uuid.UUID, title, excerpt, content, thumbnail string, isFeatured bool) (*domain.News, error) {
-	slug := generateUniqueSlug(title)
+func (s *NewsService) CreateNews(ctx context.Context, authorID, categoryID uuid.UUID, title, titleEn, excerpt, content, thumbnail string, isFeatured bool) (*domain.News, error) {
+	// Use English Title for Slug generation
+	slug := generateUniqueSlug(titleEn)
 	sanitizedContent := s.p.Sanitize(content)
 
 	news := &domain.News{
 		AuthorID:   authorID,
 		CategoryID: categoryID,
 		Title:      title,
+		TitleEn:    titleEn,
 		Excerpt:    &excerpt,
 		Content:    sanitizedContent,
 		Thumbnail:  thumbnail,
@@ -61,12 +63,13 @@ func (s *NewsService) CreateNews(ctx context.Context, authorID, categoryID uuid.
 	return s.repo.CreateNews(ctx, news)
 }
 
-func (s *NewsService) UpdateNews(ctx context.Context, id uuid.UUID, categoryID uuid.UUID, title, excerpt, content, thumbnail string, isFeatured bool) error {
+func (s *NewsService) UpdateNews(ctx context.Context, id uuid.UUID, categoryID uuid.UUID, title, titleEn, excerpt, content, thumbnail string, isFeatured bool) error {
 	sanitizedContent := s.p.Sanitize(content)
 	news := &domain.News{
 		ID:         id,
 		CategoryID: categoryID,
 		Title:      title,
+		TitleEn:    titleEn,
 		Excerpt:    &excerpt,
 		Content:    sanitizedContent,
 		Thumbnail:  thumbnail,
