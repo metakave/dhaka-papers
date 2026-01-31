@@ -1,0 +1,15 @@
+{
+    email admin@dhakapapers.com
+}
+
+beta.dhakapapers.com {
+    reverse_proxy news_portal_frontend:3000
+}
+
+admin.beta.dhakapapers.com {
+    reverse_proxy news_portal_cms:3000
+}
+
+api.beta.dhakapapers.com {
+    reverse_proxy news_portal_backend:8080
+}
