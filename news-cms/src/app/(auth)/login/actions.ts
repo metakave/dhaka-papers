@@ -25,10 +25,10 @@ export async function loginAction(prevState: any, formData: FormData) {
     }
 
     // Redirect on success (outside try/catch to avoid nextjs redirect error catching)
-    redirect('/admin');
+    redirect('/');
 }
 
 export async function logoutAction() {
     await removeAuthToken();
-    redirect('/admin/login');
+    redirect('/login');
 }

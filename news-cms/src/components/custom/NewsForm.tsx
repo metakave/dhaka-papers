@@ -113,7 +113,7 @@ export function NewsForm({ categories, initialData, action: serverAction }: News
                 toast.success(initialData ? 'News updated successfully' : 'News published successfully');
                 // Navigate to news list after short delay
                 setTimeout(() => {
-                    router.push('/admin/news');
+                    router.push('/news');
                 }, 500);
             }
         } catch (error) {

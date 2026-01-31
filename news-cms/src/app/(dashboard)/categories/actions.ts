@@ -33,7 +33,7 @@ export async function createCategoryAction(prevState: any, formData: FormData) {
     } catch (error: any) {
         return { error: error.response?.data?.message || 'Failed to create category' };
     }
-    redirect('/admin/categories');
+    redirect('/categories');
 }
 
 export async function updateCategoryAction(id: string, prevState: any, formData: FormData) {
