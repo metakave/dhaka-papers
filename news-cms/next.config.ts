@@ -36,6 +36,7 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '20mb',
     },
   },
+  basePath: '/admin',
 };
 
 export default nextConfig;

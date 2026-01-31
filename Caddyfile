@@ -3,13 +3,19 @@
 }
 
 beta.dhakapapers.com {
-    reverse_proxy news_portal_frontend:3000
-}
+    # 1. Backend API (Path: /api/*)
+    handle_path /api/* {
+        reverse_proxy news_portal_backend:8080
+    }
 
-admin.beta.dhakapapers.com {
-    reverse_proxy news_portal_cms:3000
-}
+    # 2. CMS (Path: /admin/*)
+    # Note: CMS paths might need adjustment if it expects root path
+    handle_path /admin/* {
+        reverse_proxy news_portal_cms:3000
+    }
 
-api.beta.dhakapapers.com {
-    reverse_proxy news_portal_backend:8080
+    # 3. Frontend (Default - everything else)
+    handle {
+        reverse_proxy news_portal_frontend:3000
+    }
 }
