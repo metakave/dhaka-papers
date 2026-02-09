@@ -1,0 +1,626 @@
+{
+    "info": {
+        "_postman_id": "a9e8b7d2-1c2b-4d5e-8f9g-h1i2j3k4l5m6",
+        "name": "News Portal API",
+        "description": "Comprehensive collection for testing the News Portal Backend API. Includes public and protected endpoints.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Authentication",
+            "item": [
+                {
+                    "name": "Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "var jsonData = pm.response.json();",
+                                    "if (jsonData.token) {",
+                                    "    pm.collectionVariables.set(\"token\", jsonData.token);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"admin@news.com\",\n    \"password\": \"password123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Current User (Me)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/me",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "me"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "News",
+            "item": [
+                {
+                    "name": "List News (Public)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/news?page=1&limit=10&sort=latest",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "news"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                },
+                                {
+                                    "key": "category",
+                                    "value": "bangladesh",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "sort",
+                                    "value": "latest"
+                                },
+                                {
+                                    "key": "featured",
+                                    "value": "true",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "search",
+                                    "value": "query",
+                                    "disabled": true
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get News by Slug (Public)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/news/example-slug-here",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "news",
+                                "example-slug-here"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create News (Protected)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "title",
+                                    "value": "Bengali News Title",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "title_en",
+                                    "value": "English Title for Slug",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "category_id",
+                                    "value": "uuid-here",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "excerpt",
+                                    "value": "Brief news summary",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "content",
+                                    "value": "<p>Full news HTML content</p>",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "is_featured",
+                                    "value": "false",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "thumbnail",
+                                    "type": "file",
+                                    "src": [],
+                                    "description": "Select an image file"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/news",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "news"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update News (Protected)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "title",
+                                    "value": "Updated Title",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "title_en",
+                                    "value": "Updated English Title",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "category_id",
+                                    "value": "uuid-here",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "excerpt",
+                                    "value": "Updated excerpt",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "content",
+                                    "value": "<p>Updated content</p>",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "is_featured",
+                                    "value": "true",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "thumbnail",
+                                    "type": "file",
+                                    "src": [],
+                                    "disabled": true,
+                                    "description": "Select new image OR use URL below"
+                                },
+                                {
+                                    "key": "thumbnail",
+                                    "value": "https://r2.url/existing.jpg",
+                                    "type": "text",
+                                    "description": "Provide existing URL if not uploading new file"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/news/uuid-here",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "news",
+                                "uuid-here"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete News (Protected)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/news/uuid-here",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "news",
+                                "uuid-here"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Check Slug Availability",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/news/check-slug?slug=example-slug",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "news",
+                                "check-slug"
+                            ],
+                            "query": [
+                                {
+                                    "key": "slug",
+                                    "value": "example-slug"
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Categories",
+            "item": [
+                {
+                    "name": "List Categories (Public)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/categories",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "categories"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Category (Protected)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Sports\",\n    \"name_bn\": \"খেলা\",\n    \"description\": \"All about sports\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/categories",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "categories"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Category (Protected)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Updated Name\",\n    \"name_bn\": \"আপডেটেড নাম\",\n    \"description\": \"Updated description\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/categories/uuid-here",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "categories",
+                                "uuid-here"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete Category (Protected)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/categories/uuid-here",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "categories",
+                                "uuid-here"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "User Management (Protected)",
+            "item": [
+                {
+                    "name": "List Users",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Register New User (Admin-only)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"New Editor\",\n    \"email\": \"editor@news.com\",\n    \"password\": \"password123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Change Password",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"old_password\": \"password123\",\n    \"new_password\": \"newpassword123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/users/change-password",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "change-password"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Statistics (Public)",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/stats",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "stats"
+                    ]
+                }
+            },
+            "response": []
+        }
+    ],
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        },
+        {
+            "listen": "test",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:8080/api/v1",
+            "type": "string"
+        },
+        {
+            "key": "token",
+            "value": "",
+            "type": "string"
+        }
+    ]
+}
