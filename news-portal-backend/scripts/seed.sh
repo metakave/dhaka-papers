@@ -14,25 +14,24 @@ echo "🚀 Starting Data Seed..."
 echo "🔑 Logging in as admin..."
 LOGIN_RESPONSE=$(curl -s -L -X POST $API_URL/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email": "admin@newsportal.com", "password": "password321123"}')
+  -d '{"email": "admin@news.com", "password": "password123"}')
 
-TOKEN=$(echo $LOGIN_RESPONSE | grep -oP '(?<="token":")[^"]+')
+TOKEN=$(echo $LOGIN_RESPONSE | jq -r '.token')
 
-if [ -z "$TOKEN" ]; then
+if [ -z "$TOKEN" ] || [ "$TOKEN" == "null" ]; then
     echo "❌ Error: Could not get auth token."
     echo "Response from server: $LOGIN_RESPONSE"
-    echo "Did you run 'make create-admin' with admin@newsportal.com/password321123?"
+    echo "Did you run 'make create-admin' with admin@news.com/password123?"
     exit 1
 fi
 
 # 3. Get Category IDs
 echo "🔍 Fetching Category IDs..."
-# Using a more robust way to get IDs
 CATEGORIES=$(curl -s -X GET $API_URL/categories)
 
 # Function to extract ID by Slug (more reliable than name)
 get_id() {
-    echo $CATEGORIES | grep -oP "(?<=\"id\":\")[^\"]+(?=\",\"name\":[^{]*\"slug\":\"$1\")"
+    echo $CATEGORIES | jq -r ".[] | select(.slug == \"$1\") | .id"
 }
 
 CAT_BD=$(get_id "bangladesh")

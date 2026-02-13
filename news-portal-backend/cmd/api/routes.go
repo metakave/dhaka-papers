@@ -45,7 +45,17 @@ func NewRouter(cfg RouterConfig) http.Handler {
 	r.Use(customMiddleware.RateLimitMiddleware(cfg.RPS, cfg.Burst))
 
 	// API Routes
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("News Portal API is running"))
+	})
+
 	r.Route("/api/v1", func(r chi.Router) {
+		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte("News Portal API v1 is running"))
+		})
+		r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte("OK"))
+		})
 		r.Route("/auth", func(r chi.Router) {
 			r.Post("/login", cfg.AuthHandler.Login)
 			r.Group(func(r chi.Router) {

@@ -122,9 +122,6 @@ export default function Footer() {
           <p className="text-gray-600 text-[10px] md:text-[11px] font-black uppercase tracking-[0.25em]">
             © ২০২৬ খবর লিমিটেড - ঢাকা, বাংলাদেশ
           </p>
-          <p className="text-gray-600 text-[10px] md:text-[11px] font-black uppercase tracking-[0.25em]">
-            Developed for Advanced Journalism
-          </p>
         </div>
       </div>
     </footer>
