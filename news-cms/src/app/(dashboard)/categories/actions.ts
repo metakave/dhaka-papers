@@ -23,6 +23,7 @@ export async function createCategoryAction(prevState: any, formData: FormData) {
             name: formData.get('name'),
             name_bn: formData.get('name_bn'),
             description: formData.get('description'),
+            priority: parseInt(formData.get('priority') as string) || 0,
         };
 
         await api.post('/categories', data, {
@@ -43,7 +44,10 @@ export async function updateCategoryAction(id: string, prevState: any, formData:
             name: formData.get('name'),
             name_bn: formData.get('name_bn'),
             description: formData.get('description'),
+            priority: parseInt(formData.get('priority') as string) || 0,
         };
+
+        console.log('Updating category with data:', data);
 
         await api.put(`/categories/${id}`, data, {
             headers: { Authorization: `Bearer ${token}` }

@@ -11,13 +11,22 @@ import {
   CloseIcon,
   InstagramIcon,
 } from "@/components/common/Icons";
-import { formatBengaliDate } from "@/utils/dateUtils";
 
 export default function Header() {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  // Format date in Bengali
+  const formatBengaliDate = () => {
+    const bnMonths = ["জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"];
+    const bnDays = ["রবিবার", "সোমবার", "মঙ্গলবার", "বুধবার", "বৃহস্পতিবার", "শুক্রবার", "শনিবার"];
+    const bnDigits = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+    const toBengaliNumber = (num: number) => String(num).split("").map(d => bnDigits[parseInt(d)]).join("");
+    const now = new Date();
+    return ;
+  };
+
   const [isSticky, setIsSticky] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { data: categories, isLoading, error } = useCategories();
@@ -68,7 +77,7 @@ export default function Header() {
           <li key={cat.id}>
             <Link
               href={`/${cat.slug}`}
-              className="text-[17px] font-black text-gray-900 hover:text-primary transition-colors tracking-tight whitespace-nowrap uppercase"
+              className="text-[17px] font-black text-gray-900 hover:text-primary transition-colors tracking-tight whitespace-nowrap uppercase italic"
             >
               {cat.name_bn || cat.name}
             </Link>
@@ -86,15 +95,11 @@ export default function Header() {
         key={cat.id}
         href={`/${cat.slug}`}
         onClick={() => setIsMenuOpen(false)}
-        className="text-2xl md:text-4xl font-black text-gray-900 hover:text-primary transition-all text-left md:text-center border-l-4 md:border-l-0 md:border-b-4 border-transparent hover:border-primary pl-4 md:pl-0 pb-1 md:pb-4 truncate md:overflow-visible"
+        className="text-2xl md:text-4xl font-black text-gray-900 hover:text-primary transition-all text-left md:text-center italic border-l-4 md:border-l-0 md:border-b-4 border-transparent hover:border-primary pl-4 md:pl-0 pb-1 md:pb-4 truncate md:overflow-visible"
       >
         {cat.name_bn || cat.name}
       </Link>
     ));
-  };
-
-  const getBengaliDate = () => {
-    return formatBengaliDate(new Date());
   };
 
   return (
@@ -119,8 +124,8 @@ export default function Header() {
             </div>
             <div className="w-1/2 flex justify-center">
               <Link href="/">
-                <h1 className="text-3xl font-black tracking-tighter italic">
-                  <span className="text-gray-900">ঢাকা</span> <span className="text-primary">পেপারস</span>
+                <h1 className="text-3xl font-black text-primary tracking-tighter italic">
+                  খবর
                 </h1>
               </Link>
             </div>
@@ -172,7 +177,7 @@ export default function Header() {
               <div className="w-1/3 flex justify-center">
                 <Link href="/">
                   <h1 className="text-[70px] leading-none font-black text-primary tracking-tighter italic select-none">
-                    <span className="text-gray-900">ঢাকা</span> <span className="text-primary">পেপারস</span>
+                    খবর
                   </h1>
                 </Link>
               </div>
@@ -180,7 +185,7 @@ export default function Header() {
               <div className="w-1/3 flex justify-end items-center gap-8 text-gray-400">
                 <div className="text-right">
                   <p className="text-sm font-black uppercase tracking-[0.2em] text-gray-600">
-                    {getBengaliDate()}
+                    {formatBengaliDate()}
                   </p>
                 </div>
                 <button
@@ -244,8 +249,8 @@ export default function Header() {
           <div className="container px-6 py-10 flex flex-col h-full">
             <div className="flex items-center justify-between mb-16 border-b border-gray-50 pb-8">
               <Link href="/" onClick={() => setIsMenuOpen(false)}>
-                <h1 className="text-6xl md:text-8xl font-black italic tracking-tighter">
-                  <span className="text-gray-900">ঢাকা</span> <span className="text-primary">পেপারস</span>
+                <h1 className="text-6xl md:text-8xl font-black text-primary italic tracking-tighter">
+                  খবর
                 </h1>
               </Link>
               <button

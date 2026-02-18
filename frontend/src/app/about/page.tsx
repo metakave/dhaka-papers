@@ -7,7 +7,7 @@ export default function AboutPage() {
                 {/* Hero Section */}
                 <div className="text-center mb-20 px-4">
                     <h1 className="text-6xl md:text-8xl font-black mb-8 tracking-tighter italic text-gray-900 leading-none">
-                        খবর: সংবাদের <span className="text-primary underline decoration-8 underline-offset-8">নতুন</span> যুগ
+                        ঢাকা পেপারস: সংবাদের <span className="text-primary underline decoration-8 underline-offset-8">নতুন</span> যুগ
                     </h1>
                     <p className="text-xl md:text-2xl text-gray-500 font-bold uppercase tracking-[0.2em] max-w-2xl mx-auto">
                         আমরা কেবল সংবাদ পাঠক নই, আমরা সত্যের অনুসন্ধানকারী।
@@ -23,7 +23,7 @@ export default function AboutPage() {
                             </h2>
                             <div className="prose prose-lg prose-red text-gray-700 leading-relaxed font-medium space-y-6">
                                 <p>
-                                    ২০২৬ সালে যাত্রা শুরু করা **খবর** একটি ডিজিটাল-ফার্স্ট সংবাদ মাধ্যম। আমরা এমন এক সময়ে যাত্রা শুরু করেছি যখন সংবাদের বিশ্বাসযোগ্যতা সবচাইতে বেশি জরুরি। আমাদের লক্ষ্য ডিজিটাল প্ল্যাটফর্মে গভীর সাংবাদিকতা এবং দ্রুততম সময়ে সঠিক তথ্য সরবরাহ করা।
+                                    ২০২৬ সালে যাত্রা শুরু করা ঢাকা পেপারস একটি ডিজিটাল-ফার্স্ট সংবাদ মাধ্যম। আমরা এমন এক সময়ে যাত্রা শুরু করেছি যখন সংবাদের বিশ্বাসযোগ্যতা সবচাইতে বেশি জরুরি। আমাদের লক্ষ্য ডিজিটাল প্ল্যাটফর্মে গভীর সাংবাদিকতা এবং দ্রুততম সময়ে সঠিক তথ্য সরবরাহ করা।
                                 </p>
                                 <p>
                                     আমরা বিশ্বাস করি সাংবাদিকতা কেবল তথ্য জানানো নয়, বরং সমাজকে পথ দেখানো। আমাদের প্রতিটি সংবাদের পেছনে থাকে ঘণ্টার পর ঘণ্টা গবেষণা এবং একাধিক স্তরের তথ্য যাচাই।
@@ -52,10 +52,6 @@ export default function AboutPage() {
                         <div className="bg-[#121212] border-t-8 border-primary text-white p-12 rounded-sm shadow-2xl sticky top-32">
                             <h2 className="text-3xl font-black mb-10 border-b border-gray-800 pb-4 tracking-tighter uppercase italic text-primary">আমাদের প্রভাব</h2>
                             <div className="space-y-12">
-                                <div className="group">
-                                    <p className="text-6xl font-black text-white italic group-hover:text-primary transition-colors">৫০+</p>
-                                    <p className="text-sm font-black uppercase tracking-[0.3em] text-gray-300 mt-3 border-l-4 border-primary pl-4">দক্ষ সাংবাদিক</p>
-                                </div>
                                 <div className="group">
                                     <p className="text-6xl font-black text-white italic group-hover:text-primary transition-colors">১০০%</p>
                                     <p className="text-sm font-black uppercase tracking-[0.3em] text-gray-300 mt-3 border-l-4 border-primary pl-4">নিরপেক্ষতা</p>

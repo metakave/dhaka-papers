@@ -20,7 +20,7 @@ func NewStatsService(newsRepo port.NewsRepository, categoryRepo port.CategoryRep
 }
 
 func (s *StatsService) GetDashboardStats(ctx context.Context) (*port.DashboardStats, error) {
-	totalNews, err := s.newsRepo.CountNews(ctx, nil, nil, nil, "")
+	totalNews, err := s.newsRepo.CountNews(ctx, nil, nil, nil, "", "all")
 	if err != nil {
 		return nil, err
 	}

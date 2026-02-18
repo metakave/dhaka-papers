@@ -75,6 +75,7 @@ func NewRouter(cfg RouterConfig) http.Handler {
 			r.Use(handler.AuthMiddleware(cfg.JWTSecret))
 
 			r.Post("/news", cfg.NewsHandler.CreateNews)
+			r.Get("/news/admin", cfg.NewsHandler.ListAdminNews)
 			r.Put("/news/{id}", cfg.NewsHandler.UpdateNews)
 			r.Delete("/news/{id}", cfg.NewsHandler.DeleteNews)
 
@@ -84,6 +85,7 @@ func NewRouter(cfg RouterConfig) http.Handler {
 
 			r.Get("/users", cfg.AuthHandler.ListUsers)
 			r.Post("/users", cfg.AuthHandler.Register)
+			r.Put("/users/{id}", cfg.AuthHandler.UpdateUser)
 			r.Post("/users/change-password", cfg.AuthHandler.ChangePassword)
 
 			r.Post("/SEED_news", cfg.SeedHandler.SEED_CreateNews)

@@ -2,28 +2,65 @@ package storage
 
 import (
 	"context"
+	"strconv"
 
 	"news-portal-backend/internal/core/port"
 
 	"github.com/google/uuid"
 )
 
-func (a *Adapter) CountNews(ctx context.Context, categoryID *uuid.UUID, authorID *uuid.UUID, isFeatured *bool, search string) (int64, error) {
+func (a *Adapter) CountNews(ctx context.Context, categoryID *uuid.UUID, authorID *uuid.UUID, isFeatured *bool, search string, statusFilter string) (int64, error) {
 	var searchPtr *string
 	if search != "" {
 		pattern := "%" + search + "%"
 		searchPtr = &pattern
 	}
 
-	query := `SELECT COUNT(*) FROM news n
-	          WHERE n.status = 'published' AND n.published_at <= NOW()
-	          AND ($1::uuid IS NULL OR n.category_id = $1)
-	          AND ($2::boolean IS NULL OR n.is_featured = $2)
-	          AND ($3::text IS NULL OR n.title ILIKE $3)
-	          AND ($4::uuid IS NULL OR n.author_id = $4)`
+	whereClause := "WHERE 1=1"
+	args := []interface{}{}
+	argCount := 1
+
+	// Status Filter Logic
+	if statusFilter == "all" {
+		// No status restriction
+	} else if statusFilter != "" {
+		whereClause += " AND n.status = $" + strconv.Itoa(argCount)
+		args = append(args, statusFilter)
+		argCount++
+	} else {
+		// Default (Public view)
+		whereClause += " AND n.status = 'published' AND n.published_at <= NOW()"
+	}
+
+	if categoryID != nil {
+		// I should probably stick to that if possible, but statusFilter adds complexity.
+		// Dynamic building is safer/easier for statusFilter.
+		args = append(args, *categoryID)
+		argCount++
+	}
+
+	if isFeatured != nil {
+		whereClause += " AND is_featured = $" + strconv.Itoa(argCount)
+		args = append(args, *isFeatured)
+		argCount++
+	}
+
+	if searchPtr != nil {
+		whereClause += " AND (title ILIKE $" + strconv.Itoa(argCount) + ")"
+		args = append(args, *searchPtr)
+		argCount++
+	}
+
+	if authorID != nil {
+		whereClause += " AND author_id = $" + strconv.Itoa(argCount)
+		args = append(args, *authorID)
+		argCount++
+	}
+
+	query := `SELECT COUNT(*) FROM news n ` + whereClause
 
 	var count int64
-	err := a.db.QueryRow(ctx, query, categoryID, isFeatured, searchPtr, authorID).Scan(&count)
+	err := a.db.QueryRow(ctx, query, args...).Scan(&count)
 	return count, err
 }
 

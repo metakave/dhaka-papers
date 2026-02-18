@@ -67,6 +67,7 @@ export function CategoryTable({ data }: CategoryTableProps) {
                 <Table>
                     <TableHeader>
                         <TableRow>
+                            <TableHead className="w-[80px]">Priority</TableHead>
                             <TableHead>English Name</TableHead>
                             <TableHead>Bangla Name</TableHead>
                             <TableHead>Slug</TableHead>
@@ -76,13 +77,14 @@ export function CategoryTable({ data }: CategoryTableProps) {
                     <TableBody>
                         {data.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={4} className="text-center py-10 text-muted-foreground">
+                                <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">
                                     No categories found.
                                 </TableCell>
                             </TableRow>
                         ) : (
                             data.map((category) => (
                                 <TableRow key={category.id}>
+                                    <TableCell className="font-bold text-primary">{category.priority}</TableCell>
                                     <TableCell className="font-medium">{category.name}</TableCell>
                                     <TableCell>{(category as any).name_bn || '-'}</TableCell>
                                     <TableCell>{category.slug}</TableCell>

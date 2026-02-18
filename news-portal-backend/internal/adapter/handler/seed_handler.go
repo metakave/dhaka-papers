@@ -6,6 +6,7 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"news-portal-backend/internal/core/port"
 
@@ -68,7 +69,7 @@ func (h *SeedHandler) SEED_CreateNews(w http.ResponseWriter, r *http.Request) {
 		titleEn = req.Title // Fallback for seeds
 	}
 
-	news, err := h.svc.CreateNews(r.Context(), authorID, categoryID, req.Title, titleEn, req.Excerpt, req.Content, req.ThumbnailURL, req.IsFeatured)
+	news, err := h.svc.CreateNews(r.Context(), authorID, categoryID, req.Title, titleEn, req.Excerpt, req.Content, req.ThumbnailURL, req.IsFeatured, "published", time.Now())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

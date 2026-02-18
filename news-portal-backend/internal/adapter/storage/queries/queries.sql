@@ -71,12 +71,12 @@ WHERE slug = $1;
 SELECT count(*) FROM owners;
 
 -- name: CreateCategory :one
-INSERT INTO categories (name, name_bn, slug, description)
-VALUES ($1, $2, $3, $4)
+INSERT INTO categories (name, name_bn, slug, description, priority)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 
 -- name: ListCategories :many
-SELECT * FROM categories ORDER BY name ASC;
+SELECT * FROM categories ORDER BY priority ASC, name ASC;
 
 -- name: GetCategoryBySlug :one
 SELECT * FROM categories WHERE slug = $1 LIMIT 1;

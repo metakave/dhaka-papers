@@ -80,6 +80,29 @@ func (s *AuthService) ChangePassword(ctx context.Context, id uuid.UUID, oldPassw
 	return s.repo.UpdateOwnerPassword(ctx, id, string(hashedPassword))
 }
 
+func (s *AuthService) UpdateUser(ctx context.Context, id uuid.UUID, name, email, password string) error {
+	owner, err := s.repo.GetOwnerByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if owner == nil {
+		return errors.New("user not found")
+	}
+
+	owner.Name = name
+	owner.Email = email
+
+	if password != "" {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if err != nil {
+			return err
+		}
+		owner.Password = string(hashedPassword)
+	}
+
+	return s.repo.UpdateOwner(ctx, owner)
+}
+
 func (s *AuthService) ListUsers(ctx context.Context) ([]*domain.Owner, error) {
 	return s.repo.ListOwners(ctx)
 }

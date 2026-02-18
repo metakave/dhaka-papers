@@ -21,6 +21,7 @@ type Category struct {
 	NameBN      *string   `json:"name_bn"`
 	Slug        string    `json:"slug"`
 	Description *string   `json:"description,omitempty"`
+	Priority    int       `json:"priority"`
 	CreatedAt   time.Time `json:"created_at"`
 }
 
@@ -44,7 +45,8 @@ type News struct {
 	UpdatedAt       time.Time `json:"updated_at"`
 
 	// Joined fields for easier frontend rendering
-	AuthorName   *string `json:"author_name,omitempty"`
-	CategoryName *string `json:"category_name,omitempty"`
-	CategorySlug *string `json:"category_slug,omitempty"`
+	AuthorName     *string `json:"author_name,omitempty"`
+	CategoryName   *string `json:"category_name,omitempty"`
+	CategoryNameBN *string `json:"category_name_bn,omitempty"`
+	CategorySlug   *string `json:"category_slug,omitempty"`
 }

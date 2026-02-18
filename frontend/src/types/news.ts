@@ -15,6 +15,7 @@ export interface News {
     updated_at: string;
     author_name?: string;
     category_name?: string;
+    category_name_bn?: string;
     category_slug?: string;
 }
 

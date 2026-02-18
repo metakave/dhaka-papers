@@ -38,8 +38,8 @@ export default function Footer() {
               href="/"
               className="inline-block mb-6 transition-transform hover:scale-105 duration-300"
             >
-              <h2 className="text-6xl md:text-8xl font-black text-primary italic tracking-tighter select-none leading-none">
-                খবর
+              <h2 className="text-6xl md:text-8xl font-black italic tracking-tighter select-none leading-none">
+                <span className="text-white">ঢাকা</span> <span className="text-primary">পেপারস</span>
               </h2>
             </Link>
             <p className="text-gray-300 text-lg md:text-xl leading-relaxed max-w-xl font-medium">
@@ -120,7 +120,7 @@ export default function Footer() {
         {/* 4. Final Bottom Bar: Symmetrical Credits */}
         <div className="pt-10 border-t border-gray-900 flex flex-col items-center text-center gap-3">
           <p className="text-gray-600 text-[10px] md:text-[11px] font-black uppercase tracking-[0.25em]">
-            © ২০২৬ খবর লিমিটেড - ঢাকা, বাংলাদেশ
+            © ২০২৬ ঢাকা পেপারস লিমিটেড - ঢাকা, বাংলাদেশ
           </p>
         </div>
       </div>

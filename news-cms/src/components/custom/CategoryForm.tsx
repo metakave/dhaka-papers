@@ -22,7 +22,10 @@ const formSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters'),
     name_bn: z.string().optional(),
     description: z.string().optional(),
+    priority: z.number(),
 });
+
+type FormValues = z.infer<typeof formSchema>;
 
 interface CategoryFormProps {
     initialData?: any;
@@ -35,12 +38,13 @@ export function CategoryForm({ initialData, action: serverAction }: CategoryForm
 
     const isPending = isPendingState || isPendingTransition;
 
-    const form = useForm<z.infer<typeof formSchema>>({
+    const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            name: initialData?.name || '',
-            name_bn: initialData?.name_bn || '',
-            description: initialData?.description || '',
+            name: (initialData?.name as string) || '',
+            name_bn: (initialData?.name_bn as string) || '',
+            description: (initialData?.description as string) || '',
+            priority: (initialData?.priority as number) ?? 0,
         },
     });
 
@@ -60,7 +64,9 @@ export function CategoryForm({ initialData, action: serverAction }: CategoryForm
                         const formData = new FormData();
                         const values = form.getValues();
                         Object.entries(values).forEach(([key, value]) => {
-                            if (value) formData.append(key, String(value));
+                            if (value !== undefined && value !== null) {
+                                formData.append(key, String(value));
+                            }
                         });
                         startTransition(() => {
                             formAction(formData);
@@ -107,6 +113,26 @@ export function CategoryForm({ initialData, action: serverAction }: CategoryForm
                                 <Textarea
                                     placeholder="Category description..."
                                     className="resize-none"
+                                    {...field}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    control={form.control}
+                    name="priority"
+                    render={({ field: { value, onChange, ...field } }) => (
+                        <FormItem>
+                            <FormLabel>Priority (Lower numbers appear first)</FormLabel>
+                            <FormControl>
+                                <Input
+                                    type="number"
+                                    placeholder="0"
+                                    value={value}
+                                    onChange={(e) => onChange(parseInt(e.target.value) || 0)}
                                     {...field}
                                 />
                             </FormControl>

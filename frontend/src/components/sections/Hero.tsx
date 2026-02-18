@@ -13,7 +13,7 @@ interface HeroProps {
 export default function Hero({ featured: mainArticle, latest, isLoading }: HeroProps) {
 
     if (isLoading) {
-        return <div className="py-20 text-center text-gray-400 font-bold italic">খবর লোড হচ্ছে...</div>;
+        return <div className="py-20 text-center text-gray-400 font-bold italic">সংবাদ লোড হচ্ছে...</div>;
     }
 
     // Hero uses first 3 for side list (right) and next 2 for secondary (under main)

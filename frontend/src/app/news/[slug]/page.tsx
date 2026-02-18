@@ -1,59 +1,96 @@
-'use client';
+'use server';
 
 import Link from 'next/link';
 import Image from 'next/image';
 import Layout from '@/components/layout/Layout';
-import { notFound, useParams } from 'next/navigation';
-import { useNews, useNewsBySlug } from '@/hooks/queries/useNews';
+import { notFound } from 'next/navigation';
+import { newsService } from '@/services/news.service';
+import SocialShare from '@/components/common/SocialShare';
+import { Metadata } from 'next';
+import { getBengaliDayMonthYear } from '@/utils/dateUtils';
+import ArticleMeta from '@/components/news/ArticleMeta';
 
-export default function ArticlePage() {
-    const params = useParams();
-    const slug = params?.slug as string;
-    const { data: article, isLoading, isError } = useNewsBySlug(slug);
-    const { data: categoryNews } = useNews({ category: article?.category_slug, limit: 4 });
-    const { data: latestNews } = useNews({ limit: 4 });
+type Props = {
+    params: Promise<{ slug: string }>
+}
 
-    if (isLoading) {
-        return <div className="py-20 text-center text-gray-400 font-bold italic">খবর লোড হচ্ছে...</div>;
-    }
+export async function generateMetadata(
+    { params }: Props
+): Promise<Metadata> {
+    const { slug } = await params;
+    const article = await newsService.getBySlug(slug);
 
-    if (isError || !article) {
+    if (!article) return { title: 'Not Found' };
+
+    const ogImage = article.thumbnail || 'https://beta.dhakapapers.com/placeholder-news.jpg';
+
+    return {
+        title: `${article.title} | ঢাকা পেপারস`,
+        description: article.excerpt,
+        openGraph: {
+            title: article.title,
+            description: article.excerpt,
+            url: `https://beta.dhakapapers.com/news/${slug}`,
+            siteName: 'ঢাকা পেপারস',
+            images: [
+                {
+                    url: ogImage,
+                    width: 1200,
+                    height: 630,
+                    alt: article.title,
+                },
+            ],
+            locale: 'bn_BD',
+            type: 'article',
+            publishedTime: article.published_at,
+            authors: [article.author_name || 'Dhaka Papers'],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: article.title,
+            description: article.excerpt,
+            images: [ogImage],
+        },
+    };
+}
+
+export default async function ArticlePage({ params }: Props) {
+    const { slug } = await params;
+    let article;
+    try {
+        article = await newsService.getBySlug(slug);
+    } catch (e) {
         notFound();
     }
 
-    const formattedDate = new Date(article.published_at).toLocaleDateString('bn-BD', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-    });
+    if (!article) {
+        notFound();
+    }
 
-    const filteredCategoryNews = categoryNews?.newsList?.filter(a => a.id !== article.id) || [];
-    const filteredLatestNews = latestNews?.newsList?.filter(a => a.id !== article.id) || [];
+    const { newsList: categoryNews } = await newsService.getAll({ category: article.category_slug, limit: 10 });
+    const { newsList: latestNews } = await newsService.getAll({ limit: 10 });
 
+    const filteredCategoryNews = categoryNews?.filter(a => a.id !== article.id) || [];
+    const filteredLatestNews = latestNews?.filter(a => a.id !== article.id) || [];
     const relatedNews = (filteredCategoryNews.length > 0 ? filteredCategoryNews : filteredLatestNews).slice(0, 3);
+    const shareUrl = `https://beta.dhakapapers.com/news/${slug}`;
 
     return (
         <Layout>
             <article className="max-w-[850px] mx-auto py-6 md:py-10">
                 <Link href={`/${article.category_slug}`} className="text-primary font-bold text-sm md:text-base mb-6 inline-block hover:underline uppercase tracking-widest">
-                    {article.category_name}
+                    {article.category_name_bn || article.category_name}
                 </Link>
 
                 <h1 className="text-4xl sm:text-5xl md:text-6xl font-black mb-8 leading-[1.1] tracking-tight text-gray-900">
                     {article.title}
                 </h1>
 
-                <div className="flex items-center gap-4 mb-10 border-y border-gray-100 py-6">
-                    <div className="w-14 h-14 bg-gray-900 rounded-full flex items-center justify-center font-black text-white text-xl">
-                        {article.author_name?.charAt(0) || 'A'}
-                    </div>
-                    <div>
-                        <Link href={`/author/${article.author_id}`} className="font-black text-gray-900 text-lg hover:border-b-2 border-gray-900 transition-all block w-fit">
-                            {article.author_name}
-                        </Link>
-                        <p className="text-sm text-gray-500 font-bold uppercase tracking-wider">{formattedDate}</p>
-                    </div>
-                </div>
+                <ArticleMeta
+                    authorName={article.author_name || 'Anonymous'}
+                    authorId={article.author_id}
+                    updated_at={article.updated_at}
+                />
 
                 <div className="aspect-video relative mb-12 rounded-sm overflow-hidden shadow-2xl bg-gray-100">
                     <Image
@@ -65,16 +102,21 @@ export default function ArticlePage() {
                     />
                 </div>
 
+                <SocialShare title={article.title} url={shareUrl} />
+
                 <div className="prose prose-xl prose-red max-w-none text-gray-800 leading-[1.8] font-medium">
                     <p className="font-black text-2xl md:text-3xl mb-10 text-gray-900 border-l-8 border-primary pl-8 py-4 bg-gray-50 leading-tight italic">
                         {article.excerpt}
                     </p>
 
-                    {/* Rich Text Content from Backend (Sanitized) */}
                     <div
                         className="tiptap mb-12"
                         dangerouslySetInnerHTML={{ __html: article.content }}
                     />
+                </div>
+
+                <div className="my-12">
+                    <SocialShare title={article.title} url={shareUrl} />
                 </div>
 
                 <div className="mt-24 border-t-2 border-gray-900 pt-16">

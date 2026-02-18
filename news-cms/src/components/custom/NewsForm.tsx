@@ -20,9 +20,17 @@ import { Textarea } from '@/components/ui/textarea';
 import { TipTapEditor } from '@/components/custom/TipTapEditor';
 import { Category, News } from '@/types';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { format } from 'date-fns';
+import { CalendarIcon, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { Calendar } from '@/components/ui/calendar';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
 
 const formSchema = z.object({
     title: z.string().min(5, 'Title must be at least 5 characters'),
@@ -32,6 +40,8 @@ const formSchema = z.object({
     content: z.string().min(20, 'Content must be at least 20 characters'),
     is_featured: z.boolean(),
     thumbnail: z.any().refine((val) => val && (val instanceof File || typeof val === 'string' && val.length > 0), 'Thumbnail is required'),
+    status: z.enum(['draft', 'published']),
+    published_at: z.date(),
 });
 
 interface NewsFormProps {
@@ -56,6 +66,8 @@ export function NewsForm({ categories, initialData, action: serverAction }: News
             content: initialData?.content || '',
             is_featured: initialData ? initialData.is_featured : false,
             thumbnail: initialData?.thumbnail || '',
+            status: (initialData?.status as 'draft' | 'published') || 'draft',
+            published_at: initialData?.published_at ? new Date(initialData.published_at) : new Date(),
         },
     });
 
@@ -97,6 +109,8 @@ export function NewsForm({ categories, initialData, action: serverAction }: News
             formData.append('excerpt', values.excerpt);
             formData.append('content', values.content);
             formData.append('is_featured', String(values.is_featured));
+            formData.append('status', values.status);
+            formData.append('published_at', values.published_at.toISOString());
 
             // Thumbnail can be a File (new) or string (existing)
             if ((values.thumbnail as any) instanceof File) {
@@ -156,7 +170,7 @@ export function NewsForm({ categories, initialData, action: serverAction }: News
                     )}
                 />
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                         control={form.control}
                         name="category_id"
@@ -177,6 +191,87 @@ export function NewsForm({ categories, initialData, action: serverAction }: News
                                         ))}
                                     </SelectContent>
                                 </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="status"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Status</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select status" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="draft">Draft</SelectItem>
+                                        <SelectItem value="published">Published</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="published_at"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                                <FormLabel>Publish Date & Time</FormLabel>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <FormControl>
+                                            <Button
+                                                variant={"outline"}
+                                                className={cn(
+                                                    "w-full pl-3 text-left font-normal",
+                                                    !field.value && "text-muted-foreground"
+                                                )}
+                                            >
+                                                {field.value ? (
+                                                    format(field.value, "PPP p")
+                                                ) : (
+                                                    <span>Pick a date</span>
+                                                )}
+                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                            </Button>
+                                        </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={field.value}
+                                            onSelect={field.onChange}
+                                            disabled={(date) =>
+                                                date < new Date("1900-01-01")
+                                            }
+                                            initialFocus
+                                        />
+                                        <div className="p-3 border-t">
+                                            <Input
+                                                type="time"
+                                                onChange={(e) => {
+                                                    const date = field.value || new Date();
+                                                    const [hours, minutes] = e.target.value.split(':');
+                                                    if (hours && minutes) {
+                                                        date.setHours(parseInt(hours), parseInt(minutes));
+                                                        field.onChange(date);
+                                                    }
+                                                }}
+                                                value={field.value ? format(field.value, 'HH:mm') : ''}
+                                            />
+                                        </div>
+                                    </PopoverContent>
+                                </Popover>
+                                <FormDescription>
+                                    Set future date for scheduled publishing
+                                </FormDescription>
                                 <FormMessage />
                             </FormItem>
                         )}

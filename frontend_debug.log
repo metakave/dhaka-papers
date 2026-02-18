@@ -1,0 +1,9 @@
+▲ Next.js 16.1.3 (Turbopack)
+- Local:         http://localhost:3000
+-
+npm error code EIO
+npm error syscall read
+npm error errno -5
+npm error read EIO
+npm error A complete log of this run can be found in: /Users/musfiqurtuhin/.npm/_logs/2026-02-13T17_11_49_405Z-debug-0.log
+r: 28ms)

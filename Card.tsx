@@ -14,6 +14,16 @@ const Card = memo(({ article, variant = 'medium' }: CardProps) => {
     const isSmall = variant === 'small';
     const isHeroSide = variant === 'hero-side';
 
+    // Format date in Bengali with consistent month spelling
+    const formatBengaliDate = (dateStr: string) => {
+        const bnMonths = ["জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন",  "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"];
+        const bnDigits = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+        const toBengaliNumber = (num: number) => String(num).split("").map(d => bnDigits[parseInt(d)]).join("");
+        const date = new Date(dateStr);
+        return `${toBengaliNumber(date.getDate())} ${bnMonths[date.getMonth()]}, ${toBengaliNumber(date.getFullYear())}`;
+    };
+    const formattedDate = formatBengaliDate(article.published_at);
+
     return (
         <article className={`group flex flex-col ${isList ? 'flex-row gap-6 items-center' : 'gap-4'} ${isHeroSide ? 'border-b border-gray-100 pb-5 last:border-0' : ''}`}>
             {/* Image Container */}
@@ -29,7 +39,7 @@ const Card = memo(({ article, variant = 'medium' }: CardProps) => {
             {/* Content Container */}
             <div className="flex flex-col flex-1">
                 <Link href={`/${article.category_slug}`} className="text-primary text-[13px] font-black mb-2 uppercase tracking-widest hover:underline">
-                    {article.category_name_bn || article.category_name}
+                    {article.category_name}
                 </Link>
 
                 <Link href={`/news/${article.slug}`}>
@@ -47,6 +57,11 @@ const Card = memo(({ article, variant = 'medium' }: CardProps) => {
                         {article.excerpt}
                     </p>
                 )}
+
+                {/* Meta */}
+                <div className="flex items-center gap-3 text-gray-500 text-xs md:text-sm font-black uppercase tracking-tight mt-auto">
+                    <span>{formattedDate}</span>
+                </div>
             </div>
         </article>
     );

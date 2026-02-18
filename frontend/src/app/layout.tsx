@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "News Portal | Modern News Experience",
-  description: "Stay updated with the latest news from around the world.",
+  title: "ঢাকা পেপারস | আধুনিক সংবাদ মাধ্যম",
+  description: "দেশ-বিদেশের সর্বশেষ সংবাদ নিয়ে সব সময় আপনার পাশে।",
 };
 
 import QueryProvider from "@/providers/QueryProvider";
@@ -20,7 +20,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <QueryProvider>
           {children}
         </QueryProvider>

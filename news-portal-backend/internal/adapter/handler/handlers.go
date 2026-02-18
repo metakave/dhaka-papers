@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -110,6 +111,33 @@ func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"message": "Password updated"})
 }
 
+func (h *AuthHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	var req struct {
+		Name     string `json:"name"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = h.svc.UpdateUser(r.Context(), id, req.Name, req.Email, req.Password)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func (h *AuthHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
 	users, err := h.svc.ListUsers(r.Context())
 	if err != nil {
@@ -211,7 +239,30 @@ func (h *NewsHandler) CreateNews(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	news, err := h.svc.CreateNews(r.Context(), authorID, categoryID, title, titleEn, excerpt, content, thumbnail, isFeatured)
+	// Handle Status and PublishedAt
+	status := r.FormValue("status")
+	if status == "" {
+		status = "draft" // Default to draft if not specified
+	}
+
+	publishedAtStr := r.FormValue("published_at")
+	var publishedAt time.Time
+	if publishedAtStr != "" {
+		t, err := time.Parse(time.RFC3339, publishedAtStr)
+		if err != nil {
+			// Try simpler format if RFC3339 fails (e.g. HTML datetime-local)
+			t, err = time.Parse("2006-01-02T15:04", publishedAtStr)
+			if err != nil {
+				http.Error(w, "Invalid published_at format", http.StatusBadRequest)
+				return
+			}
+		}
+		publishedAt = t
+	} else {
+		publishedAt = time.Now()
+	}
+
+	news, err := h.svc.CreateNews(r.Context(), authorID, categoryID, title, titleEn, excerpt, content, thumbnail, isFeatured, status, publishedAt)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -219,7 +270,7 @@ func (h *NewsHandler) CreateNews(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"message": "News published",
+		"message": "News saved",
 		"newsId":  news.ID,
 	})
 }
@@ -274,7 +325,29 @@ func (h *NewsHandler) UpdateNews(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if err := h.svc.UpdateNews(r.Context(), id, categoryID, title, titleEn, excerpt, content, thumbnail, isFeatured); err != nil {
+	// Handle Status and PublishedAt
+	status := r.FormValue("status")
+	if status == "" {
+		status = "draft"
+	}
+
+	publishedAtStr := r.FormValue("published_at")
+	var publishedAt time.Time
+	if publishedAtStr != "" {
+		t, err := time.Parse(time.RFC3339, publishedAtStr)
+		if err != nil {
+			t, err = time.Parse("2006-01-02T15:04", publishedAtStr)
+			if err != nil {
+				http.Error(w, "Invalid published_at format", http.StatusBadRequest)
+				return
+			}
+		}
+		publishedAt = t
+	} else {
+		publishedAt = time.Now()
+	}
+
+	if err := h.svc.UpdateNews(r.Context(), id, categoryID, title, titleEn, excerpt, content, thumbnail, isFeatured, status, publishedAt); err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
 			http.Error(w, "News not found", http.StatusNotFound)
 			return
@@ -334,7 +407,47 @@ func (h *NewsHandler) ListNews(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	newsList, total, err := h.svc.ListNews(r.Context(), int32(page), int32(limit), category, authorID, sort, isFeatured, search)
+	newsList, total, err := h.svc.ListNews(r.Context(), int32(page), int32(limit), category, authorID, sort, isFeatured, search, "")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"newsList": newsList,
+		"total":    total,
+	})
+}
+
+func (h *NewsHandler) ListAdminNews(w http.ResponseWriter, r *http.Request) {
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+	category := r.URL.Query().Get("category")
+	sort := r.URL.Query().Get("sort")
+	featuredStr := r.URL.Query().Get("featured")
+
+	var isFeatured *bool
+	if featuredStr != "" {
+		b, err := strconv.ParseBool(featuredStr)
+		if err == nil {
+			isFeatured = &b
+		}
+	}
+
+	search := r.URL.Query().Get("search")
+	authorIDStr := r.URL.Query().Get("author_id")
+
+	var authorID *uuid.UUID
+	if authorIDStr != "" {
+		id, err := uuid.Parse(authorIDStr)
+		if err == nil {
+			authorID = &id
+		}
+	}
+
+	// Status Filter: "all" for admin to see everything
+	newsList, total, err := h.svc.ListNews(r.Context(), int32(page), int32(limit), category, authorID, sort, isFeatured, search, "all")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -406,13 +519,14 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request)
 		Name        string `json:"name"`
 		NameBN      string `json:"name_bn"`
 		Description string `json:"description"`
+		Priority    int    `json:"priority"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
 
-	category, err := h.svc.CreateCategory(r.Context(), req.Name, req.NameBN, req.Description)
+	category, err := h.svc.CreateCategory(r.Context(), req.Name, req.NameBN, req.Description, req.Priority)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -435,13 +549,14 @@ func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request)
 		Name        string `json:"name"`
 		NameBN      string `json:"name_bn"`
 		Description string `json:"description"`
+		Priority    int    `json:"priority"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
 
-	err = h.svc.UpdateCategory(r.Context(), id, req.Name, req.NameBN, req.Description)
+	err = h.svc.UpdateCategory(r.Context(), id, req.Name, req.NameBN, req.Description, req.Priority)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -498,3 +613,4 @@ func (h *StatsHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(stats)
 }
+

@@ -22,7 +22,7 @@ export default function PrivacyPage() {
                         </h2>
                         <div className="prose prose-lg text-gray-700 leading-relaxed font-medium space-y-6">
                             <p>
-                                **খবর** (khaborlimited.com) এ আমরা আপনার গোপনীয়তাকে গুরুত্ব সহকারে বিবেচনা করি। এই নীতিমালায় আমরা ব্যাখ্যা করছি কীভাবে আপনার তথ্য সংগ্রহ করা হয় এবং কেন তা সুরক্ষিত রাখা হয়।
+                                ঢাকা পেপারস (dhakapapers.com) এ আমরা আপনার গোপনীয়তাকে গুরুত্ব সহকারে বিবেচনা করি। এই নীতিমালায় আমরা ব্যাখ্যা করছি কীভাবে আপনার তথ্য সংগ্রহ করা হয় এবং কেন তা সুরক্ষিত রাখা হয়।
                             </p>
                             <p>
                                 আমাদের সেবা ব্যবহারের মাধ্যমে আপনি এই গোপনীয়তা নীতির শর্তাবলীতে সম্মতি প্রদান করছেন। আমরা সংগৃহীত কোনো তথ্য তৃতীয় পক্ষের কাছে বিক্রি বা পাচার করি না।
@@ -78,7 +78,7 @@ export default function PrivacyPage() {
                             <h3 className="text-xl font-black mb-4 uppercase text-primary">যোগাযোগ</h3>
                             <p className="text-gray-400 font-bold">
                                 আপনার যদি এই নীতি সম্পর্কে কোনো প্রশ্ন থাকে, তবে সরাসরি আমাদের সাথে যোগাযোগ করুন:
-                                <span className="block mt-2 text-white italic underline">privacy@khaborlimited.com</span>
+                                <span className="block mt-2 text-white italic underline">privacy@dhakapapers.com</span>
                             </p>
                         </div>
                     </section>

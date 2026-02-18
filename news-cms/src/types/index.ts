@@ -19,7 +19,10 @@ export interface News {
 export interface Category {
     id: string;
     name: string;
+    name_bn?: string;
     slug: string;
+    description?: string;
+    priority: number;
 }
 
 export interface PaginatedResponse<T> {

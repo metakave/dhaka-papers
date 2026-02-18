@@ -74,9 +74,42 @@ export function NewsTable({ data, totalPages, currentPage, currentSort }: NewsTa
 
     return (
         <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h2 className="text-2xl md:text-3xl font-bold tracking-tight">News Articles</h2>
-                <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <h2 className="text-2xl md:text-3xl font-bold tracking-tight">News Articles</h2>
+                    <Link href="/news/create">
+                        <Button className="w-full sm:w-auto">
+                            <Plus className="mr-2 h-4 w-4" /> Create News
+                        </Button>
+                    </Link>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center gap-4 bg-white p-4 rounded-lg border shadow-sm">
+                    <div className="relative w-full sm:w-[300px]">
+                        <input
+                            type="text"
+                            placeholder="Search news..."
+                            defaultValue={searchParams.get('search')?.toString()}
+                            onChange={(e) => {
+                                const params = new URLSearchParams(searchParams.toString());
+                                if (e.target.value) {
+                                    params.set('search', e.target.value);
+                                } else {
+                                    params.delete('search');
+                                }
+                                params.set('page', '1'); // Reset to page 1
+                                router.replace(`${pathname}?${params.toString()}`);
+                            }}
+                            className="w-full pl-9 pr-4 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                        />
+                        <div className="absolute left-3 top-2.5 text-gray-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                        </div>
+                    </div>
+
                     <Select value={currentSort} onValueChange={handleSortChange}>
                         <SelectTrigger className="w-full sm:w-[180px] bg-white">
                             <ListFilter className="w-4 h-4 mr-2 text-gray-500" />
@@ -89,11 +122,6 @@ export function NewsTable({ data, totalPages, currentPage, currentSort }: NewsTa
                             <SelectItem value="views_asc">Views (Low to High)</SelectItem>
                         </SelectContent>
                     </Select>
-                    <Link href="/news/create">
-                        <Button className="w-full sm:w-auto">
-                            <Plus className="mr-2 h-4 w-4" /> Create News
-                        </Button>
-                    </Link>
                 </div>
             </div>
 

@@ -13,7 +13,7 @@ export default function ContactPage() {
                         <div className="bg-gray-50 p-8 border-l-8 border-primary shadow-sm">
                             <h2 className="text-2xl font-black mb-4 uppercase tracking-tight">প্রধান কার্যালয়</h2>
                             <address className="not-italic text-lg text-gray-700 leading-relaxed font-bold">
-                                খবর লিমিটেড<br />
+                                ঢাকা পেপারস লিমিটেড<br />
                                 ১২/এ, কারওয়ান বাজার<br />
                                 ঢাকা - ১২১৫, বাংলাদেশ
                             </address>
@@ -22,11 +22,11 @@ export default function ContactPage() {
                         <div className="space-y-6">
                             <div>
                                 <h3 className="text-lg font-black text-primary uppercase tracking-widest mb-2">ইমেইল</h3>
-                                <p className="text-xl font-bold text-gray-900 border-b-2 border-gray-100 pb-1">info@khobor.live</p>
+                                <p className="text-xl font-bold text-gray-900 border-b-2 border-gray-100 pb-1">info@dhakapapers.com</p>
                             </div>
                             <div>
                                 <h3 className="text-lg font-black text-primary uppercase tracking-widest mb-2">ফোন</h3>
-                                <p className="text-xl font-bold text-gray-900 border-b-2 border-gray-100 pb-1">+৮৮০ ১৭০০-০০০০০০</p>
+                                <p className="text-xl font-bold text-gray-900 border-b-2 border-gray-100 pb-1">০১৭৩৬-১২৩৯০২</p>
                             </div>
                         </div>
                     </div>
