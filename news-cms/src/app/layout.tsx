@@ -7,7 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "News Portal CMS",
+  title: "ঢাকা পেপারস | CMS",
   description: "Admin panel for News Portal",
 };
 

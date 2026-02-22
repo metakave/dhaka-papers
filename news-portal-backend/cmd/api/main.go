@@ -115,6 +115,7 @@ func main() {
 	authService := service.NewAuthService(store, jwtSecret)
 	categoryService := service.NewCategoryService(store)
 	newsService := service.NewNewsService(store, store)
+	specialReportService := service.NewSpecialReportService(store)
 
 	// File Service (R2 Enforced)
 	r2AccountID := os.Getenv("R2_ACCOUNT_ID")
@@ -143,18 +144,20 @@ func main() {
 	seedHandler := handler.NewSeedHandler(newsService)
 	statsService := service.NewStatsService(store, store, store)
 	statsHandler := handler.NewStatsHandler(statsService)
+	specialReportHandler := handler.NewSpecialReportHandler(specialReportService)
 
 	// 5. Router Setup
 	router := NewRouter(RouterConfig{
-		AllowedOrigins:  allowedOrigins,
-		RPS:             rps,
-		Burst:           burst,
-		JWTSecret:       jwtSecret,
-		AuthHandler:     authHandler,
-		CategoryHandler: categoryHandler,
-		NewsHandler:     newsHandler,
-		StatsHandler:    statsHandler,
-		SeedHandler:     seedHandler,
+		AllowedOrigins:       allowedOrigins,
+		RPS:                  rps,
+		Burst:                burst,
+		JWTSecret:            jwtSecret,
+		AuthHandler:          authHandler,
+		CategoryHandler:      categoryHandler,
+		NewsHandler:          newsHandler,
+		StatsHandler:         statsHandler,
+		SeedHandler:          seedHandler,
+		SpecialReportHandler: specialReportHandler,
 	})
 
 	// 6. Graceful Shutdown Setup

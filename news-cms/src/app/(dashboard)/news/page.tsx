@@ -12,7 +12,7 @@ export default async function NewsPage(props: {
     const currentSearch = searchParams.search || '';
     const limit = 10;
 
-    const result = await getNewsAction(currentPage, limit, currentSort, currentSearch);
+    const result = await getNewsAction(currentPage, limit, undefined, currentSearch);
 
     if ('error' in result) {
         return <div className="p-4 text-red-500">Error: {result.error}</div>;

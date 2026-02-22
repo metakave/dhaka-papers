@@ -228,8 +228,11 @@ func (a *Adapter) CreateNews(ctx context.Context, news *domain.News) (*domain.Ne
 	}
 
 	query := `INSERT INTO news (author_id, category_id, title, title_en, excerpt, content, thumbnail, slug, is_featured, published_at, status, meta_title, meta_description)
-	          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $3, $5) RETURNING id, published_at, created_at, updated_at`
-	err = tx.QueryRow(ctx, query, news.AuthorID, news.CategoryID, news.Title, news.TitleEn, news.Excerpt, news.Content, news.Thumbnail, news.Slug, news.IsFeatured, news.PublishedAt, news.Status).
+	          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id, published_at, created_at, updated_at`
+	err = tx.QueryRow(ctx, query,
+		news.AuthorID, news.CategoryID, news.Title, news.TitleEn, news.Excerpt,
+		news.Content, news.Thumbnail, news.Slug, news.IsFeatured, news.PublishedAt,
+		news.Status, news.Title, news.Excerpt).
 		Scan(&news.ID, &news.PublishedAt, &news.CreatedAt, &news.UpdatedAt)
 	if err != nil {
 		return nil, err
@@ -335,14 +338,27 @@ func (a *Adapter) ListNews(ctx context.Context, limit, offset int32, categoryID 
 	}
 
 	if categoryID != nil {
-		whereClause += " AND category_id = $" + strconv.Itoa(argCount)
+		whereClause += " AND n.category_id = $" + strconv.Itoa(argCount)
 		args = append(args, *categoryID)
+		argCount++
+	}
+
+	if isFeatured != nil {
+		whereClause += " AND n.is_featured = $" + strconv.Itoa(argCount)
+		args = append(args, *isFeatured)
+		argCount++
+	}
+
+	if search != nil {
+		whereClause += " AND (n.title ILIKE $" + strconv.Itoa(argCount) + " OR n.content ILIKE $" + strconv.Itoa(argCount) + ")"
+		pattern := "%" + *search + "%"
+		args = append(args, pattern)
 		argCount++
 	}
 
 	if authorID != nil {
 		whereClause += " AND n.author_id = $" + strconv.Itoa(argCount)
-		args = append(args, authorID)
+		args = append(args, *authorID)
 		argCount++
 	}
 
@@ -382,7 +398,184 @@ func (a *Adapter) IncrementNewsViews(ctx context.Context, slug string) error {
 	return a.q.IncrementNewsViews(ctx, slug)
 }
 
+// SpecialReportRepository implementation
+
+func (a *Adapter) CreateReport(ctx context.Context, report *domain.SpecialReport) (*domain.SpecialReport, error) {
+	query := `INSERT INTO special_reports (title, slug, description, thumbnail, status, meta_title, meta_description, keywords)
+	          VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, created_at, updated_at`
+	err := a.db.QueryRow(ctx, query,
+		report.Title, report.Slug, report.Description, report.Thumbnail, report.Status,
+		report.MetaTitle, report.MetaDescription, report.Keywords).
+		Scan(&report.ID, &report.CreatedAt, &report.UpdatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return report, nil
+}
+
+func (a *Adapter) UpdateReport(ctx context.Context, report *domain.SpecialReport) error {
+	query := `UPDATE special_reports SET title = $2, slug = $3, description = $4, thumbnail = $5, status = $6, meta_title = $7, meta_description = $8, keywords = $9, updated_at = NOW() WHERE id = $1`
+	tag, err := a.db.Exec(ctx, query,
+		report.ID, report.Title, report.Slug, report.Description, report.Thumbnail, report.Status,
+		report.MetaTitle, report.MetaDescription, report.Keywords)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return domain.ErrNotFound
+	}
+	return nil
+}
+
+func (a *Adapter) DeleteReport(ctx context.Context, id uuid.UUID) error {
+	tag, err := a.db.Exec(ctx, "DELETE FROM special_reports WHERE id = $1", id)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return domain.ErrNotFound
+	}
+	return nil
+}
+
+func (a *Adapter) GetReportBySlug(ctx context.Context, slug string) (*domain.SpecialReport, error) {
+	query := `SELECT id, title, slug, description, thumbnail, status, meta_title, meta_description, keywords, created_at, updated_at FROM special_reports WHERE slug = $1 LIMIT 1`
+	r := &domain.SpecialReport{}
+	err := a.db.QueryRow(ctx, query, slug).Scan(
+		&r.ID, &r.Title, &r.Slug, &r.Description, &r.Thumbnail, &r.Status,
+		&r.MetaTitle, &r.MetaDescription, &r.Keywords, &r.CreatedAt, &r.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return r, nil
+}
+
+func (a *Adapter) ListReports(ctx context.Context, limit, offset int32, statusFilter string) ([]*domain.SpecialReport, error) {
+	where := "WHERE 1=1"
+	args := []interface{}{limit, offset}
+	if statusFilter != "" && statusFilter != "all" {
+		where += " AND status = $3"
+		args = append(args, statusFilter)
+	}
+
+	query := `SELECT id, title, slug, description, thumbnail, status, created_at, updated_at FROM special_reports ` + where + ` ORDER BY created_at DESC LIMIT $1 OFFSET $2`
+	rows, err := a.db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	reports := []*domain.SpecialReport{}
+	for rows.Next() {
+		r := &domain.SpecialReport{}
+		if err := rows.Scan(&r.ID, &r.Title, &r.Slug, &r.Description, &r.Thumbnail, &r.Status, &r.CreatedAt, &r.UpdatedAt); err != nil {
+			return nil, err
+		}
+		reports = append(reports, r)
+	}
+	return reports, nil
+}
+
+func (a *Adapter) CountReports(ctx context.Context, statusFilter string) (int64, error) {
+	where := "WHERE 1=1"
+	args := []interface{}{}
+	if statusFilter != "" && statusFilter != "all" {
+		where += " AND status = $1"
+		args = append(args, statusFilter)
+	}
+	query := `SELECT COUNT(*) FROM special_reports ` + where
+	var count int64
+	err := a.db.QueryRow(ctx, query, args...).Scan(&count)
+	return count, err
+}
+
+func (a *Adapter) CreateReportItem(ctx context.Context, item *domain.ReportItem) (*domain.ReportItem, error) {
+	query := `INSERT INTO report_items (report_id, title, date_str, details, image_url, qr_code_url, news_url, serial_number, metadata)
+	          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id, created_at, updated_at`
+	err := a.db.QueryRow(ctx, query,
+		item.ReportID, item.Title, item.DateStr, item.Details, item.ImageURL, item.QRCodeURL, item.NewsURL, item.SerialNumber, item.Metadata).
+		Scan(&item.ID, &item.CreatedAt, &item.UpdatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return item, nil
+}
+
+func (a *Adapter) UpdateReportItem(ctx context.Context, item *domain.ReportItem) error {
+	query := `UPDATE report_items SET title = $2, date_str = $3, details = $4, image_url = $5, qr_code_url = $6, news_url = $7, serial_number = $8, metadata = $9, updated_at = NOW() WHERE id = $1`
+	tag, err := a.db.Exec(ctx, query,
+		item.ID, item.Title, item.DateStr, item.Details, item.ImageURL, item.QRCodeURL, item.NewsURL, item.SerialNumber, item.Metadata)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return domain.ErrNotFound
+	}
+	return nil
+}
+
+func (a *Adapter) DeleteReportItem(ctx context.Context, id uuid.UUID) error {
+	tag, err := a.db.Exec(ctx, "DELETE FROM report_items WHERE id = $1", id)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return domain.ErrNotFound
+	}
+	return nil
+}
+
+func (a *Adapter) ListReportItems(ctx context.Context, reportID uuid.UUID) ([]domain.ReportItem, error) {
+	query := `SELECT id, report_id, title, date_str, details, image_url, qr_code_url, news_url, serial_number, metadata, created_at, updated_at FROM report_items WHERE report_id = $1 ORDER BY serial_number ASC, created_at ASC`
+	rows, err := a.db.Query(ctx, query, reportID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	items := []domain.ReportItem{}
+	for rows.Next() {
+		var it domain.ReportItem
+		if err := rows.Scan(&it.ID, &it.ReportID, &it.Title, &it.DateStr, &it.Details, &it.ImageURL, &it.QRCodeURL, &it.NewsURL, &it.SerialNumber, &it.Metadata, &it.CreatedAt, &it.UpdatedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, it)
+	}
+	return items, nil
+}
+
+func (a *Adapter) BatchUpsertReportItems(ctx context.Context, reportID uuid.UUID, items []domain.ReportItem) error {
+	tx, err := a.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	// Simple approach: Delete existing and insert new (or more complex upsert)
+	// For simplicity and to ensure order matches exactly, we clear and re-insert
+	_, err = tx.Exec(ctx, "DELETE FROM report_items WHERE report_id = $1", reportID)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range items {
+		query := `INSERT INTO report_items (report_id, title, date_str, details, image_url, qr_code_url, news_url, serial_number, metadata)
+		          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`
+		_, err = tx.Exec(ctx, query, reportID, item.Title, item.DateStr, item.Details, item.ImageURL, item.QRCodeURL, item.NewsURL, item.SerialNumber, item.Metadata)
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit(ctx)
+}
+
 // Ensure interface implementation
 var _ port.OwnerRepository = (*Adapter)(nil)
 var _ port.CategoryRepository = (*Adapter)(nil)
 var _ port.NewsRepository = (*Adapter)(nil)
+var _ port.SpecialReportRepository = (*Adapter)(nil)

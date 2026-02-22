@@ -21,6 +21,7 @@ import { TipTapEditor } from '@/components/custom/TipTapEditor';
 import { Category, News } from '@/types';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { toZonedTime, fromZonedTime } from 'date-fns-tz';
 import { CalendarIcon, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -55,6 +56,7 @@ export function NewsForm({ categories, initialData, action: serverAction }: News
     const [isPending, setIsPending] = useState(false);
     const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(initialData?.thumbnail || null);
     const router = useRouter();
+    const TIMEZONE = 'Asia/Dhaka';
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -67,7 +69,9 @@ export function NewsForm({ categories, initialData, action: serverAction }: News
             is_featured: initialData ? initialData.is_featured : false,
             thumbnail: initialData?.thumbnail || '',
             status: (initialData?.status as 'draft' | 'published') || 'draft',
-            published_at: initialData?.published_at ? new Date(initialData.published_at) : new Date(),
+            published_at: initialData?.published_at
+                ? toZonedTime(new Date(initialData.published_at), TIMEZONE)
+                : toZonedTime(new Date(), TIMEZONE),
         },
     });
 
@@ -110,7 +114,10 @@ export function NewsForm({ categories, initialData, action: serverAction }: News
             formData.append('content', values.content);
             formData.append('is_featured', String(values.is_featured));
             formData.append('status', values.status);
-            formData.append('published_at', values.published_at.toISOString());
+
+            // Convert BST from UI back to UTC before sending to server
+            const utcDate = fromZonedTime(values.published_at, TIMEZONE);
+            formData.append('published_at', utcDate.toISOString());
 
             // Thumbnail can be a File (new) or string (existing)
             if ((values.thumbnail as any) instanceof File) {

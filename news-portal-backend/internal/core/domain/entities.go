@@ -50,3 +50,34 @@ type News struct {
 	CategoryNameBN *string `json:"category_name_bn,omitempty"`
 	CategorySlug   *string `json:"category_slug,omitempty"`
 }
+type SpecialReport struct {
+	ID              uuid.UUID `json:"id"`
+	Title           string    `json:"title"`
+	Slug            string    `json:"slug"`
+	Description     *string   `json:"description"`
+	Thumbnail       *string   `json:"thumbnail"`
+	Status          string    `json:"status"` // draft, published
+	MetaTitle       *string   `json:"meta_title"`
+	MetaDescription *string   `json:"meta_description"`
+	Keywords        *string   `json:"keywords"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
+
+	// Optional: List of items when fetching detailed report
+	Items []ReportItem `json:"items,omitempty"`
+}
+
+type ReportItem struct {
+	ID           uuid.UUID `json:"id"`
+	ReportID     uuid.UUID `json:"report_id"`
+	Title        string    `json:"title"`
+	DateStr      *string   `json:"date_str"`
+	Details      *string   `json:"details"`
+	ImageURL     *string   `json:"image_url"`
+	QRCodeURL    *string   `json:"qr_code_url"`
+	NewsURL      *string   `json:"news_url"`
+	SerialNumber int       `json:"serial_number"`
+	Metadata     []byte    `json:"metadata"` // Raw JSONB
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+}

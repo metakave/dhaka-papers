@@ -52,7 +52,7 @@ func (s *R2Service) UploadFile(file multipart.File, header *multipart.FileHeader
 
 	_, err := s.client.PutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket:      aws.String(s.bucketName),
-		Key:         aws.String(filename),
+		Key:         aws.String("dp/" + filename),
 		Body:        file,
 		ContentType: aws.String(header.Header.Get("Content-Type")),
 	})
@@ -61,5 +61,5 @@ func (s *R2Service) UploadFile(file multipart.File, header *multipart.FileHeader
 	}
 
 	// Return the direct public R2 URL for maximum performance
-	return fmt.Sprintf("%s/%s", strings.TrimSuffix(s.publicURL, "/"), filename), nil
+	return fmt.Sprintf("%s/dp/%s", strings.TrimSuffix(s.publicURL, "/"), filename), nil
 }

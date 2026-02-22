@@ -74,6 +74,14 @@ export default function Header() {
             </Link>
           </li>
         ))}
+        <li>
+          <Link
+            href="/special-report/extrajudicial-killing"
+            className="text-[17px] font-black text-primary hover:text-gray-900 transition-colors tracking-tight whitespace-nowrap uppercase border-b-2 border-primary"
+          >
+            স্পেশাল রিপোর্ট
+          </Link>
+        </li>
       </ul>
     );
   };
@@ -81,7 +89,7 @@ export default function Header() {
   const renderMenuLinks = () => {
     if (isLoading || error || !categories) return null;
 
-    return categories.map((cat) => (
+    const links = categories.map((cat) => (
       <Link
         key={cat.id}
         href={`/${cat.slug}`}
@@ -91,6 +99,19 @@ export default function Header() {
         {cat.name_bn || cat.name}
       </Link>
     ));
+
+    links.push(
+      <Link
+        key="special-report"
+        href="/special-report/extrajudicial-killing"
+        onClick={() => setIsMenuOpen(false)}
+        className="text-2xl md:text-4xl font-black text-primary hover:text-gray-900 transition-all text-left md:text-center border-l-4 md:border-l-0 md:border-b-4 border-primary pl-4 md:pl-0 pb-1 md:pb-4 truncate md:overflow-visible"
+      >
+        স্পেশাল রিপোর্ট
+      </Link>
+    );
+
+    return links;
   };
 
   const getBengaliDate = () => {

@@ -103,3 +103,31 @@ type DashboardStats struct {
 type StatsService interface {
 	GetDashboardStats(ctx context.Context) (*DashboardStats, error)
 }
+
+type SpecialReportRepository interface {
+	CreateReport(ctx context.Context, report *domain.SpecialReport) (*domain.SpecialReport, error)
+	UpdateReport(ctx context.Context, report *domain.SpecialReport) error
+	DeleteReport(ctx context.Context, id uuid.UUID) error
+	GetReportBySlug(ctx context.Context, slug string) (*domain.SpecialReport, error)
+	ListReports(ctx context.Context, limit, offset int32, statusFilter string) ([]*domain.SpecialReport, error)
+	CountReports(ctx context.Context, statusFilter string) (int64, error)
+
+	// Items (Victims)
+	CreateReportItem(ctx context.Context, item *domain.ReportItem) (*domain.ReportItem, error)
+	UpdateReportItem(ctx context.Context, item *domain.ReportItem) error
+	DeleteReportItem(ctx context.Context, id uuid.UUID) error
+	ListReportItems(ctx context.Context, reportID uuid.UUID) ([]domain.ReportItem, error)
+	BatchUpsertReportItems(ctx context.Context, reportID uuid.UUID, items []domain.ReportItem) error
+}
+
+type SpecialReportService interface {
+	CreateReport(ctx context.Context, title, slug, description, thumbnail, status string) (*domain.SpecialReport, error)
+	UpdateReport(ctx context.Context, id uuid.UUID, title, slug, description, thumbnail, status string) error
+	DeleteReport(ctx context.Context, id uuid.UUID) error
+	GetReportBySlug(ctx context.Context, slug string) (*domain.SpecialReport, error)
+	ListReports(ctx context.Context, page, limit int32, statusFilter string) ([]*domain.SpecialReport, int64, error)
+
+	// Items (Victims)
+	UpsertReportItems(ctx context.Context, reportID uuid.UUID, items []domain.ReportItem) error
+	ListReportItems(ctx context.Context, reportID uuid.UUID) ([]domain.ReportItem, error)
+}

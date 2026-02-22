@@ -22,7 +22,7 @@ export default function LoginPage() {
     return (
         <div className="flex min-h-screen items-center justify-center bg-gray-50/50">
             <Card className="w-full max-w-md shadow-lg border-0">
-                <CardHeader className="space-y-1 text-center">
+                <CardHeader className="space-y-4 text-center">
                     <CardTitle className="text-2xl font-bold tracking-tight">Admin Login</CardTitle>
                     <CardDescription>
                         Enter your credentials to access the dashboard

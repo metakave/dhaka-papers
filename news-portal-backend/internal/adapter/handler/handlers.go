@@ -614,3 +614,139 @@ func (h *StatsHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(stats)
 }
 
+// SpecialReport Handler
+
+type SpecialReportHandler struct {
+	svc port.SpecialReportService
+}
+
+func NewSpecialReportHandler(svc port.SpecialReportService) *SpecialReportHandler {
+	return &SpecialReportHandler{svc: svc}
+}
+
+func (h *SpecialReportHandler) CreateReport(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Title       string `json:"title"`
+		Slug        string `json:"slug"`
+		Description string `json:"description"`
+		Thumbnail   string `json:"thumbnail"`
+		Status      string `json:"status"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	report, err := h.svc.CreateReport(r.Context(), req.Title, req.Slug, req.Description, req.Thumbnail, req.Status)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(report)
+}
+
+func (h *SpecialReportHandler) UpdateReport(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	var req struct {
+		Title       string `json:"title"`
+		Slug        string `json:"slug"`
+		Description string `json:"description"`
+		Thumbnail   string `json:"thumbnail"`
+		Status      string `json:"status"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = h.svc.UpdateReport(r.Context(), id, req.Title, req.Slug, req.Description, req.Thumbnail, req.Status)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *SpecialReportHandler) DeleteReport(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	err = h.svc.DeleteReport(r.Context(), id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *SpecialReportHandler) ListReports(w http.ResponseWriter, r *http.Request) {
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+	status := r.URL.Query().Get("status")
+
+	reports, total, err := h.svc.ListReports(r.Context(), int32(page), int32(limit), status)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"reports": reports,
+		"total":   total,
+	})
+}
+
+func (h *SpecialReportHandler) GetReport(w http.ResponseWriter, r *http.Request) {
+	slug := chi.URLParam(r, "slug")
+	report, err := h.svc.GetReportBySlug(r.Context(), slug)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if report == nil {
+		http.Error(w, "Not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(report)
+}
+
+func (h *SpecialReportHandler) UpsertItems(w http.ResponseWriter, r *http.Request) {
+	reportIDStr := chi.URLParam(r, "reportId")
+	reportID, err := uuid.Parse(reportIDStr)
+	if err != nil {
+		http.Error(w, "Invalid Report ID", http.StatusBadRequest)
+		return
+	}
+
+	var items []domain.ReportItem
+	if err := json.NewDecoder(r.Body).Decode(&items); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = h.svc.UpsertReportItems(r.Context(), reportID, items)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}

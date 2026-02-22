@@ -8,7 +8,10 @@ import { redirect } from 'next/navigation';
 
 export async function getCategoriesAction(): Promise<Category[] | { error: string }> {
     try {
-        const response = await api.get('/categories');
+        const token = await getAuthToken();
+        const response = await api.get('/categories', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
         return response.data;
     } catch (error: any) {
         console.error('Failed to fetch categories:', error.message);

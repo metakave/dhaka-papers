@@ -33,26 +33,25 @@ func (a *Adapter) CountNews(ctx context.Context, categoryID *uuid.UUID, authorID
 	}
 
 	if categoryID != nil {
-		// I should probably stick to that if possible, but statusFilter adds complexity.
-		// Dynamic building is safer/easier for statusFilter.
+		whereClause += " AND n.category_id = $" + strconv.Itoa(argCount)
 		args = append(args, *categoryID)
 		argCount++
 	}
 
 	if isFeatured != nil {
-		whereClause += " AND is_featured = $" + strconv.Itoa(argCount)
+		whereClause += " AND n.is_featured = $" + strconv.Itoa(argCount)
 		args = append(args, *isFeatured)
 		argCount++
 	}
 
 	if searchPtr != nil {
-		whereClause += " AND (title ILIKE $" + strconv.Itoa(argCount) + ")"
+		whereClause += " AND (n.title ILIKE $" + strconv.Itoa(argCount) + " OR n.content ILIKE $" + strconv.Itoa(argCount) + ")"
 		args = append(args, *searchPtr)
 		argCount++
 	}
 
 	if authorID != nil {
-		whereClause += " AND author_id = $" + strconv.Itoa(argCount)
+		whereClause += " AND n.author_id = $" + strconv.Itoa(argCount)
 		args = append(args, *authorID)
 		argCount++
 	}

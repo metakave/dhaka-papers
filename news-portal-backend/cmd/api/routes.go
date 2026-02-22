@@ -13,15 +13,16 @@ import (
 )
 
 type RouterConfig struct {
-	AllowedOrigins  []string
-	RPS             float64
-	Burst           int
-	JWTSecret       string
-	AuthHandler     *handler.AuthHandler
-	CategoryHandler *handler.CategoryHandler
-	NewsHandler     *handler.NewsHandler
-	StatsHandler    *handler.StatsHandler
-	SeedHandler     *handler.SeedHandler
+	AllowedOrigins       []string
+	RPS                  float64
+	Burst                int
+	JWTSecret            string
+	AuthHandler          *handler.AuthHandler
+	CategoryHandler      *handler.CategoryHandler
+	NewsHandler          *handler.NewsHandler
+	StatsHandler         *handler.StatsHandler
+	SeedHandler          *handler.SeedHandler
+	SpecialReportHandler *handler.SpecialReportHandler
 }
 
 func NewRouter(cfg RouterConfig) http.Handler {
@@ -69,13 +70,16 @@ func NewRouter(cfg RouterConfig) http.Handler {
 		r.Get("/news/homepage", cfg.NewsHandler.GetHomepage)
 		r.Get("/news/check-slug", cfg.NewsHandler.CheckSlug)
 		r.Get("/news/{slug}", cfg.NewsHandler.GetNews)
-		r.Get("/stats", cfg.StatsHandler.GetStats)
+
+		r.Get("/special-reports", cfg.SpecialReportHandler.ListReports)
+		r.Get("/special-reports/{slug}", cfg.SpecialReportHandler.GetReport)
 
 		r.Group(func(r chi.Router) {
 			r.Use(handler.AuthMiddleware(cfg.JWTSecret))
 
 			r.Post("/news", cfg.NewsHandler.CreateNews)
 			r.Get("/news/admin", cfg.NewsHandler.ListAdminNews)
+			r.Get("/stats", cfg.StatsHandler.GetStats)
 			r.Put("/news/{id}", cfg.NewsHandler.UpdateNews)
 			r.Delete("/news/{id}", cfg.NewsHandler.DeleteNews)
 
@@ -89,6 +93,11 @@ func NewRouter(cfg RouterConfig) http.Handler {
 			r.Post("/users/change-password", cfg.AuthHandler.ChangePassword)
 
 			r.Post("/SEED_news", cfg.SeedHandler.SEED_CreateNews)
+
+			r.Post("/special-reports", cfg.SpecialReportHandler.CreateReport)
+			r.Put("/special-reports/{id}", cfg.SpecialReportHandler.UpdateReport)
+			r.Delete("/special-reports/{id}", cfg.SpecialReportHandler.DeleteReport)
+			r.Post("/special-reports/{reportId}/items", cfg.SpecialReportHandler.UpsertItems)
 		})
 	})
 
