@@ -313,6 +313,29 @@ export default function ReportContent({ items }: ReportContentProps) {
                                         const { so, address, identity, story } = parseVictimDetails(selectedVictim.details);
                                         return (
                                             <div className="space-y-12 lg:space-y-16">
+                                                {/* Top Navigation */}
+                                                <div className="flex justify-between items-center pb-8 border-b border-white/5">
+                                                    <button
+                                                        onClick={handlePrev}
+                                                        disabled={currentIndex === 0}
+                                                        className="flex items-center gap-2 px-4 py-2 bg-white/2 border border-white/10 rounded-full text-gray-400 hover:text-white hover:bg-red-900/20 hover:border-red-600/50 transition-all disabled:opacity-10 disabled:pointer-events-none group font-mono text-[9px] uppercase tracking-widest"
+                                                    >
+                                                        <ChevronLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+                                                        <span>Prev</span>
+                                                    </button>
+                                                    <div className="text-[9px] font-mono text-gray-600 tracking-widest uppercase">
+                                                        Case {currentIndex + 1} of {filteredItems.length}
+                                                    </div>
+                                                    <button
+                                                        onClick={handleNext}
+                                                        disabled={currentIndex === filteredItems.length - 1}
+                                                        className="flex items-center gap-2 px-4 py-2 bg-white/2 border border-white/10 rounded-full text-gray-400 hover:text-white hover:bg-red-900/20 hover:border-red-600/50 transition-all disabled:opacity-10 disabled:pointer-events-none group font-mono text-[9px] uppercase tracking-widest"
+                                                    >
+                                                        <span>Next</span>
+                                                        <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                                                    </button>
+                                                </div>
+
                                                 <div className="flex flex-col gap-10 pb-10 lg:pb-16 border-b border-white/5">
                                                     <InViewAnimation delay={0.2}>
                                                         <div className="flex items-start gap-4 lg:gap-6">
@@ -387,19 +410,46 @@ export default function ReportContent({ items }: ReportContentProps) {
                                                 </div>
 
                                                 <InViewAnimation delay={0.6}>
-                                                    <div className="pt-16 border-t border-white/5 flex flex-col sm:flex-row items-center gap-12">
-                                                        {selectedVictim.qr_code_url && (
-                                                            <div className="bg-white p-2 shrink-0">
-                                                                <Image src={selectedVictim.qr_code_url} alt="QR" width={100} height={100} className="w-24 h-24" />
-                                                            </div>
-                                                        )}
-                                                        <div className="w-full space-y-4">
-                                                            {selectedVictim.news_url && (
-                                                                <a href={selectedVictim.news_url} target="_blank" className="flex items-center justify-between w-full px-8 py-5 bg-white text-black font-black uppercase text-[10px] tracking-[0.4em] hover:bg-red-700 hover:text-white transition-all">
-                                                                    Original Source <ArrowUpRight size={18} />
-                                                                </a>
+                                                    <div className="pt-16 border-t border-white/5 space-y-12">
+                                                        <div className="flex flex-col sm:flex-row items-center gap-12">
+                                                            {selectedVictim.qr_code_url && (
+                                                                <div className="bg-white p-2 shrink-0">
+                                                                    <Image src={selectedVictim.qr_code_url} alt="QR" width={100} height={100} className="w-24 h-24" />
+                                                                </div>
                                                             )}
-                                                            <span className="text-[8px] font-mono text-gray-800 uppercase tracking-[0.5em] block text-center">Documentary Integrity Verified</span>
+                                                            <div className="text-center sm:text-left">
+                                                                <p className="text-white/40 text-[10px] font-mono uppercase tracking-[0.2em] mb-4">Verification Artifact</p>
+                                                                <p className="text-gray-500 text-xs leading-relaxed max-w-sm font-light">
+                                                                    Scan to verify this record against the independent registry. All data is cross-referenced with forensic reports and family testimonies.
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        {selectedVictim.news_url && (
+                                                            <a href={selectedVictim.news_url} target="_blank" className="flex items-center justify-between w-full px-8 py-5 bg-white text-black font-black uppercase text-[10px] tracking-[0.4em] hover:bg-red-700 hover:text-white transition-all">
+                                                                Original Source <ArrowUpRight size={18} />
+                                                            </a>
+                                                        )}
+                                                        <span className="text-[8px] font-mono text-gray-800 uppercase tracking-[0.5em] block text-center">Documentary Integrity Verified</span>
+
+                                                        {/* Bottom Navigation */}
+                                                        <div className="flex justify-between items-center pt-8 border-t border-white/5">
+                                                            <button
+                                                                onClick={handlePrev}
+                                                                disabled={currentIndex === 0}
+                                                                className="flex items-center gap-3 px-6 py-3 bg-white/5 border border-white/10 rounded-full text-white hover:bg-red-600 hover:border-red-600 transition-all disabled:opacity-10 disabled:pointer-events-none group font-mono text-[10px] uppercase tracking-widest"
+                                                            >
+                                                                <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                                                                <span>Previous Case</span>
+                                                            </button>
+                                                            <button
+                                                                onClick={handleNext}
+                                                                disabled={currentIndex === filteredItems.length - 1}
+                                                                className="flex items-center gap-3 px-6 py-3 bg-white/5 border border-white/10 rounded-full text-white hover:bg-red-600 hover:border-red-600 transition-all disabled:opacity-10 disabled:pointer-events-none group font-mono text-[10px] uppercase tracking-widest"
+                                                            >
+                                                                <span>Next Case</span>
+                                                                <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 </InViewAnimation>
