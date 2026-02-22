@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useCategories } from "@/hooks/queries/useCategories";
 import {
   FacebookIcon,
@@ -38,9 +39,7 @@ export default function Footer() {
               href="/"
               className="inline-block mb-6 transition-transform hover:scale-105 duration-300"
             >
-              <h2 className="text-6xl md:text-8xl font-black italic tracking-tighter select-none leading-none">
-                <span className="text-white">ঢাকা</span> <span className="text-primary">পেপারস</span>
-              </h2>
+              <Image src="/images/dhakapaper-logo.webp" alt="ঢাকা পেপারস" width={500} height={120} className="h-16 w-auto object-contain select-none" priority />
             </Link>
             <p className="text-gray-300 text-lg md:text-xl leading-relaxed max-w-xl font-medium">
               আমরা সংবাদের সত্যতায় বিশ্বাসী। আধুনিক সাংবাদিকতার মাধ্যমে আপনার

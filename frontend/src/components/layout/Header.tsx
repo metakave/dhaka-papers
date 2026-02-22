@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCategories } from "@/hooks/queries/useCategories";
 import {
@@ -74,14 +75,7 @@ export default function Header() {
             </Link>
           </li>
         ))}
-        <li>
-          <Link
-            href="/special-report/extrajudicial-killing"
-            className="text-[17px] font-black text-primary hover:text-gray-900 transition-colors tracking-tight whitespace-nowrap uppercase border-b-2 border-primary"
-          >
-            স্পেশাল রিপোর্ট
-          </Link>
-        </li>
+
       </ul>
     );
   };
@@ -100,16 +94,7 @@ export default function Header() {
       </Link>
     ));
 
-    links.push(
-      <Link
-        key="special-report"
-        href="/special-report/extrajudicial-killing"
-        onClick={() => setIsMenuOpen(false)}
-        className="text-2xl md:text-4xl font-black text-primary hover:text-gray-900 transition-all text-left md:text-center border-l-4 md:border-l-0 md:border-b-4 border-primary pl-4 md:pl-0 pb-1 md:pb-4 truncate md:overflow-visible"
-      >
-        স্পেশাল রিপোর্ট
-      </Link>
-    );
+
 
     return links;
   };
@@ -140,9 +125,7 @@ export default function Header() {
             </div>
             <div className="w-1/2 flex justify-center">
               <Link href="/">
-                <h1 className="text-3xl font-black tracking-tighter italic">
-                  <span className="text-gray-900">ঢাকা</span> <span className="text-primary">পেপারস</span>
-                </h1>
+                <Image src="/images/dhakapaper-logo.webp" alt="ঢাকা পেপারস" width={500} height={120} className="h-8 w-auto object-contain" priority />
               </Link>
             </div>
             <div className="w-1/4 flex justify-end">
@@ -192,9 +175,7 @@ export default function Header() {
 
               <div className="w-1/3 flex justify-center">
                 <Link href="/">
-                  <h1 className="text-[70px] leading-none font-black text-primary tracking-tighter italic select-none">
-                    <span className="text-gray-900">ঢাকা</span> <span className="text-primary">পেপারস</span>
-                  </h1>
+                  <Image src="/images/dhakapaper-logo.webp" alt="ঢাকা পেপারস" width={500} height={120} className="h-16 w-auto object-contain select-none" priority />
                 </Link>
               </div>
 
@@ -265,9 +246,7 @@ export default function Header() {
           <div className="container px-6 py-10 flex flex-col h-full">
             <div className="flex items-center justify-between mb-16 border-b border-gray-50 pb-8">
               <Link href="/" onClick={() => setIsMenuOpen(false)}>
-                <h1 className="text-6xl md:text-8xl font-black italic tracking-tighter">
-                  <span className="text-gray-900">ঢাকা</span> <span className="text-primary">পেপারস</span>
-                </h1>
+                <Image src="/images/dhakapaper-logo.webp" alt="ঢাকা পেপারস" width={500} height={120} className="h-14 w-auto object-contain" priority />
               </Link>
               <button
                 onClick={() => setIsMenuOpen(false)}

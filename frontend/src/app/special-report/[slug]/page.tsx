@@ -1,179 +1,63 @@
 import { notFound } from 'next/navigation';
-import Script from 'next/script';
-import Image from 'next/image';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
+import ReportContent from './ReportContent';
 
 async function getReport(slug: string) {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/special-reports/${slug}`, {
+    const API_URL = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL;
+    const res = await fetch(`${API_URL}/special-reports/${slug}`, {
         next: { revalidate: 60 } // Cache for 1 minute
     });
     if (!res.ok) return null;
     return res.json();
 }
 
-export default async function SpecialReportPage({ params }: { params: { slug: string } }) {
-    const report = await getReport(params.slug);
+export default async function SpecialReportPage({ params }: { params: Promise<{ slug: string }> }) {
+    const { slug } = await params;
+    const report = await getReport(slug);
 
     if (!report) {
         notFound();
     }
 
     return (
-        <main className="special-report-container bg-black text-white min-h-screen overflow-x-hidden">
-            {/* Custom Styles for the Interactive Experience */}
-            <style dangerouslySetInnerHTML={{
-                __html: `
-                .sr-hero {
-                    height: 100vh;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                    align-items: center;
-                    text-align: center;
-                    background: radial-gradient(circle, rgba(20,20,20,1) 0%, rgba(0,0,0,1) 100%);
-                    padding: 2rem;
-                }
-                .sr-title {
-                    font-size: 5rem;
-                    font-weight: 900;
-                    text-transform: uppercase;
-                    letter-spacing: -0.05em;
-                    margin-bottom: 1rem;
-                    background: linear-gradient(to bottom, #ffffff 50%, #666666 100%);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                }
-                .sr-item {
-                    min-height: 80vh;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                    align-items: center;
-                    padding: 4rem 2rem;
-                    position: relative;
-                    border-bottom: 1px solid #333;
-                }
-                .sr-item-content {
-                    max-width: 900px;
-                    width: 100%;
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 4rem;
-                }
-                .sr-item-image {
-                    position: relative;
-                    aspect-ratio: 4/5;
-                    border: 2px solid white;
-                    box-shadow: 0 0 30px rgba(255,255,255,0.1);
-                    transform: rotate(-2deg);
-                    transition: transform 0.5s ease;
-                }
-                .sr-item-image:hover {
-                    transform: rotate(0deg) scale(1.05);
-                }
-                .sr-item-details {
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                }
-                .sr-item-date {
-                    font-family: monospace;
-                    color: #ff3333;
-                    font-size: 1.2rem;
-                    margin-bottom: 0.5rem;
-                }
-                .sr-item-name {
-                    font-size: 3rem;
-                    font-weight: 700;
-                    margin-bottom: 1.5rem;
-                    line-height: 1.1;
-                }
-                .sr-item-text {
-                    color: #cccccc;
-                    line-height: 1.6;
-                    font-size: 1.1rem;
-                    margin-bottom: 2rem;
-                }
-                .sr-item-qr {
-                    width: 80px;
-                    height: 80px;
-                    background: white;
-                    padding: 5px;
-                }
-                .scroll-hint {
-                    position: absolute;
-                    bottom: 2rem;
-                    animation: bounce 2s infinite;
-                }
-                @keyframes bounce {
-                    0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-                    40% {transform: translateY(-10px);}
-                    60% {transform: translateY(-5px);}
-                }
-                @media (max-width: 768px) {
-                    .sr-item-content { grid-template-columns: 1fr; gap: 2rem; }
-                    .sr-title { font-size: 3rem; }
-                }
-            `}} />
+        <main className="bg-[#0a0a0a] text-[#f3f4f6] min-h-screen selection:bg-red-600 selection:text-white font-main overflow-x-hidden">
+            <Header />
 
-            <section className="sr-hero">
-                <h1 className="sr-title">{report.title}</h1>
-                <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-                    {report.description || "A solemn investigative series into extrajudicial killings."}
-                </p>
-                <div className="scroll-hint">
-                    <p className="text-sm font-mono tracking-widest text-gray-500 mb-2">SCROLL TO WITNESS</p>
-                    <div className="w-px h-12 bg-gray-500 mx-auto"></div>
+            {/* Dramatic Hero Section */}
+            <section className="relative h-screen flex flex-col justify-center items-center text-center px-4 overflow-hidden pt-[72px]">
+                {/* Red radial glow background */}
+                <div className="absolute inset-0 z-0" style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 40%, rgba(127,0,0,0.18) 0%, transparent 70%), radial-gradient(ellipse 60% 40% at 80% 80%, rgba(80,0,0,0.12) 0%, transparent 60%)' }} />
+                {/* Grid pattern overlay */}
+                <div className="absolute inset-0 z-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+                {/* Bottom fade to content */}
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0a0a0a]/30 to-[#0a0a0a] z-0" />
+
+                <div className="z-10 max-w-5xl mx-auto flex flex-col items-center">
+                    <p className="text-red-600 font-mono tracking-[0.3em] uppercase text-sm md:text-base mb-6 
+                                  border border-red-900/50 bg-red-950/20 px-4 py-2 rounded-full">
+                        Dhakapapers Special Investigation
+                    </p>
+                    <h1 className="text-5xl md:text-8xl font-black uppercase tracking-tighter leading-[0.9] text-white
+                                   [text-wrap:balance] mb-8">
+                        {report.title}
+                    </h1>
+                    <p className="text-lg md:text-2xl text-gray-400 max-w-3xl font-light leading-relaxed [text-wrap:balance]">
+                        {report.description || "A solemn investigative series into extrajudicial killings."}
+                    </p>
+                </div>
+
+                {/* Animated Scroll Indicator */}
+                <div className="absolute bottom-12 flex flex-col items-center animate-bounce z-10">
+                    <span className="text-xs font-mono tracking-widest text-gray-500 mb-4 uppercase">Scroll to explore</span>
+                    <div className="w-[1px] h-16 bg-gradient-to-b from-red-600 to-transparent"></div>
                 </div>
             </section>
 
-            {report.items && report.items.map((item: any, idx: number) => (
-                <section key={item.id} className="sr-item" id={`item-${idx + 1}`}>
-                    <div className="sr-item-content">
-                        <div className="sr-item-image">
-                            {item.image_url ? (
-                                <Image
-                                    src={item.image_url}
-                                    alt={item.title}
-                                    fill
-                                    className="object-cover"
-                                />
-                            ) : (
-                                <div className="w-full h-full bg-gray-900 flex items-center justify-center text-gray-700">NO IMAGE</div>
-                            )}
-                        </div>
-                        <div className="sr-item-details">
-                            <div className="sr-item-date">{item.date_str}</div>
-                            <h2 className="sr-item-name">{item.title}</h2>
-                            <div className="sr-item-text">
-                                {item.details}
-                            </div>
-                            <div className="flex items-center gap-6">
-                                {item.qr_code_url && (
-                                    <div className="sr-item-qr">
-                                        <Image src={item.qr_code_url} alt="QR Code" width={70} height={70} />
-                                    </div>
-                                )}
-                                {item.news_url && (
-                                    <a
-                                        href={item.news_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-xs font-mono border border-white px-4 py-2 hover:bg-white hover:text-black transition-colors"
-                                    >
-                                        READ SOURCE NEWS
-                                    </a>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            ))}
+            {/* Integrated Investigative Content (Stage + Viz + Grid) */}
+            <ReportContent items={report.items || []} />
 
-            <footer className="py-20 text-center border-t border-gray-900">
-                <p className="text-gray-600 font-mono text-xs tracking-tighter">
-                    Dhakapapers Special Investigative Report &copy; {new Date().getFullYear()}
-                </p>
-            </footer>
+            <Footer />
         </main>
     );
 }
