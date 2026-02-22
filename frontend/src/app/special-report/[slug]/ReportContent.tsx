@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     X, Calendar, MapPin, User,
-    ArrowUpRight, Search, Shield
+    ArrowUpRight, Search, Shield, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import InViewAnimation from './InViewAnimation';
 import TimelineScrubber from './TimelineScrubber';
@@ -107,6 +107,23 @@ export default function ReportContent({ items }: ReportContentProps) {
         const el = document.getElementById(`section-${month}`);
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, []);
+
+    // Story Navigation helpers
+    const handleNext = useCallback(() => {
+        const currentIndex = filteredItems.findIndex(v => v.id === selectedVictim?.id);
+        if (currentIndex < filteredItems.length - 1) {
+            setSelectedVictim(filteredItems[currentIndex + 1]);
+        }
+    }, [filteredItems, selectedVictim]);
+
+    const handlePrev = useCallback(() => {
+        const currentIndex = filteredItems.findIndex(v => v.id === selectedVictim?.id);
+        if (currentIndex > 0) {
+            setSelectedVictim(filteredItems[currentIndex - 1]);
+        }
+    }, [filteredItems, selectedVictim]);
+
+    const currentIndex = filteredItems.findIndex(v => v.id === selectedVictim?.id);
 
     return (
         <div className="bg-[#0a0a0a] text-white">
@@ -267,22 +284,42 @@ export default function ReportContent({ items }: ReportContentProps) {
                                 >
                                     <X size={18} className="group-hover:rotate-90 transition-transform duration-500" />
                                 </button>
+
+                                {/* Story Navigation Buttons */}
+                                <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 flex justify-between px-4 md:px-8 z-50 pointer-events-none">
+                                    <button
+                                        onClick={handlePrev}
+                                        disabled={currentIndex === 0}
+                                        className={`p-4 bg-black/50 border border-white/10 rounded-full text-white hover:bg-red-600 hover:border-red-600 transition-all pointer-events-auto disabled:opacity-0 disabled:pointer-events-none group`}
+                                        title="Previous Story"
+                                    >
+                                        <ChevronLeft size={24} className="group-hover:-translate-x-1 transition-transform" />
+                                    </button>
+                                    <button
+                                        onClick={handleNext}
+                                        disabled={currentIndex === filteredItems.length - 1}
+                                        className={`p-4 bg-black/50 border border-white/10 rounded-full text-white hover:bg-red-600 hover:border-red-600 transition-all pointer-events-auto disabled:opacity-0 disabled:pointer-events-none group`}
+                                        title="Next Story"
+                                    >
+                                        <ChevronRight size={24} className="group-hover:translate-x-1 transition-transform" />
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Narrative Stage */}
-                            <div className="lg:w-1/2 min-h-screen p-6 sm:p-10 md:p-16 lg:p-20 flex flex-col justify-center">
+                            <div className="lg:w-1/2 min-h-screen p-6 sm:p-10 md:p-16 lg:p-20 flex flex-col lg:justify-center">
                                 <div className="max-w-xl mx-auto w-full">
                                     {(() => {
                                         const { so, address, identity, story } = parseVictimDetails(selectedVictim.details);
                                         return (
-                                            <div className="space-y-16">
-                                                <div className="flex flex-col gap-10 pb-16 border-b border-white/5">
+                                            <div className="space-y-12 lg:space-y-16">
+                                                <div className="flex flex-col gap-10 pb-10 lg:pb-16 border-b border-white/5">
                                                     <InViewAnimation delay={0.2}>
-                                                        <div className="flex items-start gap-6">
+                                                        <div className="flex items-start gap-4 lg:gap-6">
                                                             <Shield className="text-red-700 shrink-0 mt-1" size={20} strokeWidth={1.5} />
                                                             <div>
                                                                 <span className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.3em] block mb-2 font-bold">Identity Profile</span>
-                                                                <p className="text-white text-3xl font-black uppercase tracking-tighter leading-none">{identity || 'Documented Individual'}</p>
+                                                                <p className="text-white text-xl md:text-2xl lg:text-3xl font-black uppercase tracking-tighter leading-none">{identity || 'Documented Individual'}</p>
                                                             </div>
                                                         </div>
                                                     </InViewAnimation>
@@ -324,9 +361,9 @@ export default function ReportContent({ items }: ReportContentProps) {
                                                             const benDate = storyMatch[2].trim();
                                                             const bodyText = storyMatch[3].trim();
                                                             return (
-                                                                <div className="flex flex-col gap-12 font-main">
+                                                                <div className="flex flex-col gap-8 lg:gap-12 font-main">
                                                                     <InViewAnimation>
-                                                                        <h3 className="text-4xl font-black text-white tracking-tighter mb-4 leading-[1.1] border-l-2 border-red-600 pl-8">
+                                                                        <h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-white tracking-tighter mb-4 leading-[1.1] border-l-2 border-red-600 pl-6 lg:pl-8">
                                                                             {headerStr.split('\n')[0]}
                                                                         </h3>
                                                                         <div className="flex items-center gap-4 text-red-700 font-mono text-[10px] uppercase tracking-widest pl-8">
@@ -335,7 +372,7 @@ export default function ReportContent({ items }: ReportContentProps) {
                                                                         </div>
                                                                     </InViewAnimation>
                                                                     <InViewAnimation delay={0.3}>
-                                                                        <p className="text-gray-300 leading-[1.9] font-light text-[1.25rem] whitespace-pre-wrap">{bodyText}</p>
+                                                                        <p className="text-gray-300 leading-[1.8] lg:leading-[1.9] font-light text-base md:text-lg lg:text-[1.25rem] whitespace-pre-wrap">{bodyText}</p>
                                                                     </InViewAnimation>
                                                                 </div>
                                                             );
@@ -343,7 +380,7 @@ export default function ReportContent({ items }: ReportContentProps) {
 
                                                         return (
                                                             <InViewAnimation>
-                                                                <p className="text-gray-300 leading-[1.9] font-light text-[1.25rem] whitespace-pre-wrap">{cleanStory}</p>
+                                                                <p className="text-gray-300 leading-[1.8] lg:leading-[1.9] font-light text-base md:text-lg lg:text-[1.25rem] whitespace-pre-wrap">{cleanStory}</p>
                                                             </InViewAnimation>
                                                         );
                                                     })()}
