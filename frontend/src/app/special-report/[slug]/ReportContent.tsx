@@ -62,6 +62,7 @@ export default function ReportContent({ items }: ReportContentProps) {
     const [selectedVictim, setSelectedVictim] = useState<Victim | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+    const [fontSize, setFontSize] = useState(18); // Default 18px (matches prose-2xl base roughly)
 
     const handleImageError = (url: string) => {
         setFailedImages(prev => new Set(prev).add(url));
@@ -124,6 +125,10 @@ export default function ReportContent({ items }: ReportContentProps) {
     }, [filteredItems, selectedVictim]);
 
     const currentIndex = filteredItems.findIndex(v => v.id === selectedVictim?.id);
+
+    const adjustFontSize = (delta: number) => {
+        setFontSize(prev => Math.min(Math.max(prev + delta, 14), 32));
+    };
 
     return (
         <div className="bg-[#0a0a0a] text-white">
@@ -326,14 +331,33 @@ export default function ReportContent({ items }: ReportContentProps) {
                                                     <div className="text-[9px] font-mono text-gray-600 tracking-widest uppercase">
                                                         Case {currentIndex + 1} of {filteredItems.length}
                                                     </div>
-                                                    <button
-                                                        onClick={handleNext}
-                                                        disabled={currentIndex === filteredItems.length - 1}
-                                                        className="flex items-center gap-2 px-4 py-2 bg-white/2 border border-white/10 rounded-full text-gray-400 hover:text-white hover:bg-red-900/20 hover:border-red-600/50 transition-all disabled:opacity-10 disabled:pointer-events-none group font-mono text-[9px] uppercase tracking-widest"
-                                                    >
-                                                        <span>Next</span>
-                                                        <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                                                    </button>
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="flex items-center bg-white/5 border border-white/10 rounded-full p-1">
+                                                            <button
+                                                                onClick={() => adjustFontSize(2)}
+                                                                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 text-white transition-all active:scale-95 group relative"
+                                                                title="বৃহৎ করুন"
+                                                            >
+                                                                <span className="text-sm font-bold">অ+</span>
+                                                            </button>
+                                                            <div className="w-[1px] h-4 bg-white/10 mx-1" />
+                                                            <button
+                                                                onClick={() => adjustFontSize(-2)}
+                                                                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 text-white transition-all active:scale-95"
+                                                                title="ক্ষুদ্র করুন"
+                                                            >
+                                                                <span className="text-sm font-bold">অ-</span>
+                                                            </button>
+                                                        </div>
+                                                        <button
+                                                            onClick={handleNext}
+                                                            disabled={currentIndex === filteredItems.length - 1}
+                                                            className="flex items-center gap-2 px-4 py-2 bg-white/2 border border-white/10 rounded-full text-gray-400 hover:text-white hover:bg-red-900/20 hover:border-red-600/50 transition-all disabled:opacity-10 disabled:pointer-events-none group font-mono text-[9px] uppercase tracking-widest"
+                                                        >
+                                                            <span>Next</span>
+                                                            <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                                                        </button>
+                                                    </div>
                                                 </div>
 
                                                 <div className="flex flex-col gap-10 pb-10 lg:pb-16 border-b border-white/5">
@@ -373,7 +397,10 @@ export default function ReportContent({ items }: ReportContentProps) {
                                                     </div>
                                                 </div>
 
-                                                <div className="narrative-body prose prose-invert prose-2xl max-w-none">
+                                                <div
+                                                    className="narrative-body prose prose-invert max-w-none transition-all duration-300"
+                                                    style={{ fontSize: `${fontSize}px` }}
+                                                >
                                                     {(() => {
                                                         const cleanStory = story || selectedVictim.details;
                                                         const bengaliDateRegex = /([\s\S]+?)\s+([0-9০-৯]{1,2}\s+(?:জানুয়ারি|ফেব্রুয়ারি|মার্চ|এপ্রিল|মে|জুন|জুলাই|আগস্ট|সেপ্টেম্বর|অক্টোবর|নভেম্বর|ডিসেম্বর)\s+[0-9০-৯]{4}(?:,\s*[0-9০-৯]{2}:[0-9০-৯]{2})?)\s+([\s\S]+)/;
