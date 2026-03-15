@@ -6,6 +6,7 @@ export interface News {
     excerpt: string;
     content: string;
     thumbnail: string;
+    thumbnail_caption?: string;
     slug: string;
     status: string;
     is_featured: boolean;

@@ -228,7 +228,7 @@ export default function Header() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="খবর খুঁজুন..."
-                  className="w-full text-4xl md:text-7xl font-black bg-transparent border-b-8 border-primary py-8 text-primary focus:outline-none placeholder:text-gray-100 italic tracking-tighter"
+                  className="w-full text-base md:text-lg bg-transparent border-b-4 border-primary py-4 text-black focus:outline-none placeholder:text-gray-300 tracking-tight"
                 />
                 <div className="mt-8 flex items-center justify-between text-gray-400 uppercase tracking-[0.3em] font-black text-xs md:text-sm">
                   <span>টাইপ করে এন্টার চাপুন</span>

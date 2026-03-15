@@ -11,11 +11,10 @@ export default function ContactPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20">
                     <div className="space-y-10">
                         <div className="bg-gray-50 p-8 border-l-8 border-primary shadow-sm">
-                            <h2 className="text-2xl font-black mb-4 uppercase tracking-tight">প্রধান কার্যালয়</h2>
                             <address className="not-italic text-lg text-gray-700 leading-relaxed font-bold">
-                                ঢাকা পেপারস লিমিটেড<br />
-                                ১২/এ, কারওয়ান বাজার<br />
-                                ঢাকা - ১২১৫, বাংলাদেশ
+                                ঢাকা পেপারস<br />
+                                হাউজ ৭৭ (লেভেল-১), রোড ৯, ব্লক – সি, নিকেতন,<br />
+                                গুলশান-১, ঢাকা - ১২১২, বাংলাদেশ
                             </address>
                         </div>
 
@@ -26,7 +25,7 @@ export default function ContactPage() {
                             </div>
                             <div>
                                 <h3 className="text-lg font-black text-primary uppercase tracking-widest mb-2">ফোন</h3>
-                                <p className="text-xl font-bold text-gray-900 border-b-2 border-gray-100 pb-1">০১৭৩৬-১২৩৯০২</p>
+                                <p className="text-xl font-bold text-gray-900 border-b-2 border-gray-100 pb-1">+৮৮০২ ৪৮৮-১৫০২১</p>
                             </div>
                         </div>
                     </div>

@@ -16,26 +16,29 @@ type Category struct {
 	Description pgtype.Text
 	CreatedAt   pgtype.Timestamptz
 	NameBn      pgtype.Text
+	Priority    int32
 }
 
 type News struct {
-	ID              uuid.UUID
-	AuthorID        pgtype.UUID
-	CategoryID      pgtype.UUID
-	Title           string
-	Slug            string
-	Content         string
-	Thumbnail       string
-	MetaTitle       pgtype.Text
-	MetaDescription pgtype.Text
-	Keywords        pgtype.Text
-	Status          string
-	ViewsCount      pgtype.Int8
-	PublishedAt     pgtype.Timestamptz
-	CreatedAt       pgtype.Timestamptz
-	UpdatedAt       pgtype.Timestamptz
-	Excerpt         pgtype.Text
-	IsFeatured      pgtype.Bool
+	ID               uuid.UUID
+	AuthorID         pgtype.UUID
+	CategoryID       pgtype.UUID
+	Title            string
+	Slug             string
+	Content          string
+	Thumbnail        string
+	MetaTitle        pgtype.Text
+	MetaDescription  pgtype.Text
+	Keywords         pgtype.Text
+	Status           string
+	ViewsCount       pgtype.Int8
+	PublishedAt      pgtype.Timestamptz
+	CreatedAt        pgtype.Timestamptz
+	UpdatedAt        pgtype.Timestamptz
+	Excerpt          pgtype.Text
+	IsFeatured       pgtype.Bool
+	TitleEn          pgtype.Text
+	ThumbnailCaption pgtype.Text
 }
 
 type Owner struct {
@@ -47,4 +50,33 @@ type Owner struct {
 	LastLogin    pgtype.Timestamptz
 	CreatedAt    pgtype.Timestamptz
 	UpdatedAt    pgtype.Timestamptz
+}
+
+type ReportItem struct {
+	ID           uuid.UUID
+	ReportID     pgtype.UUID
+	Title        string
+	DateStr      pgtype.Text
+	Details      pgtype.Text
+	ImageUrl     pgtype.Text
+	QrCodeUrl    pgtype.Text
+	NewsUrl      pgtype.Text
+	SerialNumber pgtype.Int4
+	Metadata     []byte
+	CreatedAt    pgtype.Timestamptz
+	UpdatedAt    pgtype.Timestamptz
+}
+
+type SpecialReport struct {
+	ID              uuid.UUID
+	Title           string
+	Slug            string
+	Description     pgtype.Text
+	Thumbnail       pgtype.Text
+	Status          string
+	MetaTitle       pgtype.Text
+	MetaDescription pgtype.Text
+	Keywords        pgtype.Text
+	CreatedAt       pgtype.Timestamptz
+	UpdatedAt       pgtype.Timestamptz
 }

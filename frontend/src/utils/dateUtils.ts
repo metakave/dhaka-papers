@@ -82,7 +82,7 @@ export const formatBengaliDateTime = (dateString: string | Date): string => {
     return `${day} ${monthName} ${year}, ${hours}:${minutes}`;
 }
 
-const toBengaliNumber = (num: number): string => {
+export const toBengaliNumber = (num: number | string): string => {
     const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
     return num.toString().split('').map(digit => bengaliDigits[parseInt(digit)] || digit).join('');
 };

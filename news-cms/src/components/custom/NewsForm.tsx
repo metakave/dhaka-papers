@@ -41,6 +41,7 @@ const formSchema = z.object({
     content: z.string().min(20, 'Content must be at least 20 characters'),
     is_featured: z.boolean(),
     thumbnail: z.any().refine((val) => val && (val instanceof File || typeof val === 'string' && val.length > 0), 'Thumbnail is required'),
+    thumbnail_caption: z.string().optional(),
     status: z.enum(['draft', 'published']),
     published_at: z.date(),
 });
@@ -68,6 +69,7 @@ export function NewsForm({ categories, initialData, action: serverAction }: News
             content: initialData?.content || '',
             is_featured: initialData ? initialData.is_featured : false,
             thumbnail: initialData?.thumbnail || '',
+            thumbnail_caption: initialData?.thumbnail_caption || '',
             status: (initialData?.status as 'draft' | 'published') || 'draft',
             published_at: initialData?.published_at
                 ? toZonedTime(new Date(initialData.published_at), TIMEZONE)
@@ -114,6 +116,7 @@ export function NewsForm({ categories, initialData, action: serverAction }: News
             formData.append('content', values.content);
             formData.append('is_featured', String(values.is_featured));
             formData.append('status', values.status);
+            formData.append('thumbnail_caption', values.thumbnail_caption || '');
 
             // Convert BST from UI back to UTC before sending to server
             const utcDate = fromZonedTime(values.published_at, TIMEZONE);
@@ -346,6 +349,23 @@ export function NewsForm({ categories, initialData, action: serverAction }: News
                                     />
                                 </div>
                             )}
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    control={form.control}
+                    name="thumbnail_caption"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Image Caption (Optional)</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Caption for the thumbnail image..." {...field} />
+                            </FormControl>
+                            <FormDescription>
+                                Displays below the main article image
+                            </FormDescription>
+                            <FormMessage />
                         </FormItem>
                     )}
                 />

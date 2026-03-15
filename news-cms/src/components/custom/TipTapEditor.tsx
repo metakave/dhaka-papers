@@ -7,11 +7,12 @@ import Color from '@tiptap/extension-color';
 import Highlight from '@tiptap/extension-highlight';
 import FontFamily from '@tiptap/extension-font-family';
 import TextAlign from '@tiptap/extension-text-align';
+import Youtube from '@tiptap/extension-youtube';
 import { Toggle } from '@/components/ui/toggle';
 import {
     Bold, Italic, Strikethrough, Heading1, Heading2, Heading3,
     List, ListOrdered, AlignLeft, AlignCenter, AlignRight, AlignJustify,
-    Highlighter
+    Highlighter, Youtube as YoutubeIcon
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -129,6 +130,28 @@ const MenuBar = ({ editor }: { editor: any }) => {
                 <ListOrdered className="h-4 w-4" />
             </Toggle>
 
+            <div className="w-px h-6 bg-gray-300 mx-1" />
+
+            <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                    const url = window.prompt('YouTube URL');
+                    if (url) {
+                        editor.getAttributes('youtube');
+                        editor.commands.setYoutubeVideo({
+                            src: url,
+                            width: 640,
+                            height: 480,
+                        });
+                    }
+                }}
+                className="h-8 w-8 p-0"
+                title="Embed YouTube Video"
+            >
+                <YoutubeIcon className="h-4 w-4" />
+            </Button>
+
         </div>
     );
 };
@@ -148,6 +171,10 @@ export function TipTapEditor({ content, onChange }: TipTapEditorProps) {
             FontFamily,
             TextAlign.configure({
                 types: ['heading', 'paragraph'],
+            }),
+            Youtube.configure({
+                controls: true,
+                nocookie: true,
             }),
         ],
         content: content,

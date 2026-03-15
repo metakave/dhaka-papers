@@ -6,6 +6,7 @@ export interface News {
     excerpt?: string;
     content?: string;
     thumbnail: string;
+    thumbnail_caption?: string;
     category_id: string;
     category_name?: string;
     author_name?: string;

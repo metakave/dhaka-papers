@@ -36,9 +36,9 @@ func (q *Queries) CountOwners(ctx context.Context) (int64, error) {
 }
 
 const createCategory = `-- name: CreateCategory :one
-INSERT INTO categories (name, name_bn, slug, description)
-VALUES ($1, $2, $3, $4)
-RETURNING id, name, slug, description, created_at, name_bn
+INSERT INTO categories (name, name_bn, slug, description, priority)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, name, slug, description, created_at, name_bn, priority
 `
 
 type CreateCategoryParams struct {
@@ -46,6 +46,7 @@ type CreateCategoryParams struct {
 	NameBn      pgtype.Text
 	Slug        string
 	Description pgtype.Text
+	Priority    int32
 }
 
 func (q *Queries) CreateCategory(ctx context.Context, arg CreateCategoryParams) (Category, error) {
@@ -54,6 +55,7 @@ func (q *Queries) CreateCategory(ctx context.Context, arg CreateCategoryParams) 
 		arg.NameBn,
 		arg.Slug,
 		arg.Description,
+		arg.Priority,
 	)
 	var i Category
 	err := row.Scan(
@@ -63,30 +65,33 @@ func (q *Queries) CreateCategory(ctx context.Context, arg CreateCategoryParams) 
 		&i.Description,
 		&i.CreatedAt,
 		&i.NameBn,
+		&i.Priority,
 	)
 	return i, err
 }
 
 const createNews = `-- name: CreateNews :one
 INSERT INTO news (
-    author_id, category_id, title, excerpt, content, thumbnail, slug, 
+    author_id, category_id, title, title_en, excerpt, content, thumbnail, thumbnail_caption, slug, 
     published_at, status, meta_title, meta_description
 )
 VALUES (
-    $1, $2, $3, $4, $5, $6, $7,
-    NOW(), 'published', $3, $4
+    $1, $2, $3, $4, $5, $6, $7, $8, $9,
+    NOW(), 'published', $3, $5
 )
-RETURNING id, author_id, category_id, title, slug, content, thumbnail, meta_title, meta_description, keywords, status, views_count, published_at, created_at, updated_at, excerpt, is_featured
+RETURNING id, author_id, category_id, title, slug, content, thumbnail, meta_title, meta_description, keywords, status, views_count, published_at, created_at, updated_at, excerpt, is_featured, title_en, thumbnail_caption
 `
 
 type CreateNewsParams struct {
-	AuthorID   pgtype.UUID
-	CategoryID pgtype.UUID
-	Title      string
-	Excerpt    pgtype.Text
-	Content    string
-	Thumbnail  string
-	Slug       string
+	AuthorID         pgtype.UUID
+	CategoryID       pgtype.UUID
+	Title            string
+	TitleEn          pgtype.Text
+	Excerpt          pgtype.Text
+	Content          string
+	Thumbnail        string
+	ThumbnailCaption pgtype.Text
+	Slug             string
 }
 
 func (q *Queries) CreateNews(ctx context.Context, arg CreateNewsParams) (News, error) {
@@ -94,9 +99,11 @@ func (q *Queries) CreateNews(ctx context.Context, arg CreateNewsParams) (News, e
 		arg.AuthorID,
 		arg.CategoryID,
 		arg.Title,
+		arg.TitleEn,
 		arg.Excerpt,
 		arg.Content,
 		arg.Thumbnail,
+		arg.ThumbnailCaption,
 		arg.Slug,
 	)
 	var i News
@@ -118,6 +125,8 @@ func (q *Queries) CreateNews(ctx context.Context, arg CreateNewsParams) (News, e
 		&i.UpdatedAt,
 		&i.Excerpt,
 		&i.IsFeatured,
+		&i.TitleEn,
+		&i.ThumbnailCaption,
 	)
 	return i, err
 }
@@ -160,7 +169,7 @@ func (q *Queries) DeleteNews(ctx context.Context, id uuid.UUID) (pgconn.CommandT
 }
 
 const getCategoryBySlug = `-- name: GetCategoryBySlug :one
-SELECT id, name, slug, description, created_at, name_bn FROM categories WHERE slug = $1 LIMIT 1
+SELECT id, name, slug, description, created_at, name_bn, priority FROM categories WHERE slug = $1 LIMIT 1
 `
 
 func (q *Queries) GetCategoryBySlug(ctx context.Context, slug string) (Category, error) {
@@ -173,12 +182,13 @@ func (q *Queries) GetCategoryBySlug(ctx context.Context, slug string) (Category,
 		&i.Description,
 		&i.CreatedAt,
 		&i.NameBn,
+		&i.Priority,
 	)
 	return i, err
 }
 
 const getNews = `-- name: GetNews :one
-SELECT n.id, n.author_id, n.category_id, n.title, n.slug, n.content, n.thumbnail, n.meta_title, n.meta_description, n.keywords, n.status, n.views_count, n.published_at, n.created_at, n.updated_at, n.excerpt, n.is_featured, c.name as category_name, c.slug as category_slug, o.name as author_name
+SELECT n.id, n.author_id, n.category_id, n.title, n.slug, n.content, n.thumbnail, n.meta_title, n.meta_description, n.keywords, n.status, n.views_count, n.published_at, n.created_at, n.updated_at, n.excerpt, n.is_featured, n.title_en, n.thumbnail_caption, c.name as category_name, c.slug as category_slug, o.name as author_name
 FROM news n
 LEFT JOIN categories c ON n.category_id = c.id
 LEFT JOIN owners o ON n.author_id = o.id
@@ -186,26 +196,28 @@ WHERE n.slug = $1 LIMIT 1
 `
 
 type GetNewsRow struct {
-	ID              uuid.UUID
-	AuthorID        pgtype.UUID
-	CategoryID      pgtype.UUID
-	Title           string
-	Slug            string
-	Content         string
-	Thumbnail       string
-	MetaTitle       pgtype.Text
-	MetaDescription pgtype.Text
-	Keywords        pgtype.Text
-	Status          string
-	ViewsCount      pgtype.Int8
-	PublishedAt     pgtype.Timestamptz
-	CreatedAt       pgtype.Timestamptz
-	UpdatedAt       pgtype.Timestamptz
-	Excerpt         pgtype.Text
-	IsFeatured      pgtype.Bool
-	CategoryName    pgtype.Text
-	CategorySlug    pgtype.Text
-	AuthorName      pgtype.Text
+	ID               uuid.UUID
+	AuthorID         pgtype.UUID
+	CategoryID       pgtype.UUID
+	Title            string
+	Slug             string
+	Content          string
+	Thumbnail        string
+	MetaTitle        pgtype.Text
+	MetaDescription  pgtype.Text
+	Keywords         pgtype.Text
+	Status           string
+	ViewsCount       pgtype.Int8
+	PublishedAt      pgtype.Timestamptz
+	CreatedAt        pgtype.Timestamptz
+	UpdatedAt        pgtype.Timestamptz
+	Excerpt          pgtype.Text
+	IsFeatured       pgtype.Bool
+	TitleEn          pgtype.Text
+	ThumbnailCaption pgtype.Text
+	CategoryName     pgtype.Text
+	CategorySlug     pgtype.Text
+	AuthorName       pgtype.Text
 }
 
 func (q *Queries) GetNews(ctx context.Context, slug string) (GetNewsRow, error) {
@@ -229,6 +241,8 @@ func (q *Queries) GetNews(ctx context.Context, slug string) (GetNewsRow, error) 
 		&i.UpdatedAt,
 		&i.Excerpt,
 		&i.IsFeatured,
+		&i.TitleEn,
+		&i.ThumbnailCaption,
 		&i.CategoryName,
 		&i.CategorySlug,
 		&i.AuthorName,
@@ -290,7 +304,7 @@ func (q *Queries) IncrementNewsViews(ctx context.Context, slug string) error {
 }
 
 const listCategories = `-- name: ListCategories :many
-SELECT id, name, slug, description, created_at, name_bn FROM categories ORDER BY name ASC
+SELECT id, name, slug, description, created_at, name_bn, priority FROM categories ORDER BY priority ASC, name ASC
 `
 
 func (q *Queries) ListCategories(ctx context.Context) ([]Category, error) {
@@ -309,6 +323,7 @@ func (q *Queries) ListCategories(ctx context.Context) ([]Category, error) {
 			&i.Description,
 			&i.CreatedAt,
 			&i.NameBn,
+			&i.Priority,
 		); err != nil {
 			return nil, err
 		}
@@ -321,7 +336,7 @@ func (q *Queries) ListCategories(ctx context.Context) ([]Category, error) {
 }
 
 const listNews = `-- name: ListNews :many
-SELECT n.id, n.title, n.thumbnail, n.slug, n.status, n.views_count, n.published_at, n.created_at, n.updated_at,
+SELECT n.id, n.title, n.title_en, n.thumbnail, n.thumbnail_caption, n.slug, n.status, n.views_count, n.published_at, n.created_at, n.updated_at,
        c.name as category_name, c.slug as category_slug, o.name as author_name
 FROM news n
 LEFT JOIN categories c ON n.category_id = c.id
@@ -342,18 +357,20 @@ type ListNewsParams struct {
 }
 
 type ListNewsRow struct {
-	ID           uuid.UUID
-	Title        string
-	Thumbnail    string
-	Slug         string
-	Status       string
-	ViewsCount   pgtype.Int8
-	PublishedAt  pgtype.Timestamptz
-	CreatedAt    pgtype.Timestamptz
-	UpdatedAt    pgtype.Timestamptz
-	CategoryName pgtype.Text
-	CategorySlug pgtype.Text
-	AuthorName   pgtype.Text
+	ID               uuid.UUID
+	Title            string
+	TitleEn          pgtype.Text
+	Thumbnail        string
+	ThumbnailCaption pgtype.Text
+	Slug             string
+	Status           string
+	ViewsCount       pgtype.Int8
+	PublishedAt      pgtype.Timestamptz
+	CreatedAt        pgtype.Timestamptz
+	UpdatedAt        pgtype.Timestamptz
+	CategoryName     pgtype.Text
+	CategorySlug     pgtype.Text
+	AuthorName       pgtype.Text
 }
 
 func (q *Queries) ListNews(ctx context.Context, arg ListNewsParams) ([]ListNewsRow, error) {
@@ -373,7 +390,9 @@ func (q *Queries) ListNews(ctx context.Context, arg ListNewsParams) ([]ListNewsR
 		if err := rows.Scan(
 			&i.ID,
 			&i.Title,
+			&i.TitleEn,
 			&i.Thumbnail,
+			&i.ThumbnailCaption,
 			&i.Slug,
 			&i.Status,
 			&i.ViewsCount,
@@ -399,20 +418,24 @@ UPDATE news
 SET 
     category_id = $2,
     title = $3, 
-    excerpt = $4,
-    content = $5, 
-    thumbnail = $6, 
+    title_en = $4,
+    excerpt = $5,
+    content = $6, 
+    thumbnail = $7, 
+    thumbnail_caption = $8,
     updated_at = NOW()
 WHERE id = $1
 `
 
 type UpdateNewsParams struct {
-	ID         uuid.UUID
-	CategoryID pgtype.UUID
-	Title      string
-	Excerpt    pgtype.Text
-	Content    string
-	Thumbnail  string
+	ID               uuid.UUID
+	CategoryID       pgtype.UUID
+	Title            string
+	TitleEn          pgtype.Text
+	Excerpt          pgtype.Text
+	Content          string
+	Thumbnail        string
+	ThumbnailCaption pgtype.Text
 }
 
 func (q *Queries) UpdateNews(ctx context.Context, arg UpdateNewsParams) (pgconn.CommandTag, error) {
@@ -420,8 +443,10 @@ func (q *Queries) UpdateNews(ctx context.Context, arg UpdateNewsParams) (pgconn.
 		arg.ID,
 		arg.CategoryID,
 		arg.Title,
+		arg.TitleEn,
 		arg.Excerpt,
 		arg.Content,
 		arg.Thumbnail,
+		arg.ThumbnailCaption,
 	)
 }

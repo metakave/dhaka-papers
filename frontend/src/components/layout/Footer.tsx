@@ -119,7 +119,7 @@ export default function Footer() {
         {/* 4. Final Bottom Bar: Symmetrical Credits */}
         <div className="pt-10 border-t border-gray-900 flex flex-col items-center text-center gap-3">
           <p className="text-gray-600 text-[10px] md:text-[11px] font-black uppercase tracking-[0.25em]">
-            © ২০২৬ ঢাকা পেপারস লিমিটেড - ঢাকা, বাংলাদেশ
+            © ২০২৬ ঢাকা পেপারস - ঢাকা, বাংলাদেশ
           </p>
         </div>
       </div>

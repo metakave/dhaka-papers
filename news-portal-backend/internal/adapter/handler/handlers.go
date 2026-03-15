@@ -196,6 +196,7 @@ func (h *NewsHandler) CreateNews(w http.ResponseWriter, r *http.Request) {
 	excerpt := r.FormValue("excerpt")
 	content := r.FormValue("content")
 	isFeatured := r.FormValue("is_featured") == "true"
+	thumbnailCaption := r.FormValue("thumbnail_caption")
 
 	if title == "" || content == "" {
 		http.Error(w, "Title and Content are required", http.StatusBadRequest)
@@ -262,7 +263,7 @@ func (h *NewsHandler) CreateNews(w http.ResponseWriter, r *http.Request) {
 		publishedAt = time.Now()
 	}
 
-	news, err := h.svc.CreateNews(r.Context(), authorID, categoryID, title, titleEn, excerpt, content, thumbnail, isFeatured, status, publishedAt)
+	news, err := h.svc.CreateNews(r.Context(), authorID, categoryID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption, isFeatured, status, publishedAt)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -294,6 +295,7 @@ func (h *NewsHandler) UpdateNews(w http.ResponseWriter, r *http.Request) {
 	excerpt := r.FormValue("excerpt")
 	content := r.FormValue("content")
 	isFeatured := r.FormValue("is_featured") == "true"
+	thumbnailCaption := r.FormValue("thumbnail_caption")
 	existingThumbnail := r.FormValue("thumbnail") // Keep existing if no new one
 
 	if title == "" || content == "" {
@@ -347,7 +349,7 @@ func (h *NewsHandler) UpdateNews(w http.ResponseWriter, r *http.Request) {
 		publishedAt = time.Now()
 	}
 
-	if err := h.svc.UpdateNews(r.Context(), id, categoryID, title, titleEn, excerpt, content, thumbnail, isFeatured, status, publishedAt); err != nil {
+	if err := h.svc.UpdateNews(r.Context(), id, categoryID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption, isFeatured, status, publishedAt); err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
 			http.Error(w, "News not found", http.StatusNotFound)
 			return

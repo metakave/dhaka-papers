@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import QueryProvider from "@/providers/QueryProvider";
 
 export const metadata: Metadata = {
   title: "ঢাকা পেপারস | আধুনিক সংবাদ মাধ্যম",
   description: "দেশ-বিদেশের সর্বশেষ সংবাদ নিয়ে সব সময় আপনার পাশে।",
 };
-
-import QueryProvider from "@/providers/QueryProvider";
 
 export default function RootLayout({
   children,

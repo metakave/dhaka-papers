@@ -32,9 +32,10 @@ type News struct {
 	Title           string    `json:"title"`
 	TitleEn         string    `json:"title_en"` // Bengali title is Title, English title is TitleEn
 	Excerpt         *string   `json:"excerpt"`
-	Content         string    `json:"content,omitempty"`
-	Thumbnail       string    `json:"thumbnail"`
-	Slug            string    `json:"slug"`
+	Content          string    `json:"content,omitempty"`
+	Thumbnail        string    `json:"thumbnail"`
+	ThumbnailCaption *string   `json:"thumbnail_caption"`
+	Slug             string    `json:"slug"`
 	Status          string    `json:"status"`
 	IsFeatured      bool      `json:"is_featured"`
 	MetaTitle       *string   `json:"meta_title"`

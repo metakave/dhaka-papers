@@ -9,6 +9,7 @@ import SocialShare from '@/components/common/SocialShare';
 import { Metadata } from 'next';
 import { getBengaliDayMonthYear } from '@/utils/dateUtils';
 import ArticleMeta from '@/components/news/ArticleMeta';
+import NewsBody from '@/components/news/NewsBody';
 
 type Props = {
     params: Promise<{ slug: string }>
@@ -92,28 +93,28 @@ export default async function ArticlePage({ params }: Props) {
                     updated_at={article.updated_at}
                 />
 
-                <div className="aspect-video relative mb-12 rounded-sm overflow-hidden shadow-2xl bg-gray-100">
-                    <Image
-                        src={article.thumbnail || '/placeholder-news.jpg'}
-                        alt={article.title}
-                        fill
-                        priority
-                        className="object-cover"
-                    />
+                <div className="mb-12">
+                    <div className="aspect-video relative rounded-sm overflow-hidden shadow-2xl bg-gray-100">
+                        <Image
+                            src={article.thumbnail || '/placeholder-news.jpg'}
+                            alt={article.title}
+                            fill
+                            priority
+                            className="object-cover"
+                        />
+                    </div>
+                    {article.thumbnail_caption && (
+                        <div className="mt-4 flex">
+                            <p className="text-sm md:text-base font-medium italic text-gray-500">
+                                {article.thumbnail_caption}
+                            </p>
+                        </div>
+                    )}
                 </div>
 
                 <SocialShare title={article.title} url={shareUrl} />
 
-                <div className="prose prose-xl prose-red max-w-none text-gray-800 leading-[1.8] font-medium">
-                    <p className="font-black text-2xl md:text-3xl mb-10 text-gray-900 border-l-8 border-primary pl-8 py-4 bg-gray-50 leading-tight italic">
-                        {article.excerpt}
-                    </p>
-
-                    <div
-                        className="tiptap mb-12"
-                        dangerouslySetInnerHTML={{ __html: article.content }}
-                    />
-                </div>
+                <NewsBody content={article.content} excerpt={article.excerpt} />
 
                 <div className="my-12">
                     <SocialShare title={article.title} url={shareUrl} />

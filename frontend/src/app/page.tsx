@@ -4,6 +4,7 @@ import Layout from '@/components/layout/Layout';
 import Hero from '@/components/sections/Hero';
 import NewsGrid from '@/components/sections/NewsGrid';
 import { useHomepage } from '@/hooks/queries/useHomepage';
+import { toBengaliNumber } from '@/utils/dateUtils';
 import Link from 'next/link';
 
 export default function Home() {
@@ -47,7 +48,7 @@ export default function Home() {
                   data?.popular?.map((news, idx) => (
                     <Link key={news.id} href={`/news/${news.slug}`} className="flex gap-6 py-6 border-b border-gray-100 last:border-0 group cursor-pointer items-start">
                       <span className="text-5xl font-black text-gray-400 group-hover:text-primary transition-colors duration-300 leading-none min-w-[40px]">
-                        {idx + 1}
+                        {toBengaliNumber(idx + 1)}
                       </span>
                       <p className="text-lg font-bold leading-tight group-hover:text-primary hover:underline transition-all duration-200">
                         {news.title}
