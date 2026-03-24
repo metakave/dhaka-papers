@@ -49,7 +49,7 @@ func NewNewsService(repo port.NewsRepository, categoryRepo port.CategoryReposito
 	}
 }
 
-func (s *NewsService) CreateNews(ctx context.Context, authorID, categoryID uuid.UUID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption string, isFeatured bool, status string, publishedAt time.Time) (*domain.News, error) {
+func (s *NewsService) CreateNews(ctx context.Context, authorID, categoryID uuid.UUID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption string, tags []string, isFeatured bool, status string, publishedAt time.Time) (*domain.News, error) {
 	// Use English Title for Slug generation
 	slug := generateUniqueSlug(titleEn)
 	sanitizedContent := s.p.Sanitize(content)
@@ -63,6 +63,7 @@ func (s *NewsService) CreateNews(ctx context.Context, authorID, categoryID uuid.
 		Content:     sanitizedContent,
 		Thumbnail:        thumbnail,
 		ThumbnailCaption: &thumbnailCaption,
+		Tags:             tags,
 		Slug:             slug,
 		IsFeatured:       isFeatured,
 		Status:           status,
@@ -71,7 +72,7 @@ func (s *NewsService) CreateNews(ctx context.Context, authorID, categoryID uuid.
 	return s.repo.CreateNews(ctx, news)
 }
 
-func (s *NewsService) UpdateNews(ctx context.Context, id uuid.UUID, categoryID uuid.UUID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption string, isFeatured bool, status string, publishedAt time.Time) error {
+func (s *NewsService) UpdateNews(ctx context.Context, id uuid.UUID, categoryID uuid.UUID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption string, tags []string, isFeatured bool, status string, publishedAt time.Time) error {
 	sanitizedContent := s.p.Sanitize(content)
 	news := &domain.News{
 		ID:          id,
@@ -82,6 +83,7 @@ func (s *NewsService) UpdateNews(ctx context.Context, id uuid.UUID, categoryID u
 		Content:     sanitizedContent,
 		Thumbnail:        thumbnail,
 		ThumbnailCaption: &thumbnailCaption,
+		Tags:             tags,
 		IsFeatured:       isFeatured,
 		Status:           status,
 		PublishedAt:      publishedAt,

@@ -54,8 +54,8 @@ type AuthService interface {
 }
 
 type NewsService interface {
-	CreateNews(ctx context.Context, authorID, categoryID uuid.UUID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption string, isFeatured bool, status string, publishedAt time.Time) (*domain.News, error)
-	UpdateNews(ctx context.Context, id uuid.UUID, categoryID uuid.UUID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption string, isFeatured bool, status string, publishedAt time.Time) error
+	CreateNews(ctx context.Context, authorID, categoryID uuid.UUID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption string, tags []string, isFeatured bool, status string, publishedAt time.Time) (*domain.News, error)
+	UpdateNews(ctx context.Context, id uuid.UUID, categoryID uuid.UUID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption string, tags []string, isFeatured bool, status string, publishedAt time.Time) error
 	DeleteNews(ctx context.Context, id uuid.UUID) error
 	GetNewsBySlug(ctx context.Context, slug string) (*domain.News, error)
 	ListNews(ctx context.Context, page, limit int32, categorySlug string, authorID *uuid.UUID, sortBy string, isFeatured *bool, search string, statusFilter string, tag string) ([]*domain.News, int64, error)
