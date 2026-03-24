@@ -35,8 +35,8 @@ type NewsRepository interface {
 	UpdateNews(ctx context.Context, news *domain.News) error
 	DeleteNews(ctx context.Context, id uuid.UUID) error
 	GetNewsBySlug(ctx context.Context, slug string) (*domain.News, error)
-	ListNews(ctx context.Context, limit, offset int32, categoryID *uuid.UUID, authorID *uuid.UUID, sortBy string, isFeatured *bool, search *string, statusFilter string) ([]*domain.News, error)
-	CountNews(ctx context.Context, categoryID *uuid.UUID, authorID *uuid.UUID, isFeatured *bool, search string, statusFilter string) (int64, error)
+	ListNews(ctx context.Context, limit, offset int32, categoryID *uuid.UUID, authorID *uuid.UUID, sortBy string, isFeatured *bool, search *string, statusFilter string, tag *string) ([]*domain.News, error)
+	CountNews(ctx context.Context, categoryID *uuid.UUID, authorID *uuid.UUID, isFeatured *bool, search string, statusFilter string, tag *string) (int64, error)
 	CheckSlugExists(ctx context.Context, slug string) (bool, error)
 	IncrementNewsViews(ctx context.Context, slug string) error
 	CountTotalViews(ctx context.Context) (int64, error)
@@ -58,7 +58,7 @@ type NewsService interface {
 	UpdateNews(ctx context.Context, id uuid.UUID, categoryID uuid.UUID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption string, isFeatured bool, status string, publishedAt time.Time) error
 	DeleteNews(ctx context.Context, id uuid.UUID) error
 	GetNewsBySlug(ctx context.Context, slug string) (*domain.News, error)
-	ListNews(ctx context.Context, page, limit int32, categorySlug string, authorID *uuid.UUID, sortBy string, isFeatured *bool, search string, statusFilter string) ([]*domain.News, int64, error)
+	ListNews(ctx context.Context, page, limit int32, categorySlug string, authorID *uuid.UUID, sortBy string, isFeatured *bool, search string, statusFilter string, tag string) ([]*domain.News, int64, error)
 	CheckSlug(ctx context.Context, slug string) (bool, error)
 	GetHomepageData(ctx context.Context) (*HomepageData, error)
 }

@@ -35,6 +35,7 @@ type News struct {
 	Content          string    `json:"content,omitempty"`
 	Thumbnail        string    `json:"thumbnail"`
 	ThumbnailCaption *string   `json:"thumbnail_caption"`
+	Tags             []string  `json:"tags"`
 	Slug             string    `json:"slug"`
 	Status          string    `json:"status"`
 	IsFeatured      bool      `json:"is_featured"`

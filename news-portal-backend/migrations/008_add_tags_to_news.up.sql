@@ -1,0 +1,1 @@
+ALTER TABLE news ADD COLUMN tags TEXT[] DEFAULT '{}';

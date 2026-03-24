@@ -78,7 +78,7 @@ export default async function ArticlePage({ params }: Props) {
 
     return (
         <Layout>
-            <article className="max-w-[850px] mx-auto py-6 md:py-10">
+            <article className="max-w-[850px] mx-auto py-6 md:py-10 px-4 sm:px-6">
                 <Link href={`/${article.category_slug}`} className="text-primary font-bold text-sm md:text-base mb-6 inline-block hover:underline uppercase tracking-widest">
                     {article.category_name_bn || article.category_name}
                 </Link>
@@ -90,6 +90,7 @@ export default async function ArticlePage({ params }: Props) {
                 <ArticleMeta
                     authorName={article.author_name || 'Anonymous'}
                     authorId={article.author_id}
+                    published_at={article.published_at}
                     updated_at={article.updated_at}
                 />
 
@@ -115,6 +116,17 @@ export default async function ArticlePage({ params }: Props) {
                 <SocialShare title={article.title} url={shareUrl} />
 
                 <NewsBody content={article.content} excerpt={article.excerpt} />
+
+                {article.tags && article.tags.length > 0 && (
+                    <div className="mt-8 flex flex-wrap gap-2">
+                        {article.tags.map((tag: string, index: number) => (
+                            <Link href={`/tag/${encodeURIComponent(tag)}`} key={index} className="bg-gray-100 px-4 py-2 rounded-full text-gray-800 font-medium text-sm md:text-base border border-gray-200 hover:bg-primary hover:text-white transition-colors flex items-center gap-1 group">
+                                <span className="text-gray-400 group-hover:text-white/80 transition-colors">#</span>
+                                {tag}
+                            </Link>
+                        ))}
+                    </div>
+                )}
 
                 <div className="my-12">
                     <SocialShare title={article.title} url={shareUrl} />

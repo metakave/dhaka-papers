@@ -400,6 +400,7 @@ func (h *NewsHandler) ListNews(w http.ResponseWriter, r *http.Request) {
 
 	search := r.URL.Query().Get("search")
 	authorIDStr := r.URL.Query().Get("author_id")
+	tag := r.URL.Query().Get("tag")
 
 	var authorID *uuid.UUID
 	if authorIDStr != "" {
@@ -409,7 +410,7 @@ func (h *NewsHandler) ListNews(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	newsList, total, err := h.svc.ListNews(r.Context(), int32(page), int32(limit), category, authorID, sort, isFeatured, search, "")
+	newsList, total, err := h.svc.ListNews(r.Context(), int32(page), int32(limit), category, authorID, sort, isFeatured, search, "", tag)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -439,6 +440,7 @@ func (h *NewsHandler) ListAdminNews(w http.ResponseWriter, r *http.Request) {
 
 	search := r.URL.Query().Get("search")
 	authorIDStr := r.URL.Query().Get("author_id")
+	tag := r.URL.Query().Get("tag")
 
 	var authorID *uuid.UUID
 	if authorIDStr != "" {
@@ -449,7 +451,7 @@ func (h *NewsHandler) ListAdminNews(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Status Filter: "all" for admin to see everything
-	newsList, total, err := h.svc.ListNews(r.Context(), int32(page), int32(limit), category, authorID, sort, isFeatured, search, "all")
+	newsList, total, err := h.svc.ListNews(r.Context(), int32(page), int32(limit), category, authorID, sort, isFeatured, search, "all", tag)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -37,6 +37,11 @@ func NewNewsService(repo port.NewsRepository, categoryRepo port.CategoryReposito
 	// Allow inline styles for colors and fonts
 	p.AllowAttrs("style").OnElements("span", "p", "h1", "h2", "h3", "h4", "h5", "h6", "div")
 
+	// Allow YouTube, Facebook & Generic Media Embeds
+	p.AllowElements("iframe").AllowAttrs("src", "width", "height", "frameborder", "allow", "allowfullscreen", "title", "scrolling", "style").OnElements("iframe")
+	p.AllowAttrs("data-youtube-video", "data-facebook-video", "data-media-embed", "data-ratio", "data-max-width", "style").OnElements("div")
+	p.AllowStyles("aspect-ratio", "max-width").OnElements("div")
+
 	return &NewsService{
 		repo:         repo,
 		categoryRepo: categoryRepo,
@@ -101,7 +106,7 @@ func (s *NewsService) GetNewsBySlug(ctx context.Context, slug string) (*domain.N
 	}
 	return news, nil
 }
-func (s *NewsService) ListNews(ctx context.Context, page, limit int32, categorySlug string, authorID *uuid.UUID, sortBy string, isFeatured *bool, search string, statusFilter string) ([]*domain.News, int64, error) {
+func (s *NewsService) ListNews(ctx context.Context, page, limit int32, categorySlug string, authorID *uuid.UUID, sortBy string, isFeatured *bool, search string, statusFilter string, tag string) ([]*domain.News, int64, error) {
 	if page < 1 {
 		page = 1
 	}
@@ -125,14 +130,19 @@ func (s *NewsService) ListNews(ctx context.Context, page, limit int32, categoryS
 	if search != "" {
 		searchPtr = &search
 	}
+	
+	var tagPtr *string
+	if tag != "" {
+		tagPtr = &tag
+	}
 
-	news, err := s.repo.ListNews(ctx, limit, offset, categoryID, authorID, sortBy, isFeatured, searchPtr, statusFilter)
+	news, err := s.repo.ListNews(ctx, limit, offset, categoryID, authorID, sortBy, isFeatured, searchPtr, statusFilter, tagPtr)
 	if err != nil {
 		return nil, 0, err
 	}
 
 	// Get total count with filters applied
-	total, err := s.repo.CountNews(ctx, categoryID, authorID, isFeatured, search, statusFilter)
+	total, err := s.repo.CountNews(ctx, categoryID, authorID, isFeatured, search, statusFilter, tagPtr)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -147,7 +157,7 @@ func (s *NewsService) CheckSlug(ctx context.Context, slug string) (bool, error) 
 func (s *NewsService) GetHomepageData(ctx context.Context) (*port.HomepageData, error) {
 	// 1. Fetch Featured News (Limit 1)
 	isFeatured := true
-	featuredList, err := s.repo.ListNews(ctx, 1, 0, nil, nil, "latest", &isFeatured, nil, "")
+	featuredList, err := s.repo.ListNews(ctx, 1, 0, nil, nil, "latest", &isFeatured, nil, "", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +170,7 @@ func (s *NewsService) GetHomepageData(ctx context.Context) (*port.HomepageData, 
 	}
 
 	// 2. Fetch Latest News (Limit 21 - fetching one extra in case we filter out featured)
-	latestList, err := s.repo.ListNews(ctx, 21, 0, nil, nil, "latest", nil, nil, "")
+	latestList, err := s.repo.ListNews(ctx, 21, 0, nil, nil, "latest", nil, nil, "", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +189,7 @@ func (s *NewsService) GetHomepageData(ctx context.Context) (*port.HomepageData, 
 	}
 
 	// 3. Fetch Popular News (Limit 5)
-	popularList, err := s.repo.ListNews(ctx, 5, 0, nil, nil, "popular", nil, nil, "")
+	popularList, err := s.repo.ListNews(ctx, 5, 0, nil, nil, "popular", nil, nil, "", nil)
 	if err != nil {
 		return nil, err
 	}

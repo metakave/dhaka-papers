@@ -14,11 +14,11 @@ WHERE id = $1 LIMIT 1;
 -- name: CreateNews :one
 INSERT INTO news (
     author_id, category_id, title, title_en, excerpt, content, thumbnail, thumbnail_caption, slug, 
-    published_at, status, meta_title, meta_description
+    published_at, status, meta_title, meta_description, tags
 )
 VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9,
-    NOW(), 'published', $3, $5
+    NOW(), 'published', $3, $5, $10
 )
 RETURNING *;
 
@@ -41,6 +41,7 @@ LEFT JOIN categories c ON n.category_id = c.id
 LEFT JOIN owners o ON n.author_id = o.id
 WHERE n.status = 'published' AND n.published_at <= NOW()
 AND ($3::uuid IS NULL OR n.category_id = $3)
+AND ($5::text IS NULL OR $5 = ANY(n.tags))
 ORDER BY 
     CASE WHEN $4 = 'popular' THEN n.views_count END DESC,
     CASE WHEN $4 != 'popular' OR $4 IS NULL THEN n.published_at END DESC
@@ -56,6 +57,7 @@ SET
     content = $6, 
     thumbnail = $7, 
     thumbnail_caption = $8,
+    tags = $9,
     updated_at = NOW()
 WHERE id = $1;
 

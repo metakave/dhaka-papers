@@ -10,9 +10,10 @@ interface InfiniteNewsListProps {
     authorId?: string;
     sort?: string;
     search?: string;
+    tag?: string;
 }
 
-export default function InfiniteNewsList({ category, authorId, sort, search }: InfiniteNewsListProps) {
+export default function InfiniteNewsList({ category, authorId, sort, search, tag }: InfiniteNewsListProps) {
     const { ref, inView } = useInView();
     const {
         data,
@@ -21,7 +22,7 @@ export default function InfiniteNewsList({ category, authorId, sort, search }: I
         isFetchingNextPage,
         isLoading,
         isError
-    } = useInfiniteNews({ limit: 12, category, authorId, sort, search });
+    } = useInfiniteNews({ limit: 12, category, authorId, sort, search, tag });
 
     useEffect(() => {
         if (inView && hasNextPage && !isFetchingNextPage) {

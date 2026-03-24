@@ -7,12 +7,12 @@ import Color from '@tiptap/extension-color';
 import Highlight from '@tiptap/extension-highlight';
 import FontFamily from '@tiptap/extension-font-family';
 import TextAlign from '@tiptap/extension-text-align';
-import Youtube from '@tiptap/extension-youtube';
+import { MediaEmbed } from './extensions/MediaEmbed';
 import { Toggle } from '@/components/ui/toggle';
 import {
     Bold, Italic, Strikethrough, Heading1, Heading2, Heading3,
     List, ListOrdered, AlignLeft, AlignCenter, AlignRight, AlignJustify,
-    Highlighter, Youtube as YoutubeIcon
+    Highlighter, Share2
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
 
     return (
         <div className="border border-b-0 rounded-t-md bg-gray-50 p-2 flex flex-wrap gap-2 items-center">
+            {/* ... existing buttons ... */}
             <Toggle
                 size="sm"
                 pressed={editor.isActive('bold')}
@@ -136,20 +137,53 @@ const MenuBar = ({ editor }: { editor: any }) => {
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                    const url = window.prompt('YouTube URL');
-                    if (url) {
-                        editor.getAttributes('youtube');
-                        editor.commands.setYoutubeVideo({
-                            src: url,
-                            width: 640,
-                            height: 480,
-                        });
+                    const input = window.prompt('Paste Media URL (YouTube, FB) or Embed Code (iframe)');
+                    if (input) {
+                        let src = input;
+                        let ratio = '16/9';
+                        let maxWidth = '100%';
+                        
+                        // Detect aspect ratio based on URL/Code hints
+                        const lowInput = input.toLowerCase();
+
+                        // Extract src, width, height if user pasted full code
+                        const srcMatch = input.match(/src="([^"]+)"/);
+                        const widthMatch = input.match(/width="(\d+)"/);
+                        const heightMatch = input.match(/height="(\d+)"/);
+
+                        if (srcMatch) {
+                            src = srcMatch[1];
+                            if (widthMatch && heightMatch) {
+                                const w = parseInt(widthMatch[1]);
+                                const h = parseInt(heightMatch[1]);
+                                ratio = `${w} / ${h}`;
+                                // Use the source width as a max-width hint, capped at a reasonable value for desktop
+                                maxWidth = w > 900 ? '900px' : `${w}px`;
+                            } else if (lowInput.includes('reel') || lowInput.includes('short') || lowInput.includes('tiktok')) {
+                                ratio = '9/16';
+                                maxWidth = '450px';
+                            }
+                        } else if (input.includes('youtube.com/watch?v=')) {
+                            const videoId = input.split('v=')[1]?.split('&')[0];
+                            if (videoId) src = `https://www.youtube.com/embed/${videoId}`;
+                        } else if (input.includes('youtu.be/')) {
+                            const videoId = input.split('/').pop()?.split('?')[0];
+                            if (videoId) src = `https://www.youtube.com/embed/${videoId}`;
+                        } else if (input.includes('facebook.com')) {
+                            src = `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(input)}&show_text=false&t=0`;
+                            if (lowInput.includes('reel')) {
+                                ratio = '9/16';
+                                maxWidth = '450px';
+                            }
+                        }
+
+                        editor.commands.setMediaEmbed({ src, ratio, maxWidth });
                     }
                 }}
                 className="h-8 w-8 p-0"
-                title="Embed YouTube Video"
+                title="Embed Media (YouTube, FB, X, etc.)"
             >
-                <YoutubeIcon className="h-4 w-4" />
+                <Share2 className="h-4 w-4" />
             </Button>
 
         </div>
@@ -172,10 +206,7 @@ export function TipTapEditor({ content, onChange }: TipTapEditorProps) {
             TextAlign.configure({
                 types: ['heading', 'paragraph'],
             }),
-            Youtube.configure({
-                controls: true,
-                nocookie: true,
-            }),
+            MediaEmbed,
         ],
         content: content,
         onUpdate: ({ editor }) => {

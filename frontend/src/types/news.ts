@@ -18,6 +18,7 @@ export interface News {
     category_name?: string;
     category_name_bn?: string;
     category_slug?: string;
+    tags?: string[];
 }
 
 export interface NewsListResponse {

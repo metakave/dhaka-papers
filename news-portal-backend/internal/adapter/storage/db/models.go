@@ -39,6 +39,7 @@ type News struct {
 	IsFeatured       pgtype.Bool
 	TitleEn          pgtype.Text
 	ThumbnailCaption pgtype.Text
+	Tags             []string
 }
 
 type Owner struct {

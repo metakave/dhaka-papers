@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (a *Adapter) CountNews(ctx context.Context, categoryID *uuid.UUID, authorID *uuid.UUID, isFeatured *bool, search string, statusFilter string) (int64, error) {
+func (a *Adapter) CountNews(ctx context.Context, categoryID *uuid.UUID, authorID *uuid.UUID, isFeatured *bool, search string, statusFilter string, tag *string) (int64, error) {
 	var searchPtr *string
 	if search != "" {
 		pattern := "%" + search + "%"
@@ -53,6 +53,12 @@ func (a *Adapter) CountNews(ctx context.Context, categoryID *uuid.UUID, authorID
 	if authorID != nil {
 		whereClause += " AND n.author_id = $" + strconv.Itoa(argCount)
 		args = append(args, *authorID)
+		argCount++
+	}
+
+	if tag != nil {
+		whereClause += " AND $" + strconv.Itoa(argCount) + " = ANY(n.tags)"
+		args = append(args, *tag)
 		argCount++
 	}
 

@@ -42,6 +42,7 @@ const formSchema = z.object({
     is_featured: z.boolean(),
     thumbnail: z.any().refine((val) => val && (val instanceof File || typeof val === 'string' && val.length > 0), 'Thumbnail is required'),
     thumbnail_caption: z.string().optional(),
+    tags: z.array(z.string()).optional(),
     status: z.enum(['draft', 'published']),
     published_at: z.date(),
 });
@@ -55,6 +56,7 @@ interface NewsFormProps {
 export function NewsForm({ categories, initialData, action: serverAction }: NewsFormProps) {
     const [uploading, setUploading] = useState(false);
     const [isPending, setIsPending] = useState(false);
+    const [tagInput, setTagInput] = useState('');
     const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(initialData?.thumbnail || null);
     const router = useRouter();
     const TIMEZONE = 'Asia/Dhaka';
@@ -70,6 +72,7 @@ export function NewsForm({ categories, initialData, action: serverAction }: News
             is_featured: initialData ? initialData.is_featured : false,
             thumbnail: initialData?.thumbnail || '',
             thumbnail_caption: initialData?.thumbnail_caption || '',
+            tags: initialData?.tags || [],
             status: (initialData?.status as 'draft' | 'published') || 'draft',
             published_at: initialData?.published_at
                 ? toZonedTime(new Date(initialData.published_at), TIMEZONE)
@@ -117,6 +120,10 @@ export function NewsForm({ categories, initialData, action: serverAction }: News
             formData.append('is_featured', String(values.is_featured));
             formData.append('status', values.status);
             formData.append('thumbnail_caption', values.thumbnail_caption || '');
+
+            if (values.tags && values.tags.length > 0) {
+                values.tags.forEach(tag => formData.append('tags', tag));
+            }
 
             // Convert BST from UI back to UTC before sending to server
             const utcDate = fromZonedTime(values.published_at, TIMEZONE);
@@ -175,6 +182,70 @@ export function NewsForm({ categories, initialData, action: serverAction }: News
                             <FormControl>
                                 <Input placeholder="News Headline in English" {...field} />
                             </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    control={form.control}
+                    name="tags"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Tags</FormLabel>
+                            <FormControl>
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex gap-2">
+                                        <Input 
+                                            value={tagInput}
+                                            onChange={(e) => setTagInput(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    e.preventDefault();
+                                                    if (tagInput.trim()) {
+                                                        field.onChange([...(field.value || []), tagInput.trim()]);
+                                                        setTagInput('');
+                                                    }
+                                                }
+                                            }}
+                                            placeholder="Add a tag and press Enter..." 
+                                        />
+                                        <Button 
+                                            type="button" 
+                                            variant="secondary"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                if (tagInput.trim()) {
+                                                    field.onChange([...(field.value || []), tagInput.trim()]);
+                                                    setTagInput('');
+                                                }
+                                            }}
+                                        >
+                                            Add
+                                        </Button>
+                                    </div>
+                                    {field.value && field.value.length > 0 && (
+                                        <div className="flex flex-wrap gap-2 mt-2">
+                                            {field.value.map((tag: string, index: number) => (
+                                                <span key={index} className="inline-flex items-center gap-1 bg-gray-100 px-3 py-1 rounded-full text-sm font-medium text-gray-800">
+                                                    {tag}
+                                                    <button 
+                                                        type="button" 
+                                                        className="text-gray-500 hover:text-red-500 font-bold ml-1 focus:outline-none"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            field.onChange((field.value || []).filter((_: any, i: number) => i !== index));
+                                                        }}
+                                                    >
+                                                        &times;
+                                                    </button>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </FormControl>
+                            <FormDescription>Press Enter or click Add to add a tag.</FormDescription>
                             <FormMessage />
                         </FormItem>
                     )}

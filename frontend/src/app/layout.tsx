@@ -5,6 +5,7 @@ import QueryProvider from "@/providers/QueryProvider";
 export const metadata: Metadata = {
   title: "ঢাকা পেপারস | আধুনিক সংবাদ মাধ্যম",
   description: "দেশ-বিদেশের সর্বশেষ সংবাদ নিয়ে সব সময় আপনার পাশে।",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=5",
 };
 
 export default function RootLayout({

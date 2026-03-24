@@ -10,6 +10,7 @@ export interface News {
     category_id: string;
     category_name?: string;
     author_name?: string;
+    tags?: string[];
     status: string;
     is_featured: boolean;
     published_at: string;
