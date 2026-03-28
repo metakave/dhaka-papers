@@ -23,7 +23,8 @@ export async function generateMetadata(
 
     if (!article) return { title: 'Not Found' };
 
-    const ogImage = article.thumbnail || 'https://beta.dhakapapers.com/placeholder-news.jpg';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://dhakapapers.com';
+    const ogImage = article.thumbnail || `${baseUrl}/placeholder-news.jpg`;
 
     return {
         title: `${article.title} | ঢাকা পেপারস`,
@@ -31,7 +32,7 @@ export async function generateMetadata(
         openGraph: {
             title: article.title,
             description: article.excerpt,
-            url: `https://beta.dhakapapers.com/news/${slug}`,
+            url: `${baseUrl}/news/${slug}`,
             siteName: 'ঢাকা পেপারস',
             images: [
                 {
@@ -74,7 +75,8 @@ export default async function ArticlePage({ params }: Props) {
     const filteredCategoryNews = categoryNews?.filter(a => a.id !== article.id) || [];
     const filteredLatestNews = latestNews?.filter(a => a.id !== article.id) || [];
     const relatedNews = (filteredCategoryNews.length > 0 ? filteredCategoryNews : filteredLatestNews).slice(0, 3);
-    const shareUrl = `https://beta.dhakapapers.com/news/${slug}`;
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://dhakapapers.com';
+    const shareUrl = `${baseUrl}/news/${slug}`;
 
     return (
         <Layout>

@@ -2,7 +2,7 @@
     email admin@dhakapapers.com
 }
 
-beta.dhakapapers.com {
+beta.dhakapapers.com, dhakapaper.com, www.dhakapaper.com, dhakapapers.com, www.dhakapapers.com {
     # 1. Backend API (Path: /api/*)
     handle /api* {
         reverse_proxy news_portal_backend:8080
