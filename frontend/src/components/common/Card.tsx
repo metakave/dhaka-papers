@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { News } from '@/types/news';
 import React, { memo } from 'react';
+import { useParams } from 'next/navigation';
 
 interface CardProps {
     article: News;
@@ -13,6 +14,9 @@ const Card = memo(({ article, variant = 'medium' }: CardProps) => {
     const isList = variant === 'list';
     const isSmall = variant === 'small';
     const isHeroSide = variant === 'hero-side';
+    
+    const params = useParams();
+    const locale = params.locale as string || "bn";
 
     return (
         <article className={`group flex flex-col ${isList ? 'flex-row gap-6 items-center' : 'gap-4'} ${isHeroSide ? 'border-b border-gray-100 pb-5 last:border-0' : ''}`}>
@@ -29,12 +33,12 @@ const Card = memo(({ article, variant = 'medium' }: CardProps) => {
             {/* Content Container */}
             <div className="flex flex-col flex-1">
                 <Link href={`/${article.category_slug}`} className="text-primary text-[13px] font-black mb-2 uppercase tracking-widest hover:underline">
-                    {article.category_name_bn || article.category_name}
+                    {locale === "bn" ? (article.category_name_bn || article.category_name) : (article.category_name || article.category_name_bn)}
                 </Link>
 
                 <Link href={`/news/${article.slug}`}>
                     <h2 className={`text-gray-900 font-black leading-[1.25] transition-colors duration-300 group-hover:text-primary font-main
-                        ${isLarge ? 'text-3xl md:text-4xl mb-4' : 'text-lg md:text-xl mb-3'} 
+                        {isLarge ? 'text-3xl md:text-4xl mb-4' : 'text-lg md:text-xl mb-3'} 
                         ${isHeroSide ? 'text-base md:text-lg mb-2' : ''}`}>
                         {article.title}
                     </h2>

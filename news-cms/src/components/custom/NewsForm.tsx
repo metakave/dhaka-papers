@@ -45,6 +45,7 @@ const formSchema = z.object({
     tags: z.array(z.string()).optional(),
     status: z.enum(['draft', 'published']),
     published_at: z.date(),
+    lang: z.enum(['bn', 'en']),
 });
 
 interface NewsFormProps {
@@ -77,6 +78,7 @@ export function NewsForm({ categories, initialData, action: serverAction }: News
             published_at: initialData?.published_at
                 ? toZonedTime(new Date(initialData.published_at), TIMEZONE)
                 : toZonedTime(new Date(), TIMEZONE),
+            lang: (initialData?.lang as 'bn' | 'en') || 'bn',
         },
     });
 
@@ -119,6 +121,7 @@ export function NewsForm({ categories, initialData, action: serverAction }: News
             formData.append('content', values.content);
             formData.append('is_featured', String(values.is_featured));
             formData.append('status', values.status);
+            formData.append('lang', values.lang);
             formData.append('thumbnail_caption', values.thumbnail_caption || '');
 
             if (values.tags && values.tags.length > 0) {
@@ -158,34 +161,93 @@ export function NewsForm({ categories, initialData, action: serverAction }: News
         <Form {...form}>
             {/* preventDefault is handled by handleSubmit */}
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-3xl">
-                <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Title (Bangla)</FormLabel>
-                            <FormControl>
-                                <Input placeholder="News Headline in Bangla" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                        control={form.control}
+                        name="lang"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Content Language</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger className="bg-white">
+                                            <SelectValue placeholder="Select language" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="bn">Bengali (Native Version)</SelectItem>
+                                        <SelectItem value="en">English (Subdomain Version)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormDescription>
+                                    Choose which version this news belongs to.
+                                </FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-                <FormField
-                    control={form.control}
-                    name="title_en"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Title (English)</FormLabel>
-                            <FormDescription>Used for generating SEO-friendly URL slug</FormDescription>
-                            <FormControl>
-                                <Input placeholder="News Headline in English" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                    <FormField
+                        control={form.control}
+                        name="status"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Status</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger className="bg-white">
+                                            <SelectValue placeholder="Select status" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="draft">Draft</SelectItem>
+                                        <SelectItem value="published">Published</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormDescription>
+                                    Control the visibility of this article.
+                                </FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-4 border-b">
+                    <FormField
+                        control={form.control}
+                        name="title"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Display Title (Main Header)</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="News Headline" {...field} />
+                                </FormControl>
+                                <FormDescription>
+                                    Headline displayed in the article and lists.
+                                </FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="title_en"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>SEO Slug Source (English)</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="News Headline in English" {...field} />
+                                </FormControl>
+                                <FormDescription>
+                                    Used for generating the URL slug: dhakapapers.com/news/slug-here
+                                </FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
 
                 <FormField
                     control={form.control}
@@ -270,28 +332,6 @@ export function NewsForm({ categories, initialData, action: serverAction }: News
                                                 {category.name}
                                             </SelectItem>
                                         ))}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
-                    <FormField
-                        control={form.control}
-                        name="status"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Status</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select status" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="draft">Draft</SelectItem>
-                                        <SelectItem value="published">Published</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />

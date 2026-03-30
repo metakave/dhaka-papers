@@ -13,9 +13,13 @@ import {
   InstagramIcon,
 } from "@/components/common/Icons";
 import { formatBengaliDate } from "@/utils/dateUtils";
+import { useParams } from "next/navigation";
+import LanguageSwitcher from "@/components/common/LanguageSwitcher";
 
 export default function Header() {
   const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string || "bn";
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -71,7 +75,7 @@ export default function Header() {
               href={`/${cat.slug}`}
               className="text-[17px] font-black text-gray-900 hover:text-primary transition-colors tracking-tight whitespace-nowrap uppercase"
             >
-              {cat.name_bn || cat.name}
+              {locale === "bn" ? (cat.name_bn || cat.name) : (cat.name || cat.name_bn)}
             </Link>
           </li>
         ))}
@@ -90,7 +94,7 @@ export default function Header() {
         onClick={() => setIsMenuOpen(false)}
         className="text-2xl md:text-4xl font-black text-gray-900 hover:text-primary transition-all text-left md:text-center border-l-4 md:border-l-0 md:border-b-4 border-transparent hover:border-primary pl-4 md:pl-0 pb-1 md:pb-4 truncate md:overflow-visible"
       >
-        {cat.name_bn || cat.name}
+        {locale === "bn" ? (cat.name_bn || cat.name) : (cat.name || cat.name_bn)}
       </Link>
     ));
 
@@ -100,6 +104,14 @@ export default function Header() {
   };
 
   const getBengaliDate = () => {
+    if (locale === "en") {
+      return new Date().toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    }
     return formatBengaliDate(new Date());
   };
 
@@ -115,7 +127,7 @@ export default function Header() {
         <div className="container px-4">
           {/* --- MOBILE HEADER --- */}
           <div className="md:hidden flex items-center h-[56px] relative">
-            <div className="w-1/4 flex justify-start">
+            <div className="w-1/3 flex justify-start">
               <button
                 className="p-2 text-3xl"
                 onClick={() => setIsMenuOpen(true)}
@@ -123,12 +135,13 @@ export default function Header() {
                 <span className="font-bold text-gray-900">☰</span>
               </button>
             </div>
-            <div className="w-1/2 flex justify-center">
+            <div className="w-1/3 flex justify-center">
               <Link href="/">
                 <Image src="/images/dhakapaper-logo.webp" alt="ঢাকা পেপারস" width={500} height={120} className="h-8 w-auto object-contain" priority />
               </Link>
             </div>
-            <div className="w-1/4 flex justify-end">
+            <div className="w-1/3 flex justify-end gap-3 items-center">
+              <LanguageSwitcher />
               <button
                 className="text-gray-400 p-2"
                 onClick={() => setIsSearchOpen(true)}
@@ -185,8 +198,11 @@ export default function Header() {
                     {getBengaliDate()}
                   </p>
                 </div>
+                <div className="flex items-center pl-4 border-l border-gray-100 ml-2">
+                  <LanguageSwitcher />
+                </div>
                 <button
-                  className="hover:text-primary transition-all"
+                  className="hover:text-primary transition-all ml-4"
                   onClick={() => setIsSearchOpen(true)}
                 >
                   <SearchIcon className="w-7 h-7" />
@@ -227,12 +243,12 @@ export default function Header() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="খবর খুঁজুন..."
+                  placeholder={locale === "bn" ? "খবর খুঁজুন..." : "Search news..."}
                   className="w-full text-base md:text-lg bg-transparent border-b-4 border-primary py-4 text-black focus:outline-none placeholder:text-gray-300 tracking-tight"
                 />
                 <div className="mt-8 flex items-center justify-between text-gray-400 uppercase tracking-[0.3em] font-black text-xs md:text-sm">
-                  <span>টাইপ করে এন্টার চাপুন</span>
-                  <span>সার্চ ইঞ্জিন ১.০</span>
+                  <span>{locale === "bn" ? "টাইপ করে এন্টার চাপুন" : "PRESS ENTER TO SEARCH"}</span>
+                  <span>{locale === "bn" ? "সার্চ ইঞ্জিন ১.০" : "SEARCH ENGINE 1.0"}</span>
                 </div>
               </div>
             </div>

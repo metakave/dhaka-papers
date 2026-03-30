@@ -7,12 +7,15 @@ import InfiniteNewsList from '@/components/sections/InfiniteNewsList';
 
 export default function CategoryPage() {
     const params = useParams();
+    const locale = params.locale as string || "bn";
     const categorySlug = params?.category as string;
 
     const { data: categories, isLoading: isCatsLoading } = useCategories();
 
     if (isCatsLoading) {
-        return <div className="py-20 text-center text-gray-400 font-bold italic">খবর লোড হচ্ছে...</div>;
+        return <div className="py-20 text-center text-gray-400 font-bold italic">
+            {locale === "bn" ? "খবর লোড হচ্ছে..." : "Loading news..."}
+        </div>;
     }
 
     const category = categories?.find((c) => c.slug === categorySlug);
@@ -25,7 +28,7 @@ export default function CategoryPage() {
             <div className="py-8 md:py-12">
                 <div className="border-b-4 border-primary mb-12">
                     <h1 className="text-4xl md:text-5xl font-black py-4 uppercase tracking-tighter italic">
-                        {category.name_bn || category.name}
+                        {locale === "en" ? category.name : (category.name_bn || category.name)}
                     </h1>
                 </div>
 

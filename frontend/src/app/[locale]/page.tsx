@@ -6,9 +6,12 @@ import NewsGrid from '@/components/sections/NewsGrid';
 import { useHomepage } from '@/hooks/queries/useHomepage';
 import { toBengaliNumber } from '@/utils/dateUtils';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 
 export default function Home() {
-  const { data, isLoading } = useHomepage();
+  const params = useParams();
+  const locale = params.locale as string || "bn";
+  const { data, isLoading } = useHomepage(locale);
 
   // Hero takes Featured + First 5 Latest (3 Side + 2 Secondary)
   // NewsGrid takes the rest of Latest
@@ -28,7 +31,7 @@ export default function Home() {
         <div className="lg:col-span-8 xl:col-span-9">
           <div className="flex items-center justify-between border-b-2 border-gray-900 mb-12">
             <h2 className="text-3xl md:text-5xl font-black py-4 inline-block border-b-8 border-primary -mb-[2px] tracking-tighter uppercase italic">
-              সাম্প্রতিক খবর
+              {locale === "bn" ? "সাম্প্রতিক খবর" : "Recent News"}
             </h2>
           </div>
           <NewsGrid news={newsGridItems} isLoading={isLoading} />
@@ -39,7 +42,9 @@ export default function Home() {
           <div className="sticky top-32 flex flex-col gap-12">
             <div>
               <div className="border-b border-gray-900 mb-8">
-                <h3 className="text-2xl font-black pb-2 inline-block border-b-4 border-primary -mb-[1px] tracking-tight">সবচেয়ে জনপ্রিয়</h3>
+                <h3 className="text-2xl font-black pb-2 inline-block border-b-4 border-primary -mb-[1px] tracking-tight">
+                  {locale === "bn" ? "সবচেয়ে জনপ্রিয়" : "Most Popular"}
+                </h3>
               </div>
               <div className="flex flex-col">
                 {isLoading ? (

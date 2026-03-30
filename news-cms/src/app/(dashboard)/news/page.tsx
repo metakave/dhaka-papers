@@ -4,15 +4,16 @@ import { NewsTable } from '@/components/custom/NewsTable';
 export const dynamic = 'force-dynamic';
 
 export default async function NewsPage(props: {
-    searchParams: Promise<{ page?: string; sort?: string; search?: string }>;
+    searchParams: Promise<{ page?: string; sort?: string; search?: string; lang?: string }>;
 }) {
     const searchParams = await props.searchParams;
     const currentPage = Number(searchParams.page) || 1;
     const currentSort = searchParams.sort || 'latest';
     const currentSearch = searchParams.search || '';
+    const currentLang = searchParams.lang || 'all';
     const limit = 10;
 
-    const result = await getNewsAction(currentPage, limit, undefined, currentSearch);
+    const result = await getNewsAction(currentPage, limit, undefined, currentSearch, currentLang);
 
     if ('error' in result) {
         return <div className="p-4 text-red-500">Error: {result.error}</div>;
@@ -26,6 +27,7 @@ export default async function NewsPage(props: {
             data={result.newsList || []}
             currentPage={currentPage}
             currentSort={currentSort}
+            currentLang={currentLang}
             totalPages={totalPages}
         />
     );

@@ -2,6 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
+import { useParams } from 'next/navigation';
 import Card from '@/components/common/Card';
 import { useInfiniteNews } from '@/hooks/queries/useNews';
 
@@ -14,6 +15,8 @@ interface InfiniteNewsListProps {
 }
 
 export default function InfiniteNewsList({ category, authorId, sort, search, tag }: InfiniteNewsListProps) {
+    const params = useParams();
+    const locale = params.locale as string || "bn";
     const { ref, inView } = useInView();
     const {
         data,
@@ -22,7 +25,7 @@ export default function InfiniteNewsList({ category, authorId, sort, search, tag
         isFetchingNextPage,
         isLoading,
         isError
-    } = useInfiniteNews({ limit: 12, category, authorId, sort, search, tag });
+    } = useInfiniteNews({ limit: 12, category, authorId, sort, search, tag, lang: locale });
 
     useEffect(() => {
         if (inView && hasNextPage && !isFetchingNextPage) {
@@ -45,13 +48,17 @@ export default function InfiniteNewsList({ category, authorId, sort, search, tag
     }
 
     if (isError) {
-        return <div className="py-20 text-center text-red-500 font-bold font-main italic">খবর লোড করতে সমস্যা হয়েছে!</div>;
+        return <div className="py-20 text-center text-red-500 font-bold font-main italic">
+            {locale === "bn" ? "খবর লোড করতে সমস্যা হয়েছে!" : "Something went wrong loading news!"}
+        </div>;
     }
 
     const allNews = data?.pages.flatMap((page) => page.newsList || []) || [];
 
     if (allNews.length === 0) {
-        return <div className="py-20 text-center text-gray-400 font-bold font-main italic">কোনো খবর পাওয়া যায়নি!</div>;
+        return <div className="py-20 text-center text-gray-400 font-bold font-main italic">
+            {locale === "bn" ? "কোনো খবর পাওয়া যায়নি!" : "No news found!"}
+        </div>;
     }
 
     return (
@@ -72,7 +79,9 @@ export default function InfiniteNewsList({ category, authorId, sort, search, tag
                     </div>
                 )}
                 {!hasNextPage && allNews.length > 0 && (
-                    <p className="text-gray-400 font-bold font-main italic border-t border-gray-100 pt-8 w-full text-center">সব খবর শেষ!</p>
+                    <p className="text-gray-400 font-bold font-main italic border-t border-gray-100 pt-8 w-full text-center">
+                        {locale === "bn" ? "সব খবর শেষ!" : "All news loaded!"}
+                    </p>
                 )}
             </div>
         </section>

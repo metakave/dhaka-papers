@@ -40,6 +40,7 @@ type News struct {
 	TitleEn          pgtype.Text
 	ThumbnailCaption pgtype.Text
 	Tags             []string
+	Lang             string
 }
 
 type Owner struct {

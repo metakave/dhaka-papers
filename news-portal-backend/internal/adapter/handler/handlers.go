@@ -197,6 +197,10 @@ func (h *NewsHandler) CreateNews(w http.ResponseWriter, r *http.Request) {
 	content := r.FormValue("content")
 	isFeatured := r.FormValue("is_featured") == "true"
 	thumbnailCaption := r.FormValue("thumbnail_caption")
+	lang := r.FormValue("lang")
+	if lang == "" {
+		lang = "bn"
+	}
 	
 	var tags []string
 	if vals, ok := r.MultipartForm.Value["tags"]; ok {
@@ -268,7 +272,7 @@ func (h *NewsHandler) CreateNews(w http.ResponseWriter, r *http.Request) {
 		publishedAt = time.Now()
 	}
 
-	news, err := h.svc.CreateNews(r.Context(), authorID, categoryID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption, tags, isFeatured, status, publishedAt)
+	news, err := h.svc.CreateNews(r.Context(), authorID, categoryID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption, tags, isFeatured, status, publishedAt, lang)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -301,6 +305,10 @@ func (h *NewsHandler) UpdateNews(w http.ResponseWriter, r *http.Request) {
 	content := r.FormValue("content")
 	isFeatured := r.FormValue("is_featured") == "true"
 	thumbnailCaption := r.FormValue("thumbnail_caption")
+	lang := r.FormValue("lang")
+	if lang == "" {
+		lang = "bn"
+	}
 	existingThumbnail := r.FormValue("thumbnail") // Keep existing if no new one
 
 	var tags []string
@@ -359,7 +367,7 @@ func (h *NewsHandler) UpdateNews(w http.ResponseWriter, r *http.Request) {
 		publishedAt = time.Now()
 	}
 
-	if err := h.svc.UpdateNews(r.Context(), id, categoryID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption, tags, isFeatured, status, publishedAt); err != nil {
+	if err := h.svc.UpdateNews(r.Context(), id, categoryID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption, tags, isFeatured, status, publishedAt, lang); err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
 			http.Error(w, "News not found", http.StatusNotFound)
 			return
@@ -411,7 +419,7 @@ func (h *NewsHandler) ListNews(w http.ResponseWriter, r *http.Request) {
 	search := r.URL.Query().Get("search")
 	authorIDStr := r.URL.Query().Get("author_id")
 	tag := r.URL.Query().Get("tag")
-
+	lang := r.URL.Query().Get("lang")
 	var authorID *uuid.UUID
 	if authorIDStr != "" {
 		id, err := uuid.Parse(authorIDStr)
@@ -420,7 +428,7 @@ func (h *NewsHandler) ListNews(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	newsList, total, err := h.svc.ListNews(r.Context(), int32(page), int32(limit), category, authorID, sort, isFeatured, search, "", tag)
+	newsList, total, err := h.svc.ListNews(r.Context(), int32(page), int32(limit), category, authorID, sort, isFeatured, search, "", tag, lang)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -451,6 +459,7 @@ func (h *NewsHandler) ListAdminNews(w http.ResponseWriter, r *http.Request) {
 	search := r.URL.Query().Get("search")
 	authorIDStr := r.URL.Query().Get("author_id")
 	tag := r.URL.Query().Get("tag")
+	lang := r.URL.Query().Get("lang")
 
 	var authorID *uuid.UUID
 	if authorIDStr != "" {
@@ -461,7 +470,7 @@ func (h *NewsHandler) ListAdminNews(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Status Filter: "all" for admin to see everything
-	newsList, total, err := h.svc.ListNews(r.Context(), int32(page), int32(limit), category, authorID, sort, isFeatured, search, "all", tag)
+	newsList, total, err := h.svc.ListNews(r.Context(), int32(page), int32(limit), category, authorID, sort, isFeatured, search, "all", tag, lang)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -476,7 +485,8 @@ func (h *NewsHandler) ListAdminNews(w http.ResponseWriter, r *http.Request) {
 
 func (h *NewsHandler) GetNews(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
-	news, err := h.svc.GetNewsBySlug(r.Context(), slug)
+	lang := r.URL.Query().Get("lang")
+	news, err := h.svc.GetNewsBySlug(r.Context(), slug, lang)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -491,7 +501,8 @@ func (h *NewsHandler) GetNews(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *NewsHandler) GetHomepage(w http.ResponseWriter, r *http.Request) {
-	data, err := h.svc.GetHomepageData(r.Context())
+	lang := r.URL.Query().Get("lang")
+	data, err := h.svc.GetHomepageData(r.Context(), lang)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -503,12 +514,13 @@ func (h *NewsHandler) GetHomepage(w http.ResponseWriter, r *http.Request) {
 
 func (h *NewsHandler) CheckSlug(w http.ResponseWriter, r *http.Request) {
 	slug := r.URL.Query().Get("slug")
+	lang := r.URL.Query().Get("lang")
 	if slug == "" {
 		http.Error(w, "Slug required", http.StatusBadRequest)
 		return
 	}
 
-	exists, err := h.svc.CheckSlug(r.Context(), slug)
+	exists, err := h.svc.CheckSlug(r.Context(), slug, lang)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -8,13 +8,14 @@ export const useNews = (params?: Parameters<typeof newsService.getAll>[0]) => {
     });
 };
 
-export const useInfiniteNews = (params?: { limit?: number; category?: string; authorId?: string; sort?: string; featured?: boolean; search?: string; tag?: string }) => {
+export const useInfiniteNews = (params?: { limit?: number; category?: string; authorId?: string; sort?: string; featured?: boolean; search?: string; tag?: string; lang?: string }) => {
     return useInfiniteQuery({
         queryKey: ['news', 'infinite', params],
         queryFn: ({ pageParam = 1 }) => newsService.getAll({
             ...params,
             author_id: params?.authorId,
-            page: pageParam as number
+            page: pageParam as number,
+            lang: params?.lang
         }),
         initialPageParam: 1,
         getNextPageParam: (lastPage, allPages) => {

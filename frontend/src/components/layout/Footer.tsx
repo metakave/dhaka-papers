@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useCategories } from "@/hooks/queries/useCategories";
+import { useParams } from "next/navigation";
 import {
   FacebookIcon,
   TwitterIcon,
@@ -12,10 +13,12 @@ import {
 
 export default function Footer() {
   const { data: categories, isLoading, error } = useCategories();
+  const params = useParams();
+  const locale = params.locale as string || "bn";
 
   const renderCategoryLinks = () => {
     if (isLoading)
-      return <div className="text-gray-600 text-sm italic">লোড হচ্ছে...</div>;
+      return <div className="text-gray-600 text-sm italic">{locale === "bn" ? "লোড হচ্ছে..." : "Loading..."}</div>;
     if (error || !categories) return null;
 
     return categories.map((cat) => (
@@ -24,7 +27,7 @@ export default function Footer() {
         href={`/${cat.slug}`}
         className="text-gray-400 hover:text-primary transition-colors text-lg font-bold"
       >
-        {cat.name_bn || cat.name}
+        {locale === "bn" ? (cat.name_bn || cat.name) : (cat.name || cat.name_bn)}
       </Link>
     ));
   };
@@ -42,8 +45,9 @@ export default function Footer() {
               <Image src="/images/dhakapaper-logo.webp" alt="ঢাকা পেপারস" width={500} height={120} className="h-16 w-auto object-contain select-none" priority />
             </Link>
             <p className="text-gray-300 text-lg md:text-xl leading-relaxed max-w-xl font-medium">
-              আমরা সংবাদের সত্যতায় বিশ্বাসী। আধুনিক সাংবাদিকতার মাধ্যমে আপনার
-              কাছে পৌঁছাতে চাই প্রতিদিন।
+              {locale === "bn" 
+                ? "আমরা সংবাদের সত্যতায় বিশ্বাসী। আধুনিক সাংবাদিকতার মাধ্যমে আপনার কাছে পৌঁছাতে চাই প্রতিদিন।" 
+                : "We believe in the truth of news. We aim to reach you every day through modern journalism."}
             </p>
           </div>
         </div>
@@ -59,7 +63,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-10 pt-10 border-t border-gray-900 mb-12">
           <div className="flex flex-col items-center md:items-start">
             <h4 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 mb-6">
-              অনুসরণ করুন
+              {locale === "bn" ? "অনুসরণ করুন" : "Follow Us"}
             </h4>
             <div className="flex items-center gap-5">
               <Link
@@ -99,19 +103,19 @@ export default function Footer() {
               href="/about"
               className="text-gray-400 hover:text-primary transition-colors text-sm font-black uppercase tracking-widest"
             >
-              আমাদের সম্পর্কে
+              {locale === "bn" ? "আমাদের সম্পর্কে" : "About Us"}
             </Link>
             <Link
               href="/contact"
               className="text-gray-400 hover:text-primary transition-colors text-sm font-black uppercase tracking-widest"
             >
-              যোগাযোগ
+              {locale === "bn" ? "যোগাযোগ" : "Contact"}
             </Link>
             <Link
               href="/privacy"
               className="text-gray-400 hover:text-primary transition-colors text-sm font-black uppercase tracking-widest"
             >
-              গোপনীয়তা নীতি
+              {locale === "bn" ? "গোপনীয়তা নীতি" : "Privacy Policy"}
             </Link>
           </div>
         </div>
@@ -119,7 +123,7 @@ export default function Footer() {
         {/* 4. Final Bottom Bar: Symmetrical Credits */}
         <div className="pt-10 border-t border-gray-900 flex flex-col items-center text-center gap-3">
           <p className="text-gray-600 text-[10px] md:text-[11px] font-black uppercase tracking-[0.25em]">
-            © ২০২৬ ঢাকা পেপারস - ঢাকা, বাংলাদেশ
+            © ২০২৬ {locale === "bn" ? "ঢাকা পেপারস - ঢাকা, বাংলাদেশ" : "Dhaka Papers - Dhaka, Bangladesh"}
           </p>
         </div>
       </div>

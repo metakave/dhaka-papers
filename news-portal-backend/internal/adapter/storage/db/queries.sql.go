@@ -14,11 +14,16 @@ import (
 )
 
 const checkSlugExists = `-- name: CheckSlugExists :one
-SELECT EXISTS(SELECT 1 FROM news WHERE slug = $1)
+SELECT EXISTS(SELECT 1 FROM news WHERE TRIM(slug) = $1 AND (lang = $2 OR $2 = ''))
 `
 
-func (q *Queries) CheckSlugExists(ctx context.Context, slug string) (bool, error) {
-	row := q.db.QueryRow(ctx, checkSlugExists, slug)
+type CheckSlugExistsParams struct {
+	Slug string
+	Lang string
+}
+
+func (q *Queries) CheckSlugExists(ctx context.Context, arg CheckSlugExistsParams) (bool, error) {
+	row := q.db.QueryRow(ctx, checkSlugExists, arg.Slug, arg.Lang)
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err
@@ -73,13 +78,13 @@ func (q *Queries) CreateCategory(ctx context.Context, arg CreateCategoryParams) 
 const createNews = `-- name: CreateNews :one
 INSERT INTO news (
     author_id, category_id, title, title_en, excerpt, content, thumbnail, thumbnail_caption, slug, 
-    published_at, status, meta_title, meta_description, tags
+    published_at, status, meta_title, meta_description, tags, lang
 )
 VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9,
-    NOW(), 'published', $3, $5, $10
+    NOW(), 'published', $3, $5, $10, $11
 )
-RETURNING id, author_id, category_id, title, slug, content, thumbnail, meta_title, meta_description, keywords, status, views_count, published_at, created_at, updated_at, excerpt, is_featured, title_en, thumbnail_caption, tags
+RETURNING id, author_id, category_id, title, slug, content, thumbnail, meta_title, meta_description, keywords, status, views_count, published_at, created_at, updated_at, excerpt, is_featured, title_en, thumbnail_caption, tags, lang
 `
 
 type CreateNewsParams struct {
@@ -93,6 +98,7 @@ type CreateNewsParams struct {
 	ThumbnailCaption pgtype.Text
 	Slug             string
 	Tags             []string
+	Lang             string
 }
 
 func (q *Queries) CreateNews(ctx context.Context, arg CreateNewsParams) (News, error) {
@@ -107,6 +113,7 @@ func (q *Queries) CreateNews(ctx context.Context, arg CreateNewsParams) (News, e
 		arg.ThumbnailCaption,
 		arg.Slug,
 		arg.Tags,
+		arg.Lang,
 	)
 	var i News
 	err := row.Scan(
@@ -130,6 +137,7 @@ func (q *Queries) CreateNews(ctx context.Context, arg CreateNewsParams) (News, e
 		&i.TitleEn,
 		&i.ThumbnailCaption,
 		&i.Tags,
+		&i.Lang,
 	)
 	return i, err
 }
@@ -191,63 +199,76 @@ func (q *Queries) GetCategoryBySlug(ctx context.Context, slug string) (Category,
 }
 
 const getNews = `-- name: GetNews :one
-SELECT n.id, n.author_id, n.category_id, n.title, n.slug, n.content, n.thumbnail, n.meta_title, n.meta_description, n.keywords, n.status, n.views_count, n.published_at, n.created_at, n.updated_at, n.excerpt, n.is_featured, n.title_en, n.thumbnail_caption, n.tags, c.name as category_name, c.slug as category_slug, o.name as author_name
+SELECT 
+    n.id, n.author_id, n.category_id, n.title, 
+    COALESCE(n.title_en, '') as title_en,
+    COALESCE(n.excerpt, '') as excerpt,
+    n.content, n.thumbnail, 
+    COALESCE(n.thumbnail_caption, '') as thumbnail_caption,
+    n.slug, n.status, n.views_count, n.lang,
+    COALESCE(n.meta_title, '') as meta_title,
+    COALESCE(n.meta_description, '') as meta_description,
+    n.tags, n.published_at, n.created_at, n.updated_at,
+    c.name as category_name, c.slug as category_slug, o.name as author_name
 FROM news n
 LEFT JOIN categories c ON n.category_id = c.id
 LEFT JOIN owners o ON n.author_id = o.id
-WHERE n.slug = $1 LIMIT 1
+WHERE TRIM(n.slug) = $1 AND (n.lang = $2 OR $2 = '') LIMIT 1
 `
+
+type GetNewsParams struct {
+	Slug string
+	Lang string
+}
 
 type GetNewsRow struct {
 	ID               uuid.UUID
 	AuthorID         pgtype.UUID
 	CategoryID       pgtype.UUID
 	Title            string
-	Slug             string
+	TitleEn          string
+	Excerpt          string
 	Content          string
 	Thumbnail        string
-	MetaTitle        pgtype.Text
-	MetaDescription  pgtype.Text
-	Keywords         pgtype.Text
+	ThumbnailCaption string
+	Slug             string
 	Status           string
 	ViewsCount       pgtype.Int8
+	Lang             string
+	MetaTitle        string
+	MetaDescription  string
+	Tags             []string
 	PublishedAt      pgtype.Timestamptz
 	CreatedAt        pgtype.Timestamptz
 	UpdatedAt        pgtype.Timestamptz
-	Excerpt          pgtype.Text
-	IsFeatured       pgtype.Bool
-	TitleEn          pgtype.Text
-	ThumbnailCaption pgtype.Text
-	Tags             []string
 	CategoryName     pgtype.Text
 	CategorySlug     pgtype.Text
 	AuthorName       pgtype.Text
 }
 
-func (q *Queries) GetNews(ctx context.Context, slug string) (GetNewsRow, error) {
-	row := q.db.QueryRow(ctx, getNews, slug)
+func (q *Queries) GetNews(ctx context.Context, arg GetNewsParams) (GetNewsRow, error) {
+	row := q.db.QueryRow(ctx, getNews, arg.Slug, arg.Lang)
 	var i GetNewsRow
 	err := row.Scan(
 		&i.ID,
 		&i.AuthorID,
 		&i.CategoryID,
 		&i.Title,
-		&i.Slug,
+		&i.TitleEn,
+		&i.Excerpt,
 		&i.Content,
 		&i.Thumbnail,
-		&i.MetaTitle,
-		&i.MetaDescription,
-		&i.Keywords,
+		&i.ThumbnailCaption,
+		&i.Slug,
 		&i.Status,
 		&i.ViewsCount,
+		&i.Lang,
+		&i.MetaTitle,
+		&i.MetaDescription,
+		&i.Tags,
 		&i.PublishedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.Excerpt,
-		&i.IsFeatured,
-		&i.TitleEn,
-		&i.ThumbnailCaption,
-		&i.Tags,
 		&i.CategoryName,
 		&i.CategorySlug,
 		&i.AuthorName,
@@ -300,7 +321,7 @@ func (q *Queries) GetOwnerByID(ctx context.Context, id uuid.UUID) (Owner, error)
 const incrementNewsViews = `-- name: IncrementNewsViews :exec
 UPDATE news 
 SET views_count = views_count + 1 
-WHERE slug = $1
+WHERE TRIM(slug) = $1
 `
 
 func (q *Queries) IncrementNewsViews(ctx context.Context, slug string) error {
@@ -341,14 +362,20 @@ func (q *Queries) ListCategories(ctx context.Context) ([]Category, error) {
 }
 
 const listNews = `-- name: ListNews :many
-SELECT n.id, n.title, n.title_en, n.thumbnail, n.thumbnail_caption, n.slug, n.status, n.views_count, n.published_at, n.created_at, n.updated_at,
-       c.name as category_name, c.slug as category_slug, o.name as author_name
+SELECT 
+    n.id, n.title, 
+    COALESCE(n.title_en, '') as title_en,
+    n.thumbnail, 
+    COALESCE(n.thumbnail_caption, '') as thumbnail_caption,
+    n.slug, n.status, n.views_count, n.published_at, n.created_at, n.updated_at, n.lang,
+    c.name as category_name, c.slug as category_slug, o.name as author_name
 FROM news n
 LEFT JOIN categories c ON n.category_id = c.id
 LEFT JOIN owners o ON n.author_id = o.id
 WHERE n.status = 'published' AND n.published_at <= NOW()
 AND ($3::uuid IS NULL OR n.category_id = $3)
 AND ($5::text IS NULL OR $5 = ANY(n.tags))
+AND ($6::text IS NULL OR n.lang = $6)
 ORDER BY 
     CASE WHEN $4 = 'popular' THEN n.views_count END DESC,
     CASE WHEN $4 != 'popular' OR $4 IS NULL THEN n.published_at END DESC
@@ -361,20 +388,22 @@ type ListNewsParams struct {
 	Column3 uuid.UUID
 	Column4 interface{}
 	Column5 string
+	Column6 string
 }
 
 type ListNewsRow struct {
 	ID               uuid.UUID
 	Title            string
-	TitleEn          pgtype.Text
+	TitleEn          string
 	Thumbnail        string
-	ThumbnailCaption pgtype.Text
+	ThumbnailCaption string
 	Slug             string
 	Status           string
 	ViewsCount       pgtype.Int8
 	PublishedAt      pgtype.Timestamptz
 	CreatedAt        pgtype.Timestamptz
 	UpdatedAt        pgtype.Timestamptz
+	Lang             string
 	CategoryName     pgtype.Text
 	CategorySlug     pgtype.Text
 	AuthorName       pgtype.Text
@@ -387,6 +416,7 @@ func (q *Queries) ListNews(ctx context.Context, arg ListNewsParams) ([]ListNewsR
 		arg.Column3,
 		arg.Column4,
 		arg.Column5,
+		arg.Column6,
 	)
 	if err != nil {
 		return nil, err
@@ -407,6 +437,7 @@ func (q *Queries) ListNews(ctx context.Context, arg ListNewsParams) ([]ListNewsR
 			&i.PublishedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Lang,
 			&i.CategoryName,
 			&i.CategorySlug,
 			&i.AuthorName,
@@ -432,6 +463,7 @@ SET
     thumbnail = $7, 
     thumbnail_caption = $8,
     tags = $9,
+    lang = $10,
     updated_at = NOW()
 WHERE id = $1
 `
@@ -446,6 +478,7 @@ type UpdateNewsParams struct {
 	Thumbnail        string
 	ThumbnailCaption pgtype.Text
 	Tags             []string
+	Lang             string
 }
 
 func (q *Queries) UpdateNews(ctx context.Context, arg UpdateNewsParams) (pgconn.CommandTag, error) {
@@ -459,5 +492,6 @@ func (q *Queries) UpdateNews(ctx context.Context, arg UpdateNewsParams) (pgconn.
 		arg.Thumbnail,
 		arg.ThumbnailCaption,
 		arg.Tags,
+		arg.Lang,
 	)
 }

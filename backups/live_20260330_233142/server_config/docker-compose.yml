@@ -1,0 +1,103 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: mm_news_portal_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-news_portal}
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - news-portal-network
+
+  backend:
+    build:
+      context: ./news-portal-backend
+      dockerfile: Dockerfile
+    container_name: news_portal_backend
+    stop_grace_period: 1m
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-news_portal}?sslmode=disable
+      - APP_ENV=${APP_ENV:-production}
+      - PORT=${BACKEND_PORT:-8080}
+      - JWT_SECRET=${JWT_SECRET}
+      - R2_ACCOUNT_ID=${R2_ACCOUNT_ID}
+      - R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
+      - R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
+      - R2_BUCKET_NAME=${R2_BUCKET_NAME}
+      - R2_PUBLIC_URL=${R2_PUBLIC_URL}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
+      - INITIAL_ADMIN_NAME=${INITIAL_ADMIN_NAME}
+      - INITIAL_ADMIN_EMAIL=${INITIAL_ADMIN_EMAIL}
+      - INITIAL_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD}
+    ports:
+      - "${BACKEND_PORT:-8080}:${BACKEND_PORT:-8080}"
+    depends_on:
+      - db
+    networks:
+      - news-portal-network
+
+  cms:
+    build:
+      context: ./news-cms
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      dockerfile: Dockerfile
+    container_name: news_portal_cms
+    stop_grace_period: 1m
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - INTERNAL_API_URL=${INTERNAL_API_URL}
+    ports:
+      - "${CMS_PORT:-3001}:3000"
+    depends_on:
+      - backend
+    networks:
+      - news-portal-network
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      dockerfile: Dockerfile
+    container_name: news_portal_frontend
+    stop_grace_period: 1m
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - INTERNAL_API_URL=${INTERNAL_API_URL}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      - backend
+    networks:
+      - news-portal-network
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: news_portal_caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+      - cms
+      - backend
+    networks:
+      - news-portal-network
+
+networks:
+  news-portal-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:

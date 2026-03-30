@@ -19,6 +19,7 @@ export interface News {
     category_name_bn?: string;
     category_slug?: string;
     tags?: string[];
+    title_en?: string;
 }
 
 export interface NewsListResponse {

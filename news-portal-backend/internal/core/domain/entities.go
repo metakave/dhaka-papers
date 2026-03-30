@@ -42,6 +42,7 @@ type News struct {
 	MetaTitle       *string   `json:"meta_title"`
 	MetaDescription *string   `json:"meta_description"`
 	ViewsCount      int64     `json:"views_count"`
+	Lang            string    `json:"lang"`
 	PublishedAt     time.Time `json:"published_at"`
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`

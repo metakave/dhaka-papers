@@ -34,10 +34,10 @@ type NewsRepository interface {
 	CreateNews(ctx context.Context, news *domain.News) (*domain.News, error)
 	UpdateNews(ctx context.Context, news *domain.News) error
 	DeleteNews(ctx context.Context, id uuid.UUID) error
-	GetNewsBySlug(ctx context.Context, slug string) (*domain.News, error)
-	ListNews(ctx context.Context, limit, offset int32, categoryID *uuid.UUID, authorID *uuid.UUID, sortBy string, isFeatured *bool, search *string, statusFilter string, tag *string) ([]*domain.News, error)
-	CountNews(ctx context.Context, categoryID *uuid.UUID, authorID *uuid.UUID, isFeatured *bool, search string, statusFilter string, tag *string) (int64, error)
-	CheckSlugExists(ctx context.Context, slug string) (bool, error)
+	GetNewsBySlug(ctx context.Context, slug string, lang string) (*domain.News, error)
+	ListNews(ctx context.Context, limit, offset int32, categoryID *uuid.UUID, authorID *uuid.UUID, sortBy string, isFeatured *bool, search *string, statusFilter string, tag *string, lang *string) ([]*domain.News, error)
+	CountNews(ctx context.Context, categoryID *uuid.UUID, authorID *uuid.UUID, isFeatured *bool, search string, statusFilter string, tag *string, lang *string) (int64, error)
+	CheckSlugExists(ctx context.Context, slug string, lang string) (bool, error)
 	IncrementNewsViews(ctx context.Context, slug string) error
 	CountTotalViews(ctx context.Context) (int64, error)
 	GetCategoryViewStats(ctx context.Context) ([]CategoryViewStat, error)
@@ -54,13 +54,13 @@ type AuthService interface {
 }
 
 type NewsService interface {
-	CreateNews(ctx context.Context, authorID, categoryID uuid.UUID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption string, tags []string, isFeatured bool, status string, publishedAt time.Time) (*domain.News, error)
-	UpdateNews(ctx context.Context, id uuid.UUID, categoryID uuid.UUID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption string, tags []string, isFeatured bool, status string, publishedAt time.Time) error
+	CreateNews(ctx context.Context, authorID, categoryID uuid.UUID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption string, tags []string, isFeatured bool, status string, publishedAt time.Time, lang string) (*domain.News, error)
+	UpdateNews(ctx context.Context, id uuid.UUID, categoryID uuid.UUID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption string, tags []string, isFeatured bool, status string, publishedAt time.Time, lang string) error
 	DeleteNews(ctx context.Context, id uuid.UUID) error
-	GetNewsBySlug(ctx context.Context, slug string) (*domain.News, error)
-	ListNews(ctx context.Context, page, limit int32, categorySlug string, authorID *uuid.UUID, sortBy string, isFeatured *bool, search string, statusFilter string, tag string) ([]*domain.News, int64, error)
-	CheckSlug(ctx context.Context, slug string) (bool, error)
-	GetHomepageData(ctx context.Context) (*HomepageData, error)
+	GetNewsBySlug(ctx context.Context, slug string, lang string) (*domain.News, error)
+	ListNews(ctx context.Context, page, limit int32, categorySlug string, authorID *uuid.UUID, sortBy string, isFeatured *bool, search string, statusFilter string, tag string, lang string) ([]*domain.News, int64, error)
+	CheckSlug(ctx context.Context, slug string, lang string) (bool, error)
+	GetHomepageData(ctx context.Context, lang string) (*HomepageData, error)
 }
 
 type CategoryService interface {

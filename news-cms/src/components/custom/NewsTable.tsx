@@ -40,9 +40,10 @@ interface NewsTableProps {
     totalPages: number;
     currentPage: number;
     currentSort: string;
+    currentLang: string;
 }
 
-export function NewsTable({ data, totalPages, currentPage, currentSort }: NewsTableProps) {
+export function NewsTable({ data, totalPages, currentPage, currentSort, currentLang }: NewsTableProps) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -69,6 +70,17 @@ export function NewsTable({ data, totalPages, currentPage, currentSort }: NewsTa
         const params = new URLSearchParams(searchParams.toString());
         params.set('sort', value);
         params.set('page', '1'); // Reset to page 1 on sort change
+        router.push(`${pathname}?${params.toString()}`);
+    };
+
+    const handleLangChange = (value: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (value === 'all') {
+            params.delete('lang');
+        } else {
+            params.set('lang', value);
+        }
+        params.set('page', '1'); // Reset to page 1 on filter change
         router.push(`${pathname}?${params.toString()}`);
     };
 
@@ -122,6 +134,17 @@ export function NewsTable({ data, totalPages, currentPage, currentSort }: NewsTa
                             <SelectItem value="views_asc">Views (Low to High)</SelectItem>
                         </SelectContent>
                     </Select>
+
+                    <Select value={currentLang} onValueChange={handleLangChange}>
+                        <SelectTrigger className="w-full sm:w-[150px] bg-white">
+                            <SelectValue placeholder="Language" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Languages</SelectItem>
+                            <SelectItem value="bn">Bengali (BN)</SelectItem>
+                            <SelectItem value="en">English (EN)</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
 
@@ -131,6 +154,7 @@ export function NewsTable({ data, totalPages, currentPage, currentSort }: NewsTa
                         <TableRow>
                             <TableHead>Title</TableHead>
                             <TableHead>Category</TableHead>
+                            <TableHead>Language</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Views</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
@@ -153,6 +177,11 @@ export function NewsTable({ data, totalPages, currentPage, currentSort }: NewsTa
                                         )}
                                     </TableCell>
                                     <TableCell>{article.category_name || '-'}</TableCell>
+                                    <TableCell>
+                                        <Badge variant="outline" className={article.lang === 'en' ? 'bg-blue-50 text-blue-700' : 'bg-green-50 text-green-700'}>
+                                            {article.lang === 'en' ? 'English' : 'Bengali'}
+                                        </Badge>
+                                    </TableCell>
                                     <TableCell>
                                         <Badge variant={article.status === 'published' ? 'default' : 'secondary'}>
                                             {article.status}
@@ -190,14 +219,14 @@ export function NewsTable({ data, totalPages, currentPage, currentSort }: NewsTa
                     <Button
                         variant="outline"
                         disabled={currentPage <= 1}
-                        onClick={() => router.push(`${pathname}?page=${currentPage - 1}&sort=${currentSort}`)}
+                        onClick={() => router.push(`${pathname}?page=${currentPage - 1}&sort=${currentSort}${currentLang !== 'all' ? `&lang=${currentLang}` : ''}`)}
                     >
                         Previous
                     </Button>
                     <Button
                         variant="outline"
                         disabled={currentPage >= totalPages}
-                        onClick={() => router.push(`${pathname}?page=${currentPage + 1}&sort=${currentSort}`)}
+                        onClick={() => router.push(`${pathname}?page=${currentPage + 1}&sort=${currentSort}${currentLang !== 'all' ? `&lang=${currentLang}` : ''}`)}
                     >
                         Next
                     </Button>

@@ -3,6 +3,7 @@
 import Card from '@/components/common/Card';
 import Link from 'next/link';
 import { News } from '@/types/news';
+import { useParams } from 'next/navigation';
 
 interface NewsGridProps {
     news: News[];
@@ -10,6 +11,8 @@ interface NewsGridProps {
 }
 
 export default function NewsGrid({ news, isLoading }: NewsGridProps) {
+    const params = useParams();
+    const locale = params.locale as string || "bn";
     if (isLoading) {
         return (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-12 gap-y-20">
@@ -33,8 +36,8 @@ export default function NewsGrid({ news, isLoading }: NewsGridProps) {
             </div>
 
             <div className="mt-24 flex justify-center">
-                <Link href="/news" className="px-16 py-5 bg-gray-900 text-white font-black hover:bg-primary transition-all duration-300 rounded-sm uppercase tracking-[0.3em] text-sm shadow-xl hover:shadow-primary/20">
-                    আরও খবর পড়ুন
+                <Link href={`/news`} className="px-16 py-5 bg-gray-900 text-white font-black hover:bg-primary transition-all duration-300 rounded-sm uppercase tracking-[0.3em] text-sm shadow-xl hover:shadow-primary/20">
+                    {locale === "bn" ? "আরও খবর পড়ুন" : "Read More News"}
                 </Link>
             </div>
         </section>

@@ -2,7 +2,7 @@
     email admin@dhakapapers.com
 }
 
-beta.dhakapapers.com, dhakapaper.com, www.dhakapaper.com, dhakapapers.com, www.dhakapapers.com, en.dhakapapers.com, www.en.dhakapapers.com {
+beta.dhakapapers.com, dhakapaper.com, www.dhakapaper.com, dhakapapers.com, www.dhakapapers.com {
     tls internal
 
     # 1. Backend API (Path: /api/*)

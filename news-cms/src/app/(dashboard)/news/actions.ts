@@ -9,7 +9,8 @@ export async function getNewsAction(
     page: number = 1,
     limit: number = 10,
     category?: string,
-    search?: string
+    search?: string,
+    lang?: string
 ) {
     try {
         const session = await getAuthToken();
@@ -23,6 +24,7 @@ export async function getNewsAction(
 
         if (category && category !== "all") queryParams.append("category", category);
         if (search) queryParams.append("search", search);
+        if (lang && lang !== "all") queryParams.append("lang", lang);
 
         const res = await api.get(`/news/admin?${queryParams.toString()}`, {
             headers: {

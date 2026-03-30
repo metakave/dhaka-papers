@@ -8,11 +8,11 @@ export interface HomepageData {
     popular: News[];
 }
 
-export const useHomepage = () => {
+export const useHomepage = (lang?: string) => {
     return useQuery({
-        queryKey: ['homepage'],
+        queryKey: ['homepage', lang],
         queryFn: async () => {
-            const { data } = await api.get<HomepageData>('/news/homepage');
+            const { data } = await api.get<HomepageData>('/news/homepage', { params: { lang } });
             return data;
         },
     });

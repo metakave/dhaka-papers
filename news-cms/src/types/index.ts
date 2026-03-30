@@ -16,6 +16,7 @@ export interface News {
     published_at: string;
     created_at: string;
     views_count: number;
+    lang: string;
 }
 
 export interface Category {

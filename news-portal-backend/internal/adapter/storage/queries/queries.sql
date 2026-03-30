@@ -14,34 +14,49 @@ WHERE id = $1 LIMIT 1;
 -- name: CreateNews :one
 INSERT INTO news (
     author_id, category_id, title, title_en, excerpt, content, thumbnail, thumbnail_caption, slug, 
-    published_at, status, meta_title, meta_description, tags
+    published_at, status, meta_title, meta_description, tags, lang
 )
 VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9,
-    NOW(), 'published', $3, $5, $10
+    NOW(), 'published', $3, $5, $10, $11
 )
 RETURNING *;
 
 -- name: GetNews :one
-SELECT n.*, c.name as category_name, c.slug as category_slug, o.name as author_name
+SELECT 
+    n.id, n.author_id, n.category_id, n.title, 
+    COALESCE(n.title_en, '') as title_en,
+    COALESCE(n.excerpt, '') as excerpt,
+    n.content, n.thumbnail, 
+    COALESCE(n.thumbnail_caption, '') as thumbnail_caption,
+    n.slug, n.status, n.views_count, n.lang,
+    COALESCE(n.meta_title, '') as meta_title,
+    COALESCE(n.meta_description, '') as meta_description,
+    n.tags, n.published_at, n.created_at, n.updated_at,
+    c.name as category_name, c.slug as category_slug, o.name as author_name
 FROM news n
 LEFT JOIN categories c ON n.category_id = c.id
 LEFT JOIN owners o ON n.author_id = o.id
-WHERE n.slug = $1 LIMIT 1;
+WHERE TRIM(n.slug) = $1 AND (n.lang = $2 OR $2 = '') LIMIT 1;
 
 -- name: CheckSlugExists :one
-SELECT EXISTS(SELECT 1 FROM news WHERE slug = $1);
+SELECT EXISTS(SELECT 1 FROM news WHERE TRIM(slug) = $1 AND (lang = $2 OR $2 = ''));
 
 -- name: ListNews :many
--- name: ListNews :many
-SELECT n.id, n.title, n.title_en, n.thumbnail, n.thumbnail_caption, n.slug, n.status, n.views_count, n.published_at, n.created_at, n.updated_at,
-       c.name as category_name, c.slug as category_slug, o.name as author_name
+SELECT 
+    n.id, n.title, 
+    COALESCE(n.title_en, '') as title_en,
+    n.thumbnail, 
+    COALESCE(n.thumbnail_caption, '') as thumbnail_caption,
+    n.slug, n.status, n.views_count, n.published_at, n.created_at, n.updated_at, n.lang,
+    c.name as category_name, c.slug as category_slug, o.name as author_name
 FROM news n
 LEFT JOIN categories c ON n.category_id = c.id
 LEFT JOIN owners o ON n.author_id = o.id
 WHERE n.status = 'published' AND n.published_at <= NOW()
 AND ($3::uuid IS NULL OR n.category_id = $3)
 AND ($5::text IS NULL OR $5 = ANY(n.tags))
+AND ($6::text IS NULL OR n.lang = $6)
 ORDER BY 
     CASE WHEN $4 = 'popular' THEN n.views_count END DESC,
     CASE WHEN $4 != 'popular' OR $4 IS NULL THEN n.published_at END DESC
@@ -58,6 +73,7 @@ SET
     thumbnail = $7, 
     thumbnail_caption = $8,
     tags = $9,
+    lang = $10,
     updated_at = NOW()
 WHERE id = $1;
 
@@ -68,7 +84,7 @@ WHERE id = $1;
 -- name: IncrementNewsViews :exec
 UPDATE news 
 SET views_count = views_count + 1 
-WHERE slug = $1;
+WHERE TRIM(slug) = $1;
 
 -- name: CountOwners :one
 SELECT count(*) FROM owners;
