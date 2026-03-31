@@ -126,27 +126,36 @@ export default function Header() {
 
         <div className="container px-4">
           {/* --- MOBILE HEADER --- */}
-          <div className="md:hidden flex items-center h-[56px] relative">
-            <div className="w-1/3 flex justify-start">
+          <div className="md:hidden flex items-center justify-between h-[56px] relative px-2 gap-1">
+            <div className="flex-none flex justify-start">
               <button
-                className="p-2 text-3xl"
+                className="p-1 text-3xl"
                 onClick={() => setIsMenuOpen(true)}
               >
                 <span className="font-bold text-gray-900">☰</span>
               </button>
             </div>
-            <div className="w-1/3 flex justify-center">
-              <Link href="/">
-                <Image src="/images/dhakapaper-logo.webp" alt="ঢাকা পেপারস" width={500} height={120} className="h-8 w-auto object-contain" priority />
+            
+            <div className="flex-1 flex justify-center min-w-0">
+              <Link href="/" className="flex items-center justify-center">
+                <Image 
+                  src="/images/dhakapaper-logo.webp" 
+                  alt="ঢাকা পেপারস" 
+                  width={500} 
+                  height={120} 
+                  className="h-10 w-auto object-contain max-w-full" 
+                  priority 
+                />
               </Link>
             </div>
-            <div className="w-1/3 flex justify-end gap-3 items-center">
+            
+            <div className="flex-none flex justify-end gap-1.5 items-center">
               <LanguageSwitcher />
               <button
-                className="text-gray-400 p-2"
+                className="text-gray-400 p-1"
                 onClick={() => setIsSearchOpen(true)}
               >
-                <SearchIcon className="w-6 h-6" />
+                <SearchIcon className="w-5 h-5" />
               </button>
             </div>
           </div>

@@ -13,18 +13,25 @@ export default function LanguageSwitcher() {
     
     const host = window.location.host;
     const protocol = window.location.protocol;
-    const pathnameWithoutLocale = pathname?.replace(/^\/(en|bn)/, "") || "/";
+    let pathnameWithoutLocale = pathname?.replace(/^\/(en|bn)/, "") || "/";
+    if (pathnameWithoutLocale.startsWith("/news/") || pathnameWithoutLocale.startsWith("/tag/")) {
+      pathnameWithoutLocale = "/";
+    }
     
     let newHost = host;
     const isLocal = host.includes("localhost") || host.includes("127.0.0.1");
 
     if (locale === "en") {
       if (!host.startsWith("en.")) {
-        newHost = `en.${host}`;
+        const cleanHost = host.replace(/^www\./i, "");
+        newHost = `en.${cleanHost}`;
       }
     } else {
       // Bengali - root domain
-      newHost = host.replace("en.", "");
+      if (host.startsWith("en.")) {
+        const cleanHost = host.replace(/^en\./i, "");
+        newHost = isLocal ? cleanHost : `www.${cleanHost}`;
+      }
     }
 
     return `${protocol}//${newHost}${pathnameWithoutLocale}`;
@@ -34,7 +41,7 @@ export default function LanguageSwitcher() {
     <div className="flex items-center bg-gray-100/50 rounded-full p-1 border border-gray-200 shadow-inner">
       <a
         href={getUrlForLocale("bn")}
-        className={`px-4 py-1.5 text-[10px] md:text-xs font-black rounded-full transition-all duration-300 tracking-widest uppercase flex items-center justify-center ${
+        className={`px-2 md:px-4 py-1 md:py-1.5 text-[10px] md:text-xs font-black rounded-full transition-all duration-300 tracking-widest uppercase flex items-center justify-center ${
           currentLocale === "bn"
             ? "bg-primary text-white shadow-md scale-105"
             : "text-gray-400 hover:text-gray-600 hover:bg-gray-200/50"
@@ -44,7 +51,7 @@ export default function LanguageSwitcher() {
       </a>
       <a
         href={getUrlForLocale("en")}
-        className={`px-4 py-1.5 text-[10px] md:text-xs font-black rounded-full transition-all duration-300 tracking-widest uppercase flex items-center justify-center ${
+        className={`px-2 md:px-4 py-1 md:py-1.5 text-[10px] md:text-xs font-black rounded-full transition-all duration-300 tracking-widest uppercase flex items-center justify-center ${
           currentLocale === "en"
             ? "bg-primary text-white shadow-md scale-105"
             : "text-gray-400 hover:text-gray-600 hover:bg-gray-200/50"
