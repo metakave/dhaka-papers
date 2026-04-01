@@ -138,7 +138,7 @@ func main() {
 	logger.Info("Using Cloudflare R2 Storage", "bucket", r2Bucket)
 
 	// Handlers
-	authHandler := handler.NewAuthHandler(authService)
+	authHandler := handler.NewAuthHandler(authService, fileService)
 	categoryHandler := handler.NewCategoryHandler(categoryService)
 	newsHandler := handler.NewNewsHandler(newsService, fileService)
 	seedHandler := handler.NewSeedHandler(newsService)

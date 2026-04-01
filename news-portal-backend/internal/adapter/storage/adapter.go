@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"news-portal-backend/internal/adapter/storage/db"
@@ -30,9 +31,10 @@ func NewAdapter(pool *pgxpool.Pool) *Adapter {
 
 // OwnerRepository implementation
 
-func (a *Adapter) CreateOwner(ctx context.Context, name, email, passwordHash string) (*domain.Owner, error) {
+func (a *Adapter) CreateOwner(ctx context.Context, name, nameEn, email, passwordHash string) (*domain.Owner, error) {
 	owner, err := a.q.CreateOwner(ctx, db.CreateOwnerParams{
 		Name:         name,
+		NameEn:       pgtype.Text{String: nameEn, Valid: true},
 		Email:        email,
 		PasswordHash: passwordHash,
 	})
@@ -40,11 +42,14 @@ func (a *Adapter) CreateOwner(ctx context.Context, name, email, passwordHash str
 		return nil, err
 	}
 	return &domain.Owner{
-		ID:        owner.ID,
-		Name:      owner.Name,
-		Email:     owner.Email,
-		Role:      owner.Role,
-		CreatedAt: owner.CreatedAt.Time,
+		ID:               owner.ID,
+		Name:             owner.Name,
+		NameEn:           owner.NameEn.String,
+		Email:            owner.Email,
+		Role:             owner.Role,
+		CreatedAt:        owner.CreatedAt.Time,
+		ProfileImage:     stringPtrOrNil(owner.ProfileImage.String, owner.ProfileImage.Valid),
+		HideProfileImage: owner.HideProfileImage.Bool,
 	}, nil
 }
 
@@ -57,12 +62,15 @@ func (a *Adapter) GetOwnerByEmail(ctx context.Context, email string) (*domain.Ow
 		return nil, err
 	}
 	return &domain.Owner{
-		ID:        owner.ID,
-		Name:      owner.Name,
-		Email:     owner.Email,
-		Password:  owner.PasswordHash,
-		Role:      owner.Role,
-		CreatedAt: owner.CreatedAt.Time,
+		ID:               owner.ID,
+		Name:             owner.Name,
+		NameEn:           owner.NameEn.String,
+		Email:            owner.Email,
+		Password:         owner.PasswordHash,
+		Role:             owner.Role,
+		CreatedAt:        owner.CreatedAt.Time,
+		ProfileImage:     stringPtrOrNil(owner.ProfileImage.String, owner.ProfileImage.Valid),
+		HideProfileImage: owner.HideProfileImage.Bool,
 	}, nil
 }
 
@@ -75,12 +83,15 @@ func (a *Adapter) GetOwnerByID(ctx context.Context, id uuid.UUID) (*domain.Owner
 		return nil, err
 	}
 	return &domain.Owner{
-		ID:        owner.ID,
-		Name:      owner.Name,
-		Email:     owner.Email,
-		Password:  owner.PasswordHash,
-		Role:      owner.Role,
-		CreatedAt: owner.CreatedAt.Time,
+		ID:               owner.ID,
+		Name:             owner.Name,
+		NameEn:           owner.NameEn.String,
+		Email:            owner.Email,
+		Password:         owner.PasswordHash,
+		Role:             owner.Role,
+		CreatedAt:        owner.CreatedAt.Time,
+		ProfileImage:     stringPtrOrNil(owner.ProfileImage.String, owner.ProfileImage.Valid),
+		HideProfileImage: owner.HideProfileImage.Bool,
 	}, nil
 }
 
@@ -89,20 +100,23 @@ func (a *Adapter) CountOwners(ctx context.Context) (int64, error) {
 }
 
 func (a *Adapter) ListOwners(ctx context.Context) ([]*domain.Owner, error) {
-	query := `SELECT id, name, email, role, created_at FROM owners ORDER BY created_at DESC`
-	rows, err := a.db.Query(ctx, query)
+	dbOwners, err := a.q.ListOwners(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 
-	owners := []*domain.Owner{}
-	for rows.Next() {
-		o := &domain.Owner{}
-		if err := rows.Scan(&o.ID, &o.Name, &o.Email, &o.Role, &o.CreatedAt); err != nil {
-			return nil, err
+	owners := make([]*domain.Owner, len(dbOwners))
+	for i, o := range dbOwners {
+		owners[i] = &domain.Owner{
+			ID:               o.ID,
+			Name:             o.Name,
+			NameEn:           o.NameEn.String,
+			Email:            o.Email,
+			Role:             o.Role,
+			CreatedAt:        o.CreatedAt.Time,
+			ProfileImage:     stringPtrOrNil(o.ProfileImage.String, o.ProfileImage.Valid),
+			HideProfileImage: o.HideProfileImage.Bool,
 		}
-		owners = append(owners, o)
 	}
 	return owners, nil
 }
@@ -120,15 +134,13 @@ func (a *Adapter) UpdateOwnerPassword(ctx context.Context, id uuid.UUID, passwor
 }
 
 func (a *Adapter) UpdateOwner(ctx context.Context, owner *domain.Owner) error {
-	query := `UPDATE owners SET name = $2, email = $3, password_hash = $4, updated_at = NOW() WHERE id = $1`
-	tag, err := a.db.Exec(ctx, query, owner.ID, owner.Name, owner.Email, owner.Password)
-	if err != nil {
-		return err
-	}
-	if tag.RowsAffected() == 0 {
-		return domain.ErrNotFound
-	}
-	return nil
+	return a.q.UpdateOwner(ctx, db.UpdateOwnerParams{
+		ID:               owner.ID,
+		Name:             owner.Name,
+		NameEn:           pgtype.Text{String: owner.NameEn, Valid: true},
+		ProfileImage:     pgtype.Text{String: stringValue(owner.ProfileImage), Valid: owner.ProfileImage != nil},
+		HideProfileImage: pgtype.Bool{Bool: owner.HideProfileImage, Valid: true},
+	})
 }
 
 // CategoryRepository implementation
@@ -220,8 +232,8 @@ func (a *Adapter) CreateNews(ctx context.Context, news *domain.News) (*domain.Ne
 	defer tx.Rollback(ctx)
 
 	if news.IsFeatured {
-		// Demote others
-		_, err = tx.Exec(ctx, "UPDATE news SET is_featured = FALSE WHERE is_featured = TRUE")
+		// Demote others IN THE SAME LANGUAGE
+		_, err = tx.Exec(ctx, "UPDATE news SET is_featured = FALSE WHERE is_featured = TRUE AND lang = $1", news.Lang)
 		if err != nil {
 			return nil, err
 		}
@@ -253,8 +265,8 @@ func (a *Adapter) UpdateNews(ctx context.Context, news *domain.News) error {
 	defer tx.Rollback(ctx)
 
 	if news.IsFeatured {
-		// Demote others
-		_, err = tx.Exec(ctx, "UPDATE news SET is_featured = FALSE WHERE is_featured = TRUE AND id != $1", news.ID)
+		// Demote others IN THE SAME LANGUAGE
+		_, err = tx.Exec(ctx, "UPDATE news SET is_featured = FALSE WHERE is_featured = TRUE AND id != $1 AND lang = $2", news.ID, news.Lang)
 		if err != nil {
 			return err
 		}
@@ -284,8 +296,9 @@ func (a *Adapter) DeleteNews(ctx context.Context, id uuid.UUID) error {
 }
 
 func (a *Adapter) GetNewsBySlug(ctx context.Context, slug string, lang string) (*domain.News, error) {
-	query := `SELECT n.id, n.author_id, n.category_id, n.title, n.title_en, n.excerpt, n.content, n.thumbnail, n.thumbnail_caption, n.tags, n.slug, n.status, n.is_featured, n.meta_title, n.meta_description, n.views_count, n.lang, n.published_at, n.created_at, n.updated_at,
-	                 c.name as category_name, c.name_bn as category_name_bn, c.slug as category_slug, o.name as author_name
+	query := `SELECT n.id, n.author_id, n.category_id, n.title, COALESCE(n.title_en, '') as title_en, n.excerpt, n.content, n.thumbnail, n.thumbnail_caption, n.tags, n.slug, n.status, n.is_featured, n.meta_title, n.meta_description, n.views_count, n.lang, n.published_at, n.created_at, n.updated_at,
+	                 c.name as category_name, c.name_bn as category_name_bn, c.slug as category_slug, o.name as author_name, COALESCE(o.name_en, '') as author_name_en,
+	                 o.profile_image, o.hide_profile_image
 	          FROM news n
 	          LEFT JOIN categories c ON n.category_id = c.id
 	          LEFT JOIN owners o ON n.author_id = o.id
@@ -295,7 +308,8 @@ func (a *Adapter) GetNewsBySlug(ctx context.Context, slug string, lang string) (
 	var authorID, categoryID uuid.UUID
 	err := a.db.QueryRow(ctx, query, slug, lang).Scan(
 		&n.ID, &authorID, &categoryID, &n.Title, &n.TitleEn, &n.Excerpt, &n.Content, &n.Thumbnail, &n.ThumbnailCaption, &n.Tags, &n.Slug, &n.Status, &n.IsFeatured, &n.MetaTitle, &n.MetaDescription, &n.ViewsCount, &n.Lang, &n.PublishedAt, &n.CreatedAt, &n.UpdatedAt,
-		&n.CategoryName, &n.CategoryNameBN, &n.CategorySlug, &n.AuthorName,
+		&n.CategoryName, &n.CategoryNameBN, &n.CategorySlug, &n.AuthorName, &n.AuthorNameEn,
+		&n.AuthorProfileImage, &n.AuthorHideProfileImage,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -373,8 +387,9 @@ func (a *Adapter) ListNews(ctx context.Context, limit, offset int32, categoryID 
 		argCount++
 	}
 
-	query := `SELECT n.id, n.author_id, n.title, n.title_en, n.thumbnail, n.thumbnail_caption, n.tags, n.slug, n.status, n.is_featured, n.views_count, n.published_at, n.created_at, n.updated_at, n.lang,
-	                 c.name as category_name, c.name_bn as category_name_bn, c.slug as category_slug, o.name as author_name
+	query := `SELECT n.id, n.author_id, n.title, COALESCE(n.title_en, '') as title_en, n.thumbnail, n.thumbnail_caption, n.tags, n.slug, n.status, n.is_featured, n.views_count, n.published_at, n.created_at, n.updated_at, n.lang,
+	                 c.name as category_name, c.name_bn as category_name_bn, c.slug as category_slug, o.name as author_name, COALESCE(o.name_en, '') as author_name_en,
+	                 o.profile_image, o.hide_profile_image
 	          FROM news n
 	          LEFT JOIN categories c ON n.category_id = c.id
 	          LEFT JOIN owners o ON n.author_id = o.id
@@ -392,7 +407,8 @@ func (a *Adapter) ListNews(ctx context.Context, limit, offset int32, categoryID 
 		n := &domain.News{}
 		if err := rows.Scan(
 			&n.ID, &n.AuthorID, &n.Title, &n.TitleEn, &n.Thumbnail, &n.ThumbnailCaption, &n.Tags, &n.Slug, &n.Status, &n.IsFeatured, &n.ViewsCount, &n.PublishedAt, &n.CreatedAt, &n.UpdatedAt, &n.Lang,
-			&n.CategoryName, &n.CategoryNameBN, &n.CategorySlug, &n.AuthorName,
+			&n.CategoryName, &n.CategoryNameBN, &n.CategorySlug, &n.AuthorName, &n.AuthorNameEn,
+			&n.AuthorProfileImage, &n.AuthorHideProfileImage,
 		); err != nil {
 			return nil, err
 		}
@@ -586,6 +602,21 @@ func (a *Adapter) BatchUpsertReportItems(ctx context.Context, reportID uuid.UUID
 	}
 
 	return tx.Commit(ctx)
+}
+
+// Helper functions
+func stringPtrOrNil(s string, valid bool) *string {
+	if !valid {
+		return nil
+	}
+	return &s
+}
+
+func stringValue(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
 }
 
 // Ensure interface implementation

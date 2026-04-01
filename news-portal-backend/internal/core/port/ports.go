@@ -11,7 +11,7 @@ import (
 )
 
 type OwnerRepository interface {
-	CreateOwner(ctx context.Context, name, email, passwordHash string) (*domain.Owner, error)
+	CreateOwner(ctx context.Context, name, nameEn, email, passwordHash string) (*domain.Owner, error)
 	GetOwnerByEmail(ctx context.Context, email string) (*domain.Owner, error)
 	GetOwnerByID(ctx context.Context, id uuid.UUID) (*domain.Owner, error)
 	CountOwners(ctx context.Context) (int64, error)
@@ -39,16 +39,16 @@ type NewsRepository interface {
 	CountNews(ctx context.Context, categoryID *uuid.UUID, authorID *uuid.UUID, isFeatured *bool, search string, statusFilter string, tag *string, lang *string) (int64, error)
 	CheckSlugExists(ctx context.Context, slug string, lang string) (bool, error)
 	IncrementNewsViews(ctx context.Context, slug string) error
-	CountTotalViews(ctx context.Context) (int64, error)
-	GetCategoryViewStats(ctx context.Context) ([]CategoryViewStat, error)
-	GetMonthlyTopNews(ctx context.Context, limit int) ([]NewsViewStat, error)
+	CountTotalViews(ctx context.Context, lang *string) (int64, error)
+	GetCategoryViewStats(ctx context.Context, lang *string) ([]CategoryViewStat, error)
+	GetMonthlyTopNews(ctx context.Context, limit int, lang *string) ([]NewsViewStat, error)
 }
 
 type AuthService interface {
 	Login(ctx context.Context, email, password string) (string, error)
-	Register(ctx context.Context, name, email, password string) (*domain.Owner, error)
+	Register(ctx context.Context, name, nameEn, email, password string) (*domain.Owner, error)
 	ChangePassword(ctx context.Context, id uuid.UUID, oldPassword, newPassword string) error
-	UpdateUser(ctx context.Context, id uuid.UUID, name, email, password string) error
+	UpdateUser(ctx context.Context, id uuid.UUID, name, nameEn, email, password string, profileImage *string, hideProfileImage bool) error
 	ListUsers(ctx context.Context) ([]*domain.Owner, error)
 	GetMe(ctx context.Context, id uuid.UUID) (*domain.Owner, error)
 }
@@ -93,11 +93,19 @@ type HomepageData struct {
 
 type DashboardStats struct {
 	TotalNews       int64              `json:"total_news"`
+	TotalNewsBN     int64              `json:"total_news_bn"`
+	TotalNewsEN     int64              `json:"total_news_en"`
 	TotalCategories int64              `json:"total_categories"`
 	TotalUsers      int64              `json:"total_users"`
 	TotalViews      int64              `json:"total_views"`
+	TotalViewsBN    int64              `json:"total_views_bn"`
+	TotalViewsEN    int64              `json:"total_views_en"`
 	CategoryStats   []CategoryViewStat `json:"category_stats"`
+	CategoryStatsBN []CategoryViewStat `json:"category_stats_bn"`
+	CategoryStatsEN []CategoryViewStat `json:"category_stats_en"`
 	TopNews         []NewsViewStat     `json:"top_news"`
+	TopNewsBN       []NewsViewStat     `json:"top_news_bn"`
+	TopNewsEN       []NewsViewStat     `json:"top_news_en"`
 }
 
 type StatsService interface {

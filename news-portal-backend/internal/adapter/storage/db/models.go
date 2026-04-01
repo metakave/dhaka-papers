@@ -44,14 +44,17 @@ type News struct {
 }
 
 type Owner struct {
-	ID           uuid.UUID
-	Name         string
-	Email        string
-	PasswordHash string
-	Role         string
-	LastLogin    pgtype.Timestamptz
-	CreatedAt    pgtype.Timestamptz
-	UpdatedAt    pgtype.Timestamptz
+	ID               uuid.UUID
+	Name             string
+	Email            string
+	PasswordHash     string
+	Role             string
+	LastLogin        pgtype.Timestamptz
+	CreatedAt        pgtype.Timestamptz
+	UpdatedAt        pgtype.Timestamptz
+	NameEn           pgtype.Text
+	ProfileImage     pgtype.Text
+	HideProfileImage pgtype.Bool
 }
 
 type ReportItem struct {

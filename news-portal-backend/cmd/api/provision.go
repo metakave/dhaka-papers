@@ -35,7 +35,7 @@ func EnsureInitialData(ctx context.Context, store *storage.Adapter) error {
 				return fmt.Errorf("failed to hash password: %w", err)
 			}
 
-			_, err = store.CreateOwner(ctx, name, email, string(hash))
+			_, err = store.CreateOwner(ctx, name, "", email, string(hash))
 			if err != nil {
 				return fmt.Errorf("failed to create initial admin: %w", err)
 			}

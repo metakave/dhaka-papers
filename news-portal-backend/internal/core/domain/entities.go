@@ -9,10 +9,13 @@ import (
 type Owner struct {
 	ID        uuid.UUID `json:"id"`
 	Name      string    `json:"name"`
+	NameEn    string    `json:"name_en"`
 	Email     string    `json:"email"`
 	Password  string    `json:"-"`
 	Role      string    `json:"role"`
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt        time.Time `json:"created_at"`
+	ProfileImage     *string   `json:"profile_image,omitempty"`
+	HideProfileImage bool      `json:"hide_profile_image"`
 }
 
 type Category struct {
@@ -49,9 +52,12 @@ type News struct {
 
 	// Joined fields for easier frontend rendering
 	AuthorName     *string `json:"author_name,omitempty"`
-	CategoryName   *string `json:"category_name,omitempty"`
-	CategoryNameBN *string `json:"category_name_bn,omitempty"`
-	CategorySlug   *string `json:"category_slug,omitempty"`
+	AuthorNameEn           *string `json:"author_name_en,omitempty"`
+	AuthorProfileImage     *string `json:"author_profile_image,omitempty"`
+	AuthorHideProfileImage *bool   `json:"author_hide_profile_image,omitempty"`
+	CategoryName           *string `json:"category_name,omitempty"`
+	CategoryNameBN         *string `json:"category_name_bn,omitempty"`
+	CategorySlug           *string `json:"category_slug,omitempty"`
 }
 type SpecialReport struct {
 	ID              uuid.UUID `json:"id"`

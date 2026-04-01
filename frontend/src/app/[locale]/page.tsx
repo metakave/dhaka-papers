@@ -48,12 +48,12 @@ export default function Home() {
               </div>
               <div className="flex flex-col">
                 {isLoading ? (
-                  <div className="text-gray-400 italic">লোড হচ্ছে...</div>
+                  <div className="text-gray-400 italic">{locale === "en" ? "Loading..." : "লোড হচ্ছে..."}</div>
                 ) : (
                   data?.popular?.map((news, idx) => (
                     <Link key={news.id} href={`/news/${news.slug}`} className="flex gap-6 py-6 border-b border-gray-100 last:border-0 group cursor-pointer items-start">
                       <span className="text-5xl font-black text-gray-400 group-hover:text-primary transition-colors duration-300 leading-none min-w-[40px]">
-                        {toBengaliNumber(idx + 1)}
+                        {locale === "bn" ? toBengaliNumber(idx + 1) : idx + 1}
                       </span>
                       <p className="text-lg font-bold leading-tight group-hover:text-primary hover:underline transition-all duration-200">
                         {news.title}

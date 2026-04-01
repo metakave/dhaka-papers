@@ -75,10 +75,16 @@ func (a *Adapter) CountNews(ctx context.Context, categoryID *uuid.UUID, authorID
 	return count, err
 }
 
-func (a *Adapter) CountTotalViews(ctx context.Context) (int64, error) {
+func (a *Adapter) CountTotalViews(ctx context.Context, lang *string) (int64, error) {
 	var totalViews int64
-	// Handle NULL sum by COALESCE just in case, though views_count is int not null default 0
-	err := a.db.QueryRow(ctx, "SELECT COALESCE(SUM(views_count), 0) FROM news").Scan(&totalViews)
+	query := "SELECT COALESCE(SUM(views_count), 0) FROM news"
+	var err error
+	if lang != nil {
+		query += " WHERE lang = $1"
+		err = a.db.QueryRow(ctx, query, *lang).Scan(&totalViews)
+	} else {
+		err = a.db.QueryRow(ctx, query).Scan(&totalViews)
+	}
 	return totalViews, err
 }
 
@@ -88,16 +94,24 @@ func (a *Adapter) CountCategories(ctx context.Context) (int64, error) {
 	return count, err
 }
 
-func (a *Adapter) GetCategoryViewStats(ctx context.Context) ([]port.CategoryViewStat, error) {
+func (a *Adapter) GetCategoryViewStats(ctx context.Context, lang *string) ([]port.CategoryViewStat, error) {
+	whereClause := "WHERE 1=1"
+	args := []interface{}{}
+	if lang != nil {
+		whereClause += " AND n.lang = $1"
+		args = append(args, *lang)
+	}
+
 	query := `
 		SELECT c.name, COALESCE(SUM(n.views_count), 0) as value
 		FROM categories c
 		LEFT JOIN news n ON c.id = n.category_id
+		` + whereClause + `
 		GROUP BY c.name
 		HAVING COALESCE(SUM(n.views_count), 0) > 0
 		ORDER BY value DESC
 	`
-	rows, err := a.db.Query(ctx, query)
+	rows, err := a.db.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -114,15 +128,24 @@ func (a *Adapter) GetCategoryViewStats(ctx context.Context) ([]port.CategoryView
 	return stats, nil
 }
 
-func (a *Adapter) GetMonthlyTopNews(ctx context.Context, limit int) ([]port.NewsViewStat, error) {
+func (a *Adapter) GetMonthlyTopNews(ctx context.Context, limit int, lang *string) ([]port.NewsViewStat, error) {
+	whereClause := "WHERE published_at >= NOW() - INTERVAL '30 days'"
+	args := []interface{}{}
+	if lang != nil {
+		whereClause += " AND lang = $1"
+		args = append(args, *lang)
+	}
+
 	query := `
 		SELECT id, title, views_count
 		FROM news
-		WHERE published_at >= NOW() - INTERVAL '30 days'
+		` + whereClause + `
 		ORDER BY views_count DESC
-		LIMIT $1
-	`
-	rows, err := a.db.Query(ctx, query, limit)
+		LIMIT $` + strconv.Itoa(len(args)+1)
+	
+	args = append(args, limit)
+
+	rows, err := a.db.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}

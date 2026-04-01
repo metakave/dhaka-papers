@@ -63,17 +63,19 @@ export default function Header() {
 
   const renderNavItems = () => {
     if (isLoading)
-      return <div className="text-gray-400 text-sm italic">লোড হচ্ছে...</div>;
+      return <div className="text-gray-400 text-sm italic">{locale === "en" ? "Loading..." : "লোড হচ্ছে..."}</div>;
     if (error) return null;
     if (!categories) return null;
 
     return (
-      <ul className="flex items-center gap-x-12">
+      <ul className={`flex items-center ${locale === "en" ? "gap-x-14" : "gap-x-12"}`}>
         {categories.map((cat) => (
           <li key={cat.id}>
             <Link
               href={`/${cat.slug}`}
-              className="text-[17px] font-black text-gray-900 hover:text-primary transition-colors tracking-tight whitespace-nowrap uppercase"
+              className={`${
+                locale === "en" ? "text-[13px] tracking-widest" : "text-[15px] tracking-tight"
+              } font-black text-gray-900 hover:text-primary transition-colors whitespace-nowrap uppercase`}
             >
               {locale === "bn" ? (cat.name_bn || cat.name) : (cat.name || cat.name_bn)}
             </Link>
@@ -92,7 +94,7 @@ export default function Header() {
         key={cat.id}
         href={`/${cat.slug}`}
         onClick={() => setIsMenuOpen(false)}
-        className="text-2xl md:text-4xl font-black text-gray-900 hover:text-primary transition-all text-left md:text-center border-l-4 md:border-l-0 md:border-b-4 border-transparent hover:border-primary pl-4 md:pl-0 pb-1 md:pb-4 truncate md:overflow-visible"
+        className="text-lg md:text-2xl font-black text-gray-900 hover:text-primary transition-all text-left md:text-center border-l-4 md:border-l-0 md:border-b-4 border-transparent hover:border-primary pl-4 md:pl-0 pb-1 md:pb-4 truncate md:overflow-visible"
       >
         {locale === "bn" ? (cat.name_bn || cat.name) : (cat.name || cat.name_bn)}
       </Link>
@@ -104,15 +106,14 @@ export default function Header() {
   };
 
   const getBengaliDate = () => {
+    const date = new Date();
     if (locale === "en") {
-      return new Date().toLocaleDateString("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
+      const day = date.getDate();
+      const month = date.toLocaleDateString("en-US", { month: "long" });
+      const year = date.getFullYear();
+      return `${day} ${month}, ${year}`;
     }
-    return formatBengaliDate(new Date());
+    return formatBengaliDate(date);
   };
 
   return (
@@ -129,7 +130,7 @@ export default function Header() {
           <div className="md:hidden flex items-center justify-between h-[56px] relative px-2 gap-1">
             <div className="flex-none flex justify-start">
               <button
-                className="p-1 text-3xl"
+                className="p-1 text-xl"
                 onClick={() => setIsMenuOpen(true)}
               >
                 <span className="font-bold text-gray-900">☰</span>
@@ -139,11 +140,11 @@ export default function Header() {
             <div className="flex-1 flex justify-center min-w-0">
               <Link href="/" className="flex items-center justify-center">
                 <Image 
-                  src="/images/dhakapaper-logo.webp" 
-                  alt="ঢাকা পেপারস" 
+                  src={locale === "en" ? "/images/logo-en.png" : "/images/logo-bn.png"} 
+                  alt={locale === "en" ? "Dhaka Papers" : "ঢাকা পেপারস"} 
                   width={500} 
                   height={120} 
-                  className="h-10 w-auto object-contain max-w-full" 
+                  className="h-10 w-auto object-contain max-w-full select-none" 
                   priority 
                 />
               </Link>
@@ -197,13 +198,13 @@ export default function Header() {
 
               <div className="w-1/3 flex justify-center">
                 <Link href="/">
-                  <Image src="/images/dhakapaper-logo.webp" alt="ঢাকা পেপারস" width={500} height={120} className="h-16 w-auto object-contain select-none" priority />
+                  <Image src={locale === "en" ? "/images/logo-en.png" : "/images/logo-bn.png"} alt={locale === "en" ? "Dhaka Papers" : "ঢাকা পেপারস"} width={500} height={120} className="h-16 w-auto object-contain select-none" priority />
                 </Link>
               </div>
 
               <div className="w-1/3 flex justify-end items-center gap-8 text-gray-400">
                 <div className="text-right">
-                  <p className="text-sm font-black uppercase tracking-[0.2em] text-gray-600">
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-gray-400">
                     {getBengaliDate()}
                   </p>
                 </div>
@@ -271,7 +272,7 @@ export default function Header() {
           <div className="container px-6 py-10 flex flex-col h-full">
             <div className="flex items-center justify-between mb-16 border-b border-gray-50 pb-8">
               <Link href="/" onClick={() => setIsMenuOpen(false)}>
-                <Image src="/images/dhakapaper-logo.webp" alt="ঢাকা পেপারস" width={500} height={120} className="h-14 w-auto object-contain" priority />
+                <Image src={locale === "en" ? "/images/logo-en.png" : "/images/logo-bn.png"} alt={locale === "en" ? "Dhaka Papers" : "ঢাকা পেপারস"} width={500} height={120} className="h-14 w-auto object-contain" priority />
               </Link>
               <button
                 onClick={() => setIsMenuOpen(false)}

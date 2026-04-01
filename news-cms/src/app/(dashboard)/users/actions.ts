@@ -45,3 +45,18 @@ export async function changePassword(oldPassword: string, newPassword: string) {
         return { success: false, error: error.response?.data || error.message };
     }
 }
+export async function updateUser(id: string, formData: FormData) {
+    try {
+        const token = await getAuthToken();
+        await api.put(`/users/${id}`, formData, {
+            headers: { 
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        revalidatePath('/users');
+        return { success: true };
+    } catch (error: any) {
+        return { success: false, error: error.response?.data || error.message };
+    }
+}

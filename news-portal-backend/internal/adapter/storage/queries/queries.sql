@@ -1,6 +1,6 @@
 -- name: CreateOwner :one
-INSERT INTO owners (name, email, password_hash, role)
-VALUES ($1, $2, $3, 'admin')
+INSERT INTO owners (name, name_en, email, password_hash, role)
+VALUES ($1, $2, $3, $4, 'admin')
 RETURNING *;
 
 -- name: GetOwnerByEmail :one
@@ -10,6 +10,18 @@ WHERE email = $1 LIMIT 1;
 -- name: GetOwnerByID :one
 SELECT * FROM owners
 WHERE id = $1 LIMIT 1;
+
+-- name: ListOwners :many
+SELECT * FROM owners ORDER BY name ASC;
+
+-- name: UpdateOwner :exec
+UPDATE owners
+SET name = $2,
+    name_en = $3,
+    profile_image = $4,
+    hide_profile_image = $5,
+    updated_at = NOW()
+WHERE id = $1;
 
 -- name: CreateNews :one
 INSERT INTO news (
@@ -33,7 +45,10 @@ SELECT
     COALESCE(n.meta_title, '') as meta_title,
     COALESCE(n.meta_description, '') as meta_description,
     n.tags, n.published_at, n.created_at, n.updated_at,
-    c.name as category_name, c.slug as category_slug, o.name as author_name
+    c.name as category_name, c.slug as category_slug, o.name as author_name,
+    COALESCE(o.name_en, '') as author_name_en,
+    o.profile_image as author_profile_image,
+    o.hide_profile_image as author_hide_profile_image
 FROM news n
 LEFT JOIN categories c ON n.category_id = c.id
 LEFT JOIN owners o ON n.author_id = o.id
@@ -49,7 +64,10 @@ SELECT
     n.thumbnail, 
     COALESCE(n.thumbnail_caption, '') as thumbnail_caption,
     n.slug, n.status, n.views_count, n.published_at, n.created_at, n.updated_at, n.lang,
-    c.name as category_name, c.slug as category_slug, o.name as author_name
+    c.name as category_name, c.slug as category_slug, o.name as author_name,
+    COALESCE(o.name_en, '') as author_name_en,
+    o.profile_image as author_profile_image,
+    o.hide_profile_image as author_hide_profile_image
 FROM news n
 LEFT JOIN categories c ON n.category_id = c.id
 LEFT JOIN owners o ON n.author_id = o.id

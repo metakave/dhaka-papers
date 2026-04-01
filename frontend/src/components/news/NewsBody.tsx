@@ -7,12 +7,24 @@ interface NewsBodyProps {
     excerpt: string;
 }
 
+import { useParams } from 'next/navigation';
+
 export default function NewsBody({ content, excerpt }: NewsBodyProps) {
+    const params = useParams();
+    const locale = (params?.locale as string) || 'bn';
     const [fontSize, setFontSize] = useState(18); // Default 18px (prose-xl equivalent)
 
     const adjustFontSize = (delta: number) => {
         setFontSize(prev => Math.min(Math.max(prev + delta, 14), 32));
     };
+
+    const labels = {
+        increase: locale === 'en' ? 'Increase' : 'বৃহৎ করুন',
+        decrease: locale === 'en' ? 'Decrease' : 'ক্ষুদ্র করুন',
+        plus: locale === 'en' ? 'A+' : 'অ+',
+        minus: locale === 'en' ? 'A-' : 'অ-'
+    };
+
 
     return (
         <div className="prose prose-xl prose-red max-w-none text-gray-800 leading-[1.8] font-medium">
@@ -21,17 +33,17 @@ export default function NewsBody({ content, excerpt }: NewsBodyProps) {
                     <button
                         onClick={() => adjustFontSize(2)}
                         className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white text-gray-900 transition-all active:scale-95 group relative"
-                        title="বৃহৎ করুন"
+                        title={labels.increase}
                     >
-                        <span className="text-sm font-bold">অ+</span>
+                        <span className="text-sm font-bold">{labels.plus}</span>
                     </button>
                     <div className="w-[1px] h-4 bg-gray-300 mx-1" />
                     <button
                         onClick={() => adjustFontSize(-2)}
                         className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white text-gray-900 transition-all active:scale-95"
-                        title="ক্ষুদ্র করুন"
+                        title={labels.decrease}
                     >
-                        <span className="text-sm font-bold">অ-</span>
+                        <span className="text-sm font-bold">{labels.minus}</span>
                     </button>
                 </div>
             </div>

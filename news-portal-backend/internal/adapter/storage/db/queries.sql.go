@@ -143,19 +143,25 @@ func (q *Queries) CreateNews(ctx context.Context, arg CreateNewsParams) (News, e
 }
 
 const createOwner = `-- name: CreateOwner :one
-INSERT INTO owners (name, email, password_hash, role)
-VALUES ($1, $2, $3, 'admin')
-RETURNING id, name, email, password_hash, role, last_login, created_at, updated_at
+INSERT INTO owners (name, name_en, email, password_hash, role)
+VALUES ($1, $2, $3, $4, 'admin')
+RETURNING id, name, email, password_hash, role, last_login, created_at, updated_at, name_en, profile_image, hide_profile_image
 `
 
 type CreateOwnerParams struct {
 	Name         string
+	NameEn       pgtype.Text
 	Email        string
 	PasswordHash string
 }
 
 func (q *Queries) CreateOwner(ctx context.Context, arg CreateOwnerParams) (Owner, error) {
-	row := q.db.QueryRow(ctx, createOwner, arg.Name, arg.Email, arg.PasswordHash)
+	row := q.db.QueryRow(ctx, createOwner,
+		arg.Name,
+		arg.NameEn,
+		arg.Email,
+		arg.PasswordHash,
+	)
 	var i Owner
 	err := row.Scan(
 		&i.ID,
@@ -166,6 +172,9 @@ func (q *Queries) CreateOwner(ctx context.Context, arg CreateOwnerParams) (Owner
 		&i.LastLogin,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.NameEn,
+		&i.ProfileImage,
+		&i.HideProfileImage,
 	)
 	return i, err
 }
@@ -209,7 +218,10 @@ SELECT
     COALESCE(n.meta_title, '') as meta_title,
     COALESCE(n.meta_description, '') as meta_description,
     n.tags, n.published_at, n.created_at, n.updated_at,
-    c.name as category_name, c.slug as category_slug, o.name as author_name
+    c.name as category_name, c.slug as category_slug, o.name as author_name,
+    COALESCE(o.name_en, '') as author_name_en,
+    o.profile_image as author_profile_image,
+    o.hide_profile_image as author_hide_profile_image
 FROM news n
 LEFT JOIN categories c ON n.category_id = c.id
 LEFT JOIN owners o ON n.author_id = o.id
@@ -222,28 +234,31 @@ type GetNewsParams struct {
 }
 
 type GetNewsRow struct {
-	ID               uuid.UUID
-	AuthorID         pgtype.UUID
-	CategoryID       pgtype.UUID
-	Title            string
-	TitleEn          string
-	Excerpt          string
-	Content          string
-	Thumbnail        string
-	ThumbnailCaption string
-	Slug             string
-	Status           string
-	ViewsCount       pgtype.Int8
-	Lang             string
-	MetaTitle        string
-	MetaDescription  string
-	Tags             []string
-	PublishedAt      pgtype.Timestamptz
-	CreatedAt        pgtype.Timestamptz
-	UpdatedAt        pgtype.Timestamptz
-	CategoryName     pgtype.Text
-	CategorySlug     pgtype.Text
-	AuthorName       pgtype.Text
+	ID                     uuid.UUID
+	AuthorID               pgtype.UUID
+	CategoryID             pgtype.UUID
+	Title                  string
+	TitleEn                string
+	Excerpt                string
+	Content                string
+	Thumbnail              string
+	ThumbnailCaption       string
+	Slug                   string
+	Status                 string
+	ViewsCount             pgtype.Int8
+	Lang                   string
+	MetaTitle              string
+	MetaDescription        string
+	Tags                   []string
+	PublishedAt            pgtype.Timestamptz
+	CreatedAt              pgtype.Timestamptz
+	UpdatedAt              pgtype.Timestamptz
+	CategoryName           pgtype.Text
+	CategorySlug           pgtype.Text
+	AuthorName             pgtype.Text
+	AuthorNameEn           string
+	AuthorProfileImage     pgtype.Text
+	AuthorHideProfileImage pgtype.Bool
 }
 
 func (q *Queries) GetNews(ctx context.Context, arg GetNewsParams) (GetNewsRow, error) {
@@ -272,12 +287,15 @@ func (q *Queries) GetNews(ctx context.Context, arg GetNewsParams) (GetNewsRow, e
 		&i.CategoryName,
 		&i.CategorySlug,
 		&i.AuthorName,
+		&i.AuthorNameEn,
+		&i.AuthorProfileImage,
+		&i.AuthorHideProfileImage,
 	)
 	return i, err
 }
 
 const getOwnerByEmail = `-- name: GetOwnerByEmail :one
-SELECT id, name, email, password_hash, role, last_login, created_at, updated_at FROM owners
+SELECT id, name, email, password_hash, role, last_login, created_at, updated_at, name_en, profile_image, hide_profile_image FROM owners
 WHERE email = $1 LIMIT 1
 `
 
@@ -293,12 +311,15 @@ func (q *Queries) GetOwnerByEmail(ctx context.Context, email string) (Owner, err
 		&i.LastLogin,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.NameEn,
+		&i.ProfileImage,
+		&i.HideProfileImage,
 	)
 	return i, err
 }
 
 const getOwnerByID = `-- name: GetOwnerByID :one
-SELECT id, name, email, password_hash, role, last_login, created_at, updated_at FROM owners
+SELECT id, name, email, password_hash, role, last_login, created_at, updated_at, name_en, profile_image, hide_profile_image FROM owners
 WHERE id = $1 LIMIT 1
 `
 
@@ -314,6 +335,9 @@ func (q *Queries) GetOwnerByID(ctx context.Context, id uuid.UUID) (Owner, error)
 		&i.LastLogin,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.NameEn,
+		&i.ProfileImage,
+		&i.HideProfileImage,
 	)
 	return i, err
 }
@@ -368,7 +392,10 @@ SELECT
     n.thumbnail, 
     COALESCE(n.thumbnail_caption, '') as thumbnail_caption,
     n.slug, n.status, n.views_count, n.published_at, n.created_at, n.updated_at, n.lang,
-    c.name as category_name, c.slug as category_slug, o.name as author_name
+    c.name as category_name, c.slug as category_slug, o.name as author_name,
+    COALESCE(o.name_en, '') as author_name_en,
+    o.profile_image as author_profile_image,
+    o.hide_profile_image as author_hide_profile_image
 FROM news n
 LEFT JOIN categories c ON n.category_id = c.id
 LEFT JOIN owners o ON n.author_id = o.id
@@ -392,21 +419,24 @@ type ListNewsParams struct {
 }
 
 type ListNewsRow struct {
-	ID               uuid.UUID
-	Title            string
-	TitleEn          string
-	Thumbnail        string
-	ThumbnailCaption string
-	Slug             string
-	Status           string
-	ViewsCount       pgtype.Int8
-	PublishedAt      pgtype.Timestamptz
-	CreatedAt        pgtype.Timestamptz
-	UpdatedAt        pgtype.Timestamptz
-	Lang             string
-	CategoryName     pgtype.Text
-	CategorySlug     pgtype.Text
-	AuthorName       pgtype.Text
+	ID                     uuid.UUID
+	Title                  string
+	TitleEn                string
+	Thumbnail              string
+	ThumbnailCaption       string
+	Slug                   string
+	Status                 string
+	ViewsCount             pgtype.Int8
+	PublishedAt            pgtype.Timestamptz
+	CreatedAt              pgtype.Timestamptz
+	UpdatedAt              pgtype.Timestamptz
+	Lang                   string
+	CategoryName           pgtype.Text
+	CategorySlug           pgtype.Text
+	AuthorName             pgtype.Text
+	AuthorNameEn           string
+	AuthorProfileImage     pgtype.Text
+	AuthorHideProfileImage pgtype.Bool
 }
 
 func (q *Queries) ListNews(ctx context.Context, arg ListNewsParams) ([]ListNewsRow, error) {
@@ -441,6 +471,45 @@ func (q *Queries) ListNews(ctx context.Context, arg ListNewsParams) ([]ListNewsR
 			&i.CategoryName,
 			&i.CategorySlug,
 			&i.AuthorName,
+			&i.AuthorNameEn,
+			&i.AuthorProfileImage,
+			&i.AuthorHideProfileImage,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listOwners = `-- name: ListOwners :many
+SELECT id, name, email, password_hash, role, last_login, created_at, updated_at, name_en, profile_image, hide_profile_image FROM owners ORDER BY name ASC
+`
+
+func (q *Queries) ListOwners(ctx context.Context) ([]Owner, error) {
+	rows, err := q.db.Query(ctx, listOwners)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Owner
+	for rows.Next() {
+		var i Owner
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Email,
+			&i.PasswordHash,
+			&i.Role,
+			&i.LastLogin,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.NameEn,
+			&i.ProfileImage,
+			&i.HideProfileImage,
 		); err != nil {
 			return nil, err
 		}
@@ -494,4 +563,33 @@ func (q *Queries) UpdateNews(ctx context.Context, arg UpdateNewsParams) (pgconn.
 		arg.Tags,
 		arg.Lang,
 	)
+}
+
+const updateOwner = `-- name: UpdateOwner :exec
+UPDATE owners
+SET name = $2,
+    name_en = $3,
+    profile_image = $4,
+    hide_profile_image = $5,
+    updated_at = NOW()
+WHERE id = $1
+`
+
+type UpdateOwnerParams struct {
+	ID               uuid.UUID
+	Name             string
+	NameEn           pgtype.Text
+	ProfileImage     pgtype.Text
+	HideProfileImage pgtype.Bool
+}
+
+func (q *Queries) UpdateOwner(ctx context.Context, arg UpdateOwnerParams) error {
+	_, err := q.db.Exec(ctx, updateOwner,
+		arg.ID,
+		arg.Name,
+		arg.NameEn,
+		arg.ProfileImage,
+		arg.HideProfileImage,
+	)
+	return err
 }

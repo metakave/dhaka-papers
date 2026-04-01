@@ -49,17 +49,28 @@ export interface NewsViewStat {
 
 export interface DashboardStats {
     total_news: number;
+    total_news_bn: number;
+    total_news_en: number;
     total_categories: number;
     total_users: number;
     total_views: number;
+    total_views_bn: number;
+    total_views_en: number;
     category_stats: CategoryViewStat[];
+    category_stats_bn: CategoryViewStat[];
+    category_stats_en: CategoryViewStat[];
     top_news: NewsViewStat[];
+    top_news_bn: NewsViewStat[];
+    top_news_en: NewsViewStat[];
 }
 
 export interface User {
     id: string;
     name: string;
+    name_en?: string;
     email: string;
     role: string;
+    profile_image?: string;
+    hide_profile_image?: boolean;
     created_at: string;
 }

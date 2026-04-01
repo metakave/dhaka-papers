@@ -48,7 +48,7 @@ export default function Hero({ featured: mainArticle, latest, isLoading }: HeroP
                 {/* Side High-Density List */}
                 <div className="lg:col-span-4 flex flex-col gap-6">
                     <div className="bg-gray-50 p-4 border-l-4 border-primary">
-                        <h3 className="text-xl font-black uppercase tracking-tighter">
+                        <h3 className={`${locale === "en" ? "text-[18px]" : "text-xl"} font-black uppercase tracking-tighter`}>
                             {locale === "bn" ? "সর্বশেষ খবর" : "Latest News"}
                         </h3>
                     </div>

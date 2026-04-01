@@ -17,11 +17,12 @@ import (
 )
 
 type AuthHandler struct {
-	svc port.AuthService
+	svc     port.AuthService
+	fileSvc port.FileService
 }
 
-func NewAuthHandler(svc port.AuthService) *AuthHandler {
-	return &AuthHandler{svc: svc}
+func NewAuthHandler(svc port.AuthService, fileSvc port.FileService) *AuthHandler {
+	return &AuthHandler{svc: svc, fileSvc: fileSvc}
 }
 
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
@@ -47,6 +48,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Name     string `json:"name"`
+		NameEn   string `json:"name_en"`
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
@@ -60,7 +62,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.svc.Register(r.Context(), req.Name, req.Email, req.Password)
+	user, err := h.svc.Register(r.Context(), req.Name, req.NameEn, req.Email, req.Password)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -119,17 +121,42 @@ func (h *AuthHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req struct {
-		Name     string `json:"name"`
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
+		http.Error(w, "Failed to parse form", http.StatusBadRequest)
 		return
 	}
 
-	err = h.svc.UpdateUser(r.Context(), id, req.Name, req.Email, req.Password)
+	name := r.FormValue("name")
+	nameEn := r.FormValue("name_en")
+	email := r.FormValue("email")
+	password := r.FormValue("password")
+	hideProfileImage := r.FormValue("hide_profile_image") == "true"
+	existingProfileImage := r.FormValue("profile_image")
+
+	var profileImage *string
+	if existingProfileImage != "" {
+		profileImage = &existingProfileImage
+	}
+
+	// Handle Image Upload if present
+	file, header, err := r.FormFile("profile_image_file")
+	if err == nil {
+		defer file.Close()
+		contentType := header.Header.Get("Content-Type")
+		if !strings.HasPrefix(contentType, "image/") {
+			http.Error(w, "Only image files are allowed", http.StatusBadRequest)
+			return
+		}
+
+		uploadedURL, err := h.fileSvc.UploadFile(file, header)
+		if err != nil {
+			http.Error(w, "Failed to upload image: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		profileImage = &uploadedURL
+	}
+
+	err = h.svc.UpdateUser(r.Context(), id, name, nameEn, email, password, profileImage, hideProfileImage)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

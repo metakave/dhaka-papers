@@ -1,21 +1,18 @@
-export const formatBengaliDate = (dateString: string | Date): string => {
+export const formatBengaliDate = (dateString: string | Date, locale: string = 'bn'): string => {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return '';
 
-    const days = ['রোববার', 'সোমবার', 'মঙ্গলবার', 'বুধবার', 'বৃহস্পতিবার', 'শুক্রবার', 'শনিবার'];
+    if (locale === 'en') {
+        return date.toLocaleDateString('en-US', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+    }
+
     const months = [
-        'জানুয়ারি',
-        'ফেব্রুয়ারি', // Explicitly using the user's preferred spelling
-        'মার্চ',
-        'এপ্রিল',
-        'মে',
-        'জুন',
-        'জুলাই',
-        'আগস্ট',
-        'সেপ্টেম্বর',
-        'অক্টোবর',
-        'নভেম্বর',
-        'ডিসেম্বর'
+        'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
+        'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'
     ];
 
     const monthName = months[date.getMonth()];
@@ -25,24 +22,21 @@ export const formatBengaliDate = (dateString: string | Date): string => {
     return `${day} ${monthName}, ${year}`;
 };
 
-export const getBengaliDayMonthYear = (dateString: string | Date): string => {
+export const getBengaliDayMonthYear = (dateString: string | Date, locale: string = 'bn'): string => {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return '';
 
-    // For cases where we just want "15 February, 2026" without the day name
+    if (locale === 'en') {
+        return date.toLocaleDateString('en-US', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+    }
+
     const months = [
-        'জানুয়ারি',
-        'ফেব্রুয়ারি',
-        'মার্চ',
-        'এপ্রিল',
-        'মে',
-        'জুন',
-        'জুলাই',
-        'আগস্ট',
-        'সেপ্টেম্বর',
-        'অক্টোবর',
-        'নভেম্বর',
-        'ডিসেম্বর'
+        'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
+        'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'
     ];
 
     const monthName = months[date.getMonth()];
@@ -52,23 +46,24 @@ export const getBengaliDayMonthYear = (dateString: string | Date): string => {
     return `${day} ${monthName}, ${year}`;
 }
 
-export const formatBengaliDateTime = (dateString: string | Date): string => {
+export const formatBengaliDateTime = (dateString: string | Date, locale: string = 'bn'): string => {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return '';
 
+    if (locale === 'en') {
+        return date.toLocaleString('en-US', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
+    }
+
     const months = [
-        'জানুয়ারি',
-        'ফেব্রুয়ারি',
-        'মার্চ',
-        'এপ্রিল',
-        'মে',
-        'জুন',
-        'জুলাই',
-        'আগস্ট',
-        'সেপ্টেম্বর',
-        'অক্টোবর',
-        'নভেম্বর',
-        'ডিসেম্বর'
+        'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
+        'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'
     ];
 
     const monthName = months[date.getMonth()];
@@ -82,15 +77,27 @@ export const formatBengaliDateTime = (dateString: string | Date): string => {
     return `${day} ${monthName} ${year}, ${hours}:${minutes}`;
 }
 
-export const toBengaliNumber = (num: number | string): string => {
+export const toBengaliNumber = (num: number | string, locale: string = 'bn'): string => {
+    if (locale === 'en') return num.toString();
     const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
     return num.toString().split('').map(digit => bengaliDigits[parseInt(digit)] || digit).join('');
 };
 
-export const getRelativeTimeBengali = (dateString: string | Date): string => {
+export const getRelativeTimeBengali = (dateString: string | Date, locale: string = 'bn'): string => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (locale === 'en') {
+        if (diffInSeconds < 60) return 'Just now';
+        const diffInMinutes = Math.floor(diffInSeconds / 60);
+        if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+        const diffInHours = Math.floor(diffInMinutes / 60);
+        if (diffInHours < 24) return `${diffInHours}h ago`;
+        const diffInDays = Math.floor(diffInHours / 24);
+        if (diffInDays < 7) return `${diffInDays}d ago`;
+        return getBengaliDayMonthYear(dateString, 'en');
+    }
 
     if (diffInSeconds < 60) {
         return 'এইমাত্র';

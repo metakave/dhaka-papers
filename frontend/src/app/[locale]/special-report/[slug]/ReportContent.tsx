@@ -58,11 +58,23 @@ function parseVictimDetails(details: string) {
     return { so, address, identity, story };
 }
 
+import { useParams } from 'next/navigation';
+
 export default function ReportContent({ items }: ReportContentProps) {
+    const params = useParams();
+    const locale = (params?.locale as string) || 'bn';
     const [selectedVictim, setSelectedVictim] = useState<Victim | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
     const [fontSize, setFontSize] = useState(18); // Default 18px (matches prose-2xl base roughly)
+
+    const labels = {
+        increase: locale === 'en' ? 'Increase' : 'বৃহৎ করুন',
+        decrease: locale === 'en' ? 'Decrease' : 'ক্ষুদ্র করুন',
+        plus: locale === 'en' ? 'A+' : 'অ+',
+        minus: locale === 'en' ? 'A-' : 'অ-'
+    };
+
 
     const handleImageError = (url: string) => {
         setFailedImages(prev => new Set(prev).add(url));
@@ -140,7 +152,7 @@ export default function ReportContent({ items }: ReportContentProps) {
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-red-600 transition-colors" size={18} />
                         <input
                             type="text"
-                            placeholder="Search by name, location..."
+                            placeholder={locale === 'en' ? "Search by name, location..." : "নাম বা ঠিকানা দিয়ে খুঁজুন..."}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full bg-white/5 border border-white/10 rounded-full py-3 pl-12 pr-6 text-sm focus:outline-none focus:border-red-600/50 focus:bg-white/10 transition-all font-mono"
@@ -162,7 +174,7 @@ export default function ReportContent({ items }: ReportContentProps) {
                             <div className="flex items-center gap-6 mb-12 border-l-4 border-red-600 pl-8">
                                 <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-white">{month}</h2>
                                 <span className="text-gray-700 font-mono text-xs uppercase tracking-[0.3em]">
-                                    Documented Incidents: {groupedItems[month].length}
+                                    {locale === 'en' ? 'Documented Incidents' : 'নথিভুক্ত ঘটনা'}: {groupedItems[month].length}
                                 </span>
                             </div>
 
@@ -205,14 +217,14 @@ export default function ReportContent({ items }: ReportContentProps) {
 
                                         <div className="absolute inset-x-0 bottom-0 z-30 p-8 flex flex-col items-start bg-gradient-to-t from-black to-transparent pt-20">
                                             <motion.span layoutId={`case-id-${item.id}`} className="text-red-600 font-mono text-[9px] uppercase tracking-[0.4em] mb-3">
-                                                {(() => { const { identity } = parseVictimDetails(item.details); return identity || 'Undocumented'; })()}
+                                                {(() => { const { identity } = parseVictimDetails(item.details); return identity || (locale === 'en' ? 'Undocumented' : 'অজ্ঞাতনামা'); })()}
                                             </motion.span>
                                             <motion.h3 layoutId={`title-${item.id}`} className="text-xl md:text-2xl font-black text-white uppercase leading-none tracking-tighter mb-4">
                                                 {item.title}
                                             </motion.h3>
                                             <div className="flex items-center justify-between w-full opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
                                                 <div className="flex items-center gap-2 text-[8px] font-mono text-gray-500 uppercase tracking-widest">
-                                                    <MapPin size={10} /> <span>{item.location || 'Unknown'}</span>
+                                                    <MapPin size={10} /> <span>{item.location || (locale === 'en' ? 'Unknown' : 'অজানা')}</span>
                                                 </div>
                                                 <ArrowUpRight size={14} className="text-red-600" />
                                             </div>
@@ -229,8 +241,8 @@ export default function ReportContent({ items }: ReportContentProps) {
                 {filteredItems.length === 0 && (
                     <div className="py-40 text-center">
                         <Shield className="mx-auto text-gray-800 mb-8" size={64} strokeWidth={1} />
-                        <h3 className="text-2xl font-black text-white uppercase tracking-tighter mb-2">No matching records</h3>
-                        <p className="text-gray-500 font-mono text-xs uppercase tracking-widest">Refine your search parameters</p>
+                        <h3 className="text-2xl font-black text-white uppercase tracking-tighter mb-2">{locale === 'en' ? 'No matching records' : 'কোন রেকর্ড পাওয়া যায়নি'}</h3>
+                        <p className="text-gray-500 font-mono text-xs uppercase tracking-widest">{locale === 'en' ? 'Refine your search parameters' : 'আপনার অনুসন্ধান পরিবর্তন করুন'}</p>
                     </div>
                 )}
 
@@ -276,7 +288,7 @@ export default function ReportContent({ items }: ReportContentProps) {
 
                                 <div className="absolute bottom-6 left-5 right-5 md:bottom-12 md:left-10 md:right-10 z-50">
                                     <motion.span layoutId={`case-id-${selectedVictim.id}`} className="text-red-600 font-mono text-[10px] tracking-[0.4em] uppercase mb-2 block">
-                                        Forensic Case Report
+                                        {locale === 'en' ? 'Forensic Case Report' : 'ফরেনসিক কেস রিপোর্ট'}
                                     </motion.span>
                                     <motion.h2 layoutId={`title-${selectedVictim.id}`} className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white uppercase leading-[0.85] tracking-tighter">
                                         {selectedVictim.title}
@@ -296,7 +308,7 @@ export default function ReportContent({ items }: ReportContentProps) {
                                         onClick={handlePrev}
                                         disabled={currentIndex === 0}
                                         className={`p-4 bg-black/50 border border-white/10 rounded-full text-white hover:bg-red-600 hover:border-red-600 transition-all pointer-events-auto disabled:opacity-0 disabled:pointer-events-none group`}
-                                        title="Previous Story"
+                                        title={locale === 'en' ? 'Previous Story' : 'পূর্ববর্তী'}
                                     >
                                         <ChevronLeft size={24} className="group-hover:-translate-x-1 transition-transform" />
                                     </button>
@@ -304,7 +316,7 @@ export default function ReportContent({ items }: ReportContentProps) {
                                         onClick={handleNext}
                                         disabled={currentIndex === filteredItems.length - 1}
                                         className={`p-4 bg-black/50 border border-white/10 rounded-full text-white hover:bg-red-600 hover:border-red-600 transition-all pointer-events-auto disabled:opacity-0 disabled:pointer-events-none group`}
-                                        title="Next Story"
+                                        title={locale === 'en' ? 'Next Story' : 'পরবর্তী'}
                                     >
                                         <ChevronRight size={24} className="group-hover:translate-x-1 transition-transform" />
                                     </button>
@@ -326,27 +338,27 @@ export default function ReportContent({ items }: ReportContentProps) {
                                                         className="flex items-center gap-2 px-4 py-2 bg-white/2 border border-white/10 rounded-full text-gray-400 hover:text-white hover:bg-red-900/20 hover:border-red-600/50 transition-all disabled:opacity-10 disabled:pointer-events-none group font-mono text-[9px] uppercase tracking-widest"
                                                     >
                                                         <ChevronLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-                                                        <span>Prev</span>
+                                                        <span>{locale === 'en' ? 'Prev' : 'আগের'}</span>
                                                     </button>
                                                     <div className="text-[9px] font-mono text-gray-600 tracking-widest uppercase">
-                                                        Case {currentIndex + 1} of {filteredItems.length}
+                                                        {locale === 'en' ? 'Case' : 'কেস'} {currentIndex + 1} {locale === 'en' ? 'of' : 'এর'} {filteredItems.length}
                                                     </div>
                                                     <div className="flex items-center gap-4">
                                                         <div className="flex items-center bg-white/5 border border-white/10 rounded-full p-1">
                                                             <button
                                                                 onClick={() => adjustFontSize(2)}
                                                                 className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 text-white transition-all active:scale-95 group relative"
-                                                                title="বৃহৎ করুন"
+                                                                title={labels.increase}
                                                             >
-                                                                <span className="text-sm font-bold">অ+</span>
+                                                                <span className="text-sm font-bold">{labels.plus}</span>
                                                             </button>
                                                             <div className="w-[1px] h-4 bg-white/10 mx-1" />
                                                             <button
                                                                 onClick={() => adjustFontSize(-2)}
                                                                 className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 text-white transition-all active:scale-95"
-                                                                title="ক্ষুদ্র করুন"
+                                                                title={labels.decrease}
                                                             >
-                                                                <span className="text-sm font-bold">অ-</span>
+                                                                <span className="text-sm font-bold">{labels.minus}</span>
                                                             </button>
                                                         </div>
                                                         <button
@@ -354,7 +366,7 @@ export default function ReportContent({ items }: ReportContentProps) {
                                                             disabled={currentIndex === filteredItems.length - 1}
                                                             className="flex items-center gap-2 px-4 py-2 bg-white/2 border border-white/10 rounded-full text-gray-400 hover:text-white hover:bg-red-900/20 hover:border-red-600/50 transition-all disabled:opacity-10 disabled:pointer-events-none group font-mono text-[9px] uppercase tracking-widest"
                                                         >
-                                                            <span>Next</span>
+                                                            <span>{locale === 'en' ? 'Next' : 'পরের'}</span>
                                                             <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
                                                         </button>
                                                     </div>
@@ -365,8 +377,8 @@ export default function ReportContent({ items }: ReportContentProps) {
                                                         <div className="flex items-start gap-4 lg:gap-6">
                                                             <Shield className="text-red-700 shrink-0 mt-1" size={20} strokeWidth={1.5} />
                                                             <div>
-                                                                <span className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.3em] block mb-2 font-bold">Identity Profile</span>
-                                                                <p className="text-white text-xl md:text-2xl lg:text-3xl font-black uppercase tracking-tighter leading-none">{identity || 'Documented Individual'}</p>
+                                                                <span className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.3em] block mb-2 font-bold">{locale === 'en' ? 'Identity Profile' : 'পরিচয় বিবরণ'}</span>
+                                                                <p className="text-white text-xl md:text-2xl lg:text-3xl font-black uppercase tracking-tighter leading-none">{identity || (locale === 'en' ? 'Documented Individual' : 'নথিভুক্ত ব্যক্তি')}</p>
                                                             </div>
                                                         </div>
                                                     </InViewAnimation>
@@ -374,21 +386,21 @@ export default function ReportContent({ items }: ReportContentProps) {
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                                                         {so && (
                                                             <InViewAnimation delay={0.4}>
-                                                                <div className="flex items-start gap-4 p-6 bg-white/2 border border-white/5 rounded-xl">
-                                                                    <User className="text-red-900 shrink-0" size={16} />
-                                                                    <div>
-                                                                        <span className="text-[9px] font-mono text-gray-600 uppercase tracking-widest block mb-2">Lineage</span>
-                                                                        <p className="text-gray-300 text-sm font-medium uppercase">{so}</p>
-                                                                    </div>
-                                                                </div>
-                                                            </InViewAnimation>
-                                                        )}
+                                                                 <div className="flex items-start gap-4 p-6 bg-white/2 border border-white/5 rounded-xl">
+                                                                     <User className="text-red-900 shrink-0" size={16} />
+                                                                     <div>
+                                                                         <span className="text-[9px] font-mono text-gray-600 uppercase tracking-widest block mb-2">{locale === 'en' ? 'Lineage' : 'বংশপরিচয়'}</span>
+                                                                         <p className="text-gray-300 text-sm font-medium uppercase">{so}</p>
+                                                                     </div>
+                                                                 </div>
+                                                             </InViewAnimation>
+                                                         )}
                                                         {address && (
                                                             <InViewAnimation delay={0.5}>
                                                                 <div className="flex items-start gap-4 p-6 bg-white/2 border border-white/5 rounded-xl">
                                                                     <MapPin className="text-red-900 shrink-0" size={16} />
                                                                     <div>
-                                                                        <span className="text-[9px] font-mono text-gray-600 uppercase tracking-widest block mb-2">Residence</span>
+                                                                        <span className="text-[9px] font-mono text-gray-600 uppercase tracking-widest block mb-2">{locale === 'en' ? 'Residence' : 'বাসস্থান'}</span>
                                                                         <p className="text-gray-300 text-sm font-medium uppercase">{address}</p>
                                                                     </div>
                                                                 </div>
@@ -445,19 +457,25 @@ export default function ReportContent({ items }: ReportContentProps) {
                                                                 </div>
                                                             )}
                                                             <div className="text-center sm:text-left">
-                                                                <p className="text-white/40 text-[10px] font-mono uppercase tracking-[0.2em] mb-4">Verification Artifact</p>
+                                                                <p className="text-white/40 text-[10px] font-mono uppercase tracking-[0.2em] mb-4">
+                                                                    {locale === 'en' ? 'Verification Artifact' : 'যাচাইকৃত নথি'}
+                                                                </p>
                                                                 <p className="text-gray-500 text-xs leading-relaxed max-w-sm font-light">
-                                                                    Scan to verify this record against the independent registry. All data is cross-referenced with forensic reports and family testimonies.
+                                                                    {locale === 'en' 
+                                                                        ? "Scan to verify this record against the independent registry. All data is cross-referenced with forensic reports and family testimonies." 
+                                                                        : "এই রেকর্ডটি স্বাধীন রেজিস্ট্রির সাথে যাচাই করতে স্ক্যান করুন। সমস্ত তথ্য ফরেনসিক রিপোর্ট এবং পরিবারের সাক্ষ্যের সাথে ক্রস-রেফারেন্স করা হয়েছে।"}
                                                                 </p>
                                                             </div>
                                                         </div>
 
                                                         {selectedVictim.news_url && (
                                                             <a href={selectedVictim.news_url} target="_blank" className="flex items-center justify-between w-full px-8 py-5 bg-white text-black font-black uppercase text-[10px] tracking-[0.4em] hover:bg-red-700 hover:text-white transition-all">
-                                                                Original Source <ArrowUpRight size={18} />
+                                                                {locale === 'en' ? 'Original Source' : 'মূল উৎস'} <ArrowUpRight size={18} />
                                                             </a>
                                                         )}
-                                                        <span className="text-[8px] font-mono text-gray-800 uppercase tracking-[0.5em] block text-center">Documentary Integrity Verified</span>
+                                                        <span className="text-[8px] font-mono text-gray-800 uppercase tracking-[0.5em] block text-center">
+                                                            {locale === 'en' ? 'Documentary Integrity Verified' : 'নথিপত্রের অখণ্ডতা যাচাই করা হয়েছে'}
+                                                        </span>
 
                                                         {/* Bottom Navigation */}
                                                         <div className="flex justify-between items-center pt-8 border-t border-white/5">
@@ -467,14 +485,14 @@ export default function ReportContent({ items }: ReportContentProps) {
                                                                 className="flex items-center gap-3 px-6 py-3 bg-white/5 border border-white/10 rounded-full text-white hover:bg-red-600 hover:border-red-600 transition-all disabled:opacity-10 disabled:pointer-events-none group font-mono text-[10px] uppercase tracking-widest"
                                                             >
                                                                 <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                                                                <span>Previous Case</span>
+                                                                <span>{locale === 'en' ? 'Previous Case' : 'পূর্ববর্তী ঘটনা'}</span>
                                                             </button>
                                                             <button
                                                                 onClick={handleNext}
                                                                 disabled={currentIndex === filteredItems.length - 1}
                                                                 className="flex items-center gap-3 px-6 py-3 bg-white/5 border border-white/10 rounded-full text-white hover:bg-red-600 hover:border-red-600 transition-all disabled:opacity-10 disabled:pointer-events-none group font-mono text-[10px] uppercase tracking-widest"
                                                             >
-                                                                <span>Next Case</span>
+                                                                <span>{locale === 'en' ? 'Next Case' : 'পরবর্তী ঘটনা'}</span>
                                                                 <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
                                                             </button>
                                                         </div>

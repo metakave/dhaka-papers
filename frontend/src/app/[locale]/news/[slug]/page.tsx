@@ -1,5 +1,3 @@
-'use server';
-
 import Link from 'next/link';
 import Image from 'next/image';
 import Layout from '@/components/layout/Layout';
@@ -34,7 +32,7 @@ export async function generateMetadata(
         openGraph: {
             title: title,
             description: article.excerpt,
-            url: `${baseUrl.replace('//', `//${locale === 'en' ? 'en.' : ''}`)}/news/${slug}`,
+            url: `${locale === 'en' ? baseUrl.replace(/(\/\/)(www\.)?/i, '$1en.') : baseUrl}/news/${slug}`,
             siteName: isBn ? 'ঢাকা পেপারস' : 'Dhaka Papers',
             images: [
                 {
@@ -79,7 +77,7 @@ export default async function ArticlePage({ params }: Props) {
     const filteredLatestNews = latestNews?.filter(a => a.id !== article.id) || [];
     const relatedNews = (filteredCategoryNews.length > 0 ? filteredCategoryNews : filteredLatestNews).slice(0, 3);
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://dhakapapers.com';
-    const shareUrl = `${baseUrl.replace('//', `//${locale === 'en' ? 'en.' : ''}`)}/news/${slug}`;
+    const shareUrl = `${locale === 'en' ? baseUrl.replace(/(\/\/)(www\.)?/i, '$1en.') : baseUrl}/news/${slug}`;
 
     return (
         <Layout>
@@ -94,9 +92,12 @@ export default async function ArticlePage({ params }: Props) {
 
                 <ArticleMeta
                     authorName={article.author_name || 'Anonymous'}
+                    authorNameEn={article.author_name_en}
                     authorId={article.author_id}
                     published_at={article.published_at}
                     updated_at={article.updated_at}
+                    authorProfileImage={article.author_profile_image}
+                    authorHideProfileImage={article.author_hide_profile_image}
                 />
 
                 <div className="mb-12">
@@ -125,7 +126,7 @@ export default async function ArticlePage({ params }: Props) {
                 {article.tags && article.tags.length > 0 && (
                     <div className="mt-8 flex flex-wrap gap-2">
                         {article.tags.map((tag: string, index: number) => (
-                            <Link href={`/${locale}/tag/${encodeURIComponent(tag)}`} key={index} className="bg-gray-100 px-4 py-2 rounded-full text-gray-800 font-medium text-sm md:text-base border border-gray-200 hover:bg-primary hover:text-white transition-colors flex items-center gap-1 group">
+                            <Link href={`/tag/${encodeURIComponent(tag)}`} key={index} className="bg-gray-100 px-4 py-2 rounded-full text-gray-800 font-medium text-sm md:text-base border border-gray-200 hover:bg-primary hover:text-white transition-colors flex items-center gap-1 group">
                                 <span className="text-gray-400 group-hover:text-white/80 transition-colors">#</span>
                                 {tag}
                             </Link>

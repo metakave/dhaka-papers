@@ -48,13 +48,13 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (string
 	return token.SignedString([]byte(s.jwtSecret))
 }
 
-func (s *AuthService) Register(ctx context.Context, name, email, password string) (*domain.Owner, error) {
+func (s *AuthService) Register(ctx context.Context, name, nameEn, email, password string) (*domain.Owner, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.repo.CreateOwner(ctx, name, email, string(hashedPassword))
+	return s.repo.CreateOwner(ctx, name, nameEn, email, string(hashedPassword))
 }
 
 func (s *AuthService) ChangePassword(ctx context.Context, id uuid.UUID, oldPassword, newPassword string) error {
@@ -80,7 +80,7 @@ func (s *AuthService) ChangePassword(ctx context.Context, id uuid.UUID, oldPassw
 	return s.repo.UpdateOwnerPassword(ctx, id, string(hashedPassword))
 }
 
-func (s *AuthService) UpdateUser(ctx context.Context, id uuid.UUID, name, email, password string) error {
+func (s *AuthService) UpdateUser(ctx context.Context, id uuid.UUID, name, nameEn, email, password string, profileImage *string, hideProfileImage bool) error {
 	owner, err := s.repo.GetOwnerByID(ctx, id)
 	if err != nil {
 		return err
@@ -90,7 +90,10 @@ func (s *AuthService) UpdateUser(ctx context.Context, id uuid.UUID, name, email,
 	}
 
 	owner.Name = name
+	owner.NameEn = nameEn
 	owner.Email = email
+	owner.ProfileImage = profileImage
+	owner.HideProfileImage = hideProfileImage
 
 	if password != "" {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
