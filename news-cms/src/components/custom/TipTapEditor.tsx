@@ -30,6 +30,7 @@ type EmbedPlatform =
     | 'facebook-post'
     | 'facebook-video'
     | 'facebook-reel'
+    | 'facebook-share'   // share links can't be embedded directly — need embed code
     | 'iframe'
     | null;
 
@@ -44,9 +45,16 @@ function detectPlatform(input: string): EmbedPlatform {
         return 'twitter';
     }
 
+    // Facebook: check for full <iframe> embed code first (src contains plugins URL)
+    if (lower.includes('facebook.com/plugins/post.php')) return 'facebook-post';
+    if (lower.includes('facebook.com/plugins/video.php')) return 'facebook-video';
+
+    // Facebook raw URLs
     if (lower.includes('facebook.com/') || lower.includes('fb.watch/')) {
         if (lower.includes('/reel') || lower.includes('/reels')) return 'facebook-reel';
         if (lower.includes('/videos/') || lower.includes('fb.watch/')) return 'facebook-video';
+        // Share links (e.g. /share/p/, /share/v/) can't be resolved by the plugin
+        if (lower.includes('/share/')) return 'facebook-share';
         return 'facebook-post';
     }
 
@@ -56,13 +64,14 @@ function detectPlatform(input: string): EmbedPlatform {
 }
 
 const platformInfo: Record<NonNullable<EmbedPlatform>, { label: string; color: string; hint: string }> = {
-    'youtube':        { label: 'YouTube Video',       color: '#dc2626', hint: '16:9 · full width' },
-    'youtube-short':  { label: 'YouTube Short',       color: '#dc2626', hint: '9:16 · 315px wide' },
-    'twitter':        { label: 'X (Twitter) Post',    color: '#0ea5e9', hint: '550px wide · fixed height' },
-    'facebook-post':  { label: 'Facebook Post',       color: '#2563eb', hint: '500px wide · fixed height' },
-    'facebook-video': { label: 'Facebook Video',      color: '#2563eb', hint: '16:9 · full width' },
-    'facebook-reel':  { label: 'Facebook Reel',       color: '#2563eb', hint: '9:16 · 315px wide' },
-    'iframe':         { label: 'Custom Embed Code',   color: '#6b7280', hint: 'size from embed code' },
+    'youtube':          { label: 'YouTube Video',         color: '#dc2626', hint: '16:9 · full width' },
+    'youtube-short':    { label: 'YouTube Short',         color: '#dc2626', hint: '9:16 · 315px wide' },
+    'twitter':          { label: 'X (Twitter) Post',      color: '#0ea5e9', hint: '550px wide · fixed height' },
+    'facebook-post':    { label: 'Facebook Post',         color: '#2563eb', hint: 'exact size from embed code' },
+    'facebook-video':   { label: 'Facebook Video',        color: '#2563eb', hint: 'exact size from embed code' },
+    'facebook-reel':    { label: 'Facebook Reel',         color: '#2563eb', hint: '9:16 · vertical' },
+    'facebook-share':   { label: 'Facebook Share Link',   color: '#dc2626', hint: 'share links cannot be embedded — use the embed code instead' },
+    'iframe':           { label: 'Custom Embed Code',     color: '#6b7280', hint: 'size from embed code' },
 };
 
 // ─── Build Embed Params ───────────────────────────────────────────────────────
@@ -108,16 +117,53 @@ function buildEmbed(input: string, platform: EmbedPlatform): EmbedParams | null 
         };
     }
 
-    if (platform === 'facebook-reel') {
+    if (platform === 'facebook-share') {
+        // Share links cannot be embedded — buildEmbed returns null, dialog blocks insert
+        return null;
+    }
+
+    if (platform === 'facebook-post') {
+        // Full <iframe> embed code pasted → extract src + exact dimensions
+        const srcMatch = trimmed.match(/src="([^"]+)"/);
+        if (srcMatch) {
+            const widthMatch = trimmed.match(/width="(\d+)"/);
+            const heightMatch = trimmed.match(/height="(\d+)"/);
+            const w = widthMatch ? parseInt(widthMatch[1]) : 500;
+            const h = heightMatch ? parseInt(heightMatch[1]) : 700;
+            return {
+                src: srcMatch[1],
+                type: 'facebook-post',
+                ratio: '',
+                maxWidth: `${w}px`,
+                embedHeight: `${h}`,
+            };
+        }
+        // Raw post URL (not a share link) → construct plugin URL
         return {
-            src: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(trimmed)}&show_text=false&t=0`,
-            type: 'facebook-video',
-            ratio: '9/16',
-            maxWidth: '315px',
+            src: `https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(trimmed)}&show_text=true&width=500`,
+            type: 'facebook-post',
+            ratio: '',
+            maxWidth: '500px',
+            embedHeight: '700',
         };
     }
 
     if (platform === 'facebook-video') {
+        // Full <iframe> embed code pasted → extract src + exact dimensions
+        const srcMatch = trimmed.match(/src="([^"]+)"/);
+        if (srcMatch) {
+            const widthMatch = trimmed.match(/width="(\d+)"/);
+            const heightMatch = trimmed.match(/height="(\d+)"/);
+            const w = widthMatch ? parseInt(widthMatch[1]) : 560;
+            const h = heightMatch ? parseInt(heightMatch[1]) : 315;
+            return {
+                src: srcMatch[1],
+                type: 'facebook-video',
+                ratio: `${w}/${h}`,
+                maxWidth: `${w}px`,
+            };
+        }
+        // Raw video URL
         return {
             src: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(trimmed)}&show_text=false&t=0`,
             type: 'facebook-video',
@@ -126,13 +172,12 @@ function buildEmbed(input: string, platform: EmbedPlatform): EmbedParams | null 
         };
     }
 
-    if (platform === 'facebook-post') {
+    if (platform === 'facebook-reel') {
         return {
-            src: `https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(trimmed)}&show_text=true&width=500`,
-            type: 'facebook-post',
-            ratio: '',
-            maxWidth: '500px',
-            embedHeight: '700',
+            src: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(trimmed)}&show_text=false&t=0`,
+            type: 'facebook-video',
+            ratio: '9/16',
+            maxWidth: '315px',
         };
     }
 
@@ -215,7 +260,7 @@ function EmbedDialog({ onInsert }: EmbedDialogProps) {
                         </div>
 
                         {/* Detection result */}
-                        {info && (
+                        {info && platform !== 'facebook-share' && (
                             <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm">
                                 <span className="font-semibold" style={{ color: info.color }}>
                                     {info.label}
@@ -224,6 +269,15 @@ function EmbedDialog({ onInsert }: EmbedDialogProps) {
                                 <span className="text-gray-500">{info.hint}</span>
                             </div>
                         )}
+
+                        {/* Facebook share link warning */}
+                        {platform === 'facebook-share' && (
+                            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 space-y-1">
+                                <p className="font-semibold">Facebook share links cannot be embedded directly.</p>
+                                <p>On Facebook, open the post → click <strong>⋯ More</strong> → <strong>Embed</strong> → copy the <code className="bg-red-100 px-1 rounded">&lt;iframe&gt;</code> code and paste it here instead.</p>
+                            </div>
+                        )}
+
                         {!info && url.trim() && (
                             <p className="text-sm text-amber-600">
                                 Platform not recognized. Paste a full URL or &lt;iframe&gt; code.
@@ -235,19 +289,19 @@ function EmbedDialog({ onInsert }: EmbedDialogProps) {
                             <p className="font-medium text-gray-700 mb-1">Supported sources:</p>
                             <p>
                                 <span className="font-medium" style={{ color: '#dc2626' }}>YouTube</span>
-                                {' '}— video or Shorts URL
+                                {' '}— paste video or Shorts URL
                             </p>
                             <p>
                                 <span className="font-medium" style={{ color: '#0ea5e9' }}>X (Twitter)</span>
-                                {' '}— tweet URL (twitter.com or x.com)
+                                {' '}— paste tweet URL (twitter.com or x.com)
                             </p>
                             <p>
                                 <span className="font-medium" style={{ color: '#2563eb' }}>Facebook</span>
-                                {' '}— post, video, or reel URL
+                                {' '}— paste the <strong>&lt;iframe&gt; embed code</strong> from Facebook (Post → ⋯ → Embed)
                             </p>
                             <p>
                                 <span className="font-medium text-gray-600">Custom</span>
-                                {' '}— paste the full &lt;iframe&gt; embed code
+                                {' '}— paste any &lt;iframe&gt; embed code
                             </p>
                         </div>
                     </div>
@@ -256,7 +310,7 @@ function EmbedDialog({ onInsert }: EmbedDialogProps) {
                         <Button variant="outline" onClick={handleClose} type="button">
                             Cancel
                         </Button>
-                        <Button onClick={handleInsert} disabled={!info} type="button">
+                        <Button onClick={handleInsert} disabled={!info || platform === 'facebook-share'} type="button">
                             Insert Embed
                         </Button>
                     </DialogFooter>
