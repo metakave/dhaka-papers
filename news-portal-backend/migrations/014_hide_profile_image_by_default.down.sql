@@ -1,0 +1,1 @@
+ALTER TABLE owners ALTER COLUMN hide_profile_image SET DEFAULT FALSE;

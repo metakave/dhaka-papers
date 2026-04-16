@@ -180,29 +180,41 @@
     }
   }
 
-  /* Unified Media Embed Previews */
-  div[data-media-embed] {
-    @apply relative my-6 flex justify-center mx-auto overflow-hidden bg-black/5 rounded-sm;
+  /* ── Aspect-ratio embeds: YouTube, Facebook Video/Reel ── */
+  div[data-media-embed]:not([data-embed-type="twitter"]):not([data-embed-type="facebook-post"]) {
+    @apply relative my-6 mx-auto bg-black/5 rounded-sm overflow-hidden;
     width: 100%;
   }
 
-  div[data-media-embed]:not([style*="aspect-ratio"]) {
+  /* Fallback 16:9 when no aspect-ratio style is present */
+  div[data-media-embed]:not([data-embed-type="twitter"]):not([data-embed-type="facebook-post"]):not([style*="aspect-ratio"]) {
     aspect-ratio: 16 / 9;
   }
 
-  @media (max-width: 640px) {
-    div[data-media-embed][data-aspect="vertical"] {
-      max-width: 250px;
-    }
-  }
-
-  div[data-media-embed] iframe {
+  /* iframe fills the aspect-ratio container */
+  div[data-media-embed]:not([data-embed-type="twitter"]):not([data-embed-type="facebook-post"]) iframe {
     @apply border-0 shadow-sm;
-    width: 100%;
-    height: 100%;
     position: absolute;
     top: 0;
     left: 0;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* ── Fixed-size embeds: X (Twitter) & Facebook Post ── */
+  div[data-embed-type="twitter"],
+  div[data-embed-type="facebook-post"] {
+    @apply my-6 mx-auto rounded-sm overflow-hidden;
+    display: flex;
+    justify-content: center;
+  }
+
+  div[data-embed-type="twitter"] iframe,
+  div[data-embed-type="facebook-post"] iframe {
+    @apply border-0 shadow-sm rounded-sm;
+    display: block;
+    max-width: 100%;
+    position: static; /* Override absolute from aspect-ratio default */
   }
 }
 

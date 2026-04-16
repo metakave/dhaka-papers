@@ -71,16 +71,12 @@ const ArticleMeta: React.FC<ArticleMetaProps> = ({ authorName, authorNameEn, aut
     return (
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 border-y border-gray-100 py-6">
             <div className="flex items-center gap-4">
-                {!authorHideProfileImage && authorProfileImage ? (
+                {!authorHideProfileImage && authorProfileImage && (
                     <img 
                         src={authorProfileImage} 
                         alt={authorName} 
                         className="w-14 h-14 rounded-full object-cover flex-shrink-0"
                     />
-                ) : (
-                    <div className="w-14 h-14 bg-gray-900 rounded-full flex items-center justify-center font-black text-white text-xl flex-shrink-0">
-                        {authorName?.charAt(0) || 'A'}
-                    </div>
                 )}
                 <div>
                     <Link href={`/author/${authorId}`} className="font-black text-gray-900 text-lg hover:border-b-2 border-gray-900 transition-all block w-fit mb-1">

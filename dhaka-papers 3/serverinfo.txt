@@ -1,0 +1,9 @@
+IP Address:	180.94.20.68
+Username:	ubuntu
+OS:	Ubuntu 24.04 LTS 
+vCPU:	2 Cores
+RAM:	4 GB
+Storage:	40 GB SSD
+Auth Method:	SSH Key (Ed25519)
+
+ssh -i [path_to_key] ubuntu@180.94.20.68

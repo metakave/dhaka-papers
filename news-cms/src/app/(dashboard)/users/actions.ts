@@ -48,15 +48,24 @@ export async function changePassword(oldPassword: string, newPassword: string) {
 export async function updateUser(id: string, formData: FormData) {
     try {
         const token = await getAuthToken();
-        await api.put(`/users/${id}`, formData, {
+        const API_URL = (typeof window === 'undefined' ? process.env.INTERNAL_API_URL : process.env.NEXT_PUBLIC_API_URL);
+        
+        const response = await fetch(`${API_URL}/users/${id}`, {
+            method: 'PUT',
             headers: { 
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'multipart/form-data'
-            }
+                Authorization: `Bearer ${token}`
+            },
+            body: formData
         });
+
+        if (!response.ok) {
+            const error = await response.text();
+            throw new Error(error || 'Failed to update user');
+        }
+
         revalidatePath('/users');
         return { success: true };
     } catch (error: any) {
-        return { success: false, error: error.response?.data || error.message };
+        return { success: false, error: error.message };
     }
 }
