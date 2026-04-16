@@ -181,13 +181,21 @@
   }
 
   /* ── Aspect-ratio embeds: YouTube, Facebook Video/Reel ── */
-  div[data-media-embed]:not([data-embed-type="twitter"]):not([data-embed-type="facebook-post"]) {
+  div[data-media-embed]:not([data-embed-type="twitter"]):not([data-embed-type="facebook-post"]):not([data-embed-type="facebook-reel"]) {
     @apply relative my-6 mx-auto bg-black/5 rounded-sm overflow-hidden;
     width: 100%;
   }
 
+  /* Specific sizing for Reels to keep them centered and vertical */
+  div[data-embed-type="facebook-reel"] {
+    @apply relative my-6 mx-auto bg-black rounded-sm overflow-hidden;
+    width: 100%;
+    max-width: 315px; /* Default reel width */
+    aspect-ratio: 9 / 16;
+  }
+
   /* Fallback 16:9 when no aspect-ratio style is present */
-  div[data-media-embed]:not([data-embed-type="twitter"]):not([data-embed-type="facebook-post"]):not([style*="aspect-ratio"]) {
+  div[data-media-embed]:not([data-embed-type="twitter"]):not([data-embed-type="facebook-post"]):not([data-embed-type="facebook-reel"]):not([style*="aspect-ratio"]) {
     aspect-ratio: 16 / 9;
   }
 

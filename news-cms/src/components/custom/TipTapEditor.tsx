@@ -51,7 +51,8 @@ function detectPlatform(input: string): EmbedPlatform {
 
     // Facebook raw URLs
     if (lower.includes('facebook.com/') || lower.includes('fb.watch/')) {
-        if (lower.includes('/reel') || lower.includes('/reels')) return 'facebook-reel';
+        // Specific checks for reel/reels as a path segment
+        if (lower.includes('/reel/') || lower.includes('/reels/')) return 'facebook-reel';
         if (lower.includes('/videos/') || lower.includes('fb.watch/')) return 'facebook-video';
         // Share links (e.g. /share/p/, /share/v/) can't be resolved by the plugin
         if (lower.includes('/share/')) return 'facebook-share';
@@ -175,7 +176,7 @@ function buildEmbed(input: string, platform: EmbedPlatform): EmbedParams | null 
     if (platform === 'facebook-reel') {
         return {
             src: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(trimmed)}&show_text=false&t=0`,
-            type: 'facebook-video',
+            type: 'facebook-reel',
             ratio: '9/16',
             maxWidth: '315px',
         };
