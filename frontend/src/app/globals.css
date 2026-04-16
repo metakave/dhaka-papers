@@ -114,51 +114,64 @@
   max-width: none;
 }
 
-/* Unified Media Embed Adaptivity */
-.tiptap div[data-media-embed] {
-  @apply relative my-12 flex justify-center mx-auto bg-black/5 rounded-sm;
-  width: 100% !important;
-  max-width: 100% !important;
-  overflow: hidden;
+/* ── Aspect-ratio embeds: YouTube, Facebook Video/Reel ── */
+.tiptap div[data-media-embed]:not([data-embed-type="twitter"]):not([data-embed-type="facebook-post"]) {
+  @apply relative my-12 mx-auto bg-black/5 rounded-sm overflow-hidden;
+  width: 100%;
 }
 
-/* On desktop, keep a reasonable maximum */
+/* Fallback 16:9 when no aspect-ratio style is present */
+.tiptap div[data-media-embed]:not([data-embed-type="twitter"]):not([data-embed-type="facebook-post"]):not([style*="aspect-ratio"]) {
+  aspect-ratio: 16 / 9;
+}
+
+/* Cap width on large screens */
 @media (min-width: 1024px) {
-  .tiptap div[data-media-embed] {
+  .tiptap div[data-media-embed]:not([data-embed-type="twitter"]):not([data-embed-type="facebook-post"]) {
     max-width: 900px !important;
   }
 }
 
-/* Fallback if ratio fails or is not provided */
-.tiptap div[data-media-embed]:not([style*="aspect-ratio"]) {
-  aspect-ratio: 16 / 9;
-}
-
-/* Mobile Specific: Vertical content is too tall if 100% wide */
-@media (max-width: 640px) {
-  .tiptap div[data-media-embed][data-aspect="vertical"] {
-    max-width: 280px !important; /* Slightly smaller for better focus */
-    margin-left: auto;
-    margin-right: auto;
-  }
-}
-
-.tiptap div[data-media-embed] iframe,
-.tiptap iframe,
-.prose iframe {
+/* iframe fills the aspect-ratio container */
+.tiptap div[data-media-embed]:not([data-embed-type="twitter"]):not([data-embed-type="facebook-post"]) iframe {
   @apply border-0 shadow-lg;
-  width: 100% !important;
-  max-width: 100% !important;
-  height: 100% !important;
   position: absolute;
   top: 0;
   left: 0;
+  width: 100% !important;
+  height: 100% !important;
 }
 
-/* If iframe is NOT in our wrapper, we still need to prevent overflow but aspect-ratio is harder */
-.tiptap iframe:not([data-media-embed] iframe),
-.prose iframe:not([data-media-embed] iframe) {
-  position: static !important;
+/* ── Fixed-size embeds: X (Twitter) & Facebook Post ── */
+.tiptap div[data-embed-type="twitter"],
+.tiptap div[data-embed-type="facebook-post"] {
+  @apply my-12 mx-auto rounded-sm overflow-hidden;
+  display: flex;
+  justify-content: center;
+}
+
+.tiptap div[data-embed-type="twitter"] iframe,
+.tiptap div[data-embed-type="facebook-post"] iframe {
+  @apply border-0 shadow-lg rounded-sm;
+  display: block;
+  max-width: 100%;
+  /* width/height come from the iframe attributes set at embed time */
+}
+
+/* On mobile, let fixed-size embeds shrink to fit */
+@media (max-width: 600px) {
+  .tiptap div[data-embed-type="twitter"] iframe,
+  .tiptap div[data-embed-type="facebook-post"] iframe {
+    width: 100% !important;
+  }
+}
+
+/* Bare iframes not inside our wrapper */
+.tiptap iframe:not(div[data-media-embed] > iframe),
+.prose iframe:not(div[data-media-embed] > iframe) {
+  display: block;
   aspect-ratio: 16 / 9;
-  height: auto !important;
+  width: 100%;
+  height: auto;
+  border: none;
 }

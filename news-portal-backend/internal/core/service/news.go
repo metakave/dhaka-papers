@@ -37,9 +37,9 @@ func NewNewsService(repo port.NewsRepository, categoryRepo port.CategoryReposito
 	// Allow inline styles for colors and fonts
 	p.AllowAttrs("style").OnElements("span", "p", "h1", "h2", "h3", "h4", "h5", "h6", "div")
 
-	// Allow YouTube, Facebook & Generic Media Embeds
-	p.AllowElements("iframe").AllowAttrs("src", "width", "height", "frameborder", "allow", "allowfullscreen", "title", "scrolling", "style").OnElements("iframe")
-	p.AllowAttrs("data-youtube-video", "data-facebook-video", "data-media-embed", "data-ratio", "data-max-width", "style").OnElements("div")
+	// Allow YouTube, Facebook, X (Twitter) & Generic Media Embeds
+	p.AllowElements("iframe").AllowAttrs("src", "width", "height", "frameborder", "allow", "allowfullscreen", "title", "scrolling", "loading", "style").OnElements("iframe")
+	p.AllowAttrs("data-youtube-video", "data-facebook-video", "data-media-embed", "data-embed-type", "data-ratio", "data-max-width", "data-embed-height", "style").OnElements("div")
 	p.AllowStyles("aspect-ratio", "max-width").OnElements("div")
 
 	return &NewsService{

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { TextStyle } from '@tiptap/extension-text-style';
@@ -9,22 +10,269 @@ import FontFamily from '@tiptap/extension-font-family';
 import TextAlign from '@tiptap/extension-text-align';
 import { MediaEmbed } from './extensions/MediaEmbed';
 import { Toggle } from '@/components/ui/toggle';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
-    Bold, Italic, Strikethrough, Heading1, Heading2, Heading3,
+    Bold, Italic, Strikethrough,
     List, ListOrdered, AlignLeft, AlignCenter, AlignRight, AlignJustify,
     Highlighter, Share2
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 
-const MenuBar = ({ editor }: { editor: any }) => {
-    if (!editor) {
-        return null;
+// ─── Platform Detection ──────────────────────────────────────────────────────
+
+type EmbedPlatform =
+    | 'youtube'
+    | 'youtube-short'
+    | 'twitter'
+    | 'facebook-post'
+    | 'facebook-video'
+    | 'facebook-reel'
+    | 'iframe'
+    | null;
+
+function detectPlatform(input: string): EmbedPlatform {
+    const lower = input.toLowerCase().trim();
+    if (!lower) return null;
+
+    if (lower.includes('youtube.com/shorts/')) return 'youtube-short';
+    if (lower.includes('youtube.com/watch') || lower.includes('youtu.be/')) return 'youtube';
+
+    if ((lower.includes('twitter.com/') || lower.includes('x.com/')) && lower.includes('/status/')) {
+        return 'twitter';
     }
+
+    if (lower.includes('facebook.com/') || lower.includes('fb.watch/')) {
+        if (lower.includes('/reel') || lower.includes('/reels')) return 'facebook-reel';
+        if (lower.includes('/videos/') || lower.includes('fb.watch/')) return 'facebook-video';
+        return 'facebook-post';
+    }
+
+    if (lower.includes('<iframe') || lower.match(/src="[^"]+"/)) return 'iframe';
+
+    return null;
+}
+
+const platformInfo: Record<NonNullable<EmbedPlatform>, { label: string; color: string; hint: string }> = {
+    'youtube':        { label: 'YouTube Video',       color: '#dc2626', hint: '16:9 · full width' },
+    'youtube-short':  { label: 'YouTube Short',       color: '#dc2626', hint: '9:16 · 315px wide' },
+    'twitter':        { label: 'X (Twitter) Post',    color: '#0ea5e9', hint: '550px wide · fixed height' },
+    'facebook-post':  { label: 'Facebook Post',       color: '#2563eb', hint: '500px wide · fixed height' },
+    'facebook-video': { label: 'Facebook Video',      color: '#2563eb', hint: '16:9 · full width' },
+    'facebook-reel':  { label: 'Facebook Reel',       color: '#2563eb', hint: '9:16 · 315px wide' },
+    'iframe':         { label: 'Custom Embed Code',   color: '#6b7280', hint: 'size from embed code' },
+};
+
+// ─── Build Embed Params ───────────────────────────────────────────────────────
+
+interface EmbedParams {
+    src: string;
+    type: string;
+    ratio: string;
+    maxWidth: string;
+    embedHeight?: string;
+}
+
+function buildEmbed(input: string, platform: EmbedPlatform): EmbedParams | null {
+    if (!platform) return null;
+    const trimmed = input.trim();
+
+    if (platform === 'youtube') {
+        let videoId = '';
+        if (trimmed.includes('watch?v=')) {
+            videoId = trimmed.split('v=')[1]?.split('&')[0] || '';
+        } else if (trimmed.includes('youtu.be/')) {
+            videoId = trimmed.split('youtu.be/')[1]?.split('?')[0] || '';
+        }
+        if (!videoId) return null;
+        return { src: `https://www.youtube.com/embed/${videoId}`, type: 'youtube', ratio: '16/9', maxWidth: '100%' };
+    }
+
+    if (platform === 'youtube-short') {
+        const videoId = trimmed.split('/shorts/')[1]?.split('?')[0] || '';
+        if (!videoId) return null;
+        return { src: `https://www.youtube.com/embed/${videoId}`, type: 'youtube', ratio: '9/16', maxWidth: '315px' };
+    }
+
+    if (platform === 'twitter') {
+        const tweetId = trimmed.split('/status/')[1]?.split('?')[0]?.split('/')[0] || '';
+        if (!tweetId) return null;
+        return {
+            src: `https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=light`,
+            type: 'twitter',
+            ratio: '',
+            maxWidth: '550px',
+            embedHeight: '550',
+        };
+    }
+
+    if (platform === 'facebook-reel') {
+        return {
+            src: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(trimmed)}&show_text=false&t=0`,
+            type: 'facebook-video',
+            ratio: '9/16',
+            maxWidth: '315px',
+        };
+    }
+
+    if (platform === 'facebook-video') {
+        return {
+            src: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(trimmed)}&show_text=false&t=0`,
+            type: 'facebook-video',
+            ratio: '16/9',
+            maxWidth: '100%',
+        };
+    }
+
+    if (platform === 'facebook-post') {
+        return {
+            src: `https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(trimmed)}&show_text=true&width=500`,
+            type: 'facebook-post',
+            ratio: '',
+            maxWidth: '500px',
+            embedHeight: '700',
+        };
+    }
+
+    if (platform === 'iframe') {
+        const srcMatch = trimmed.match(/src="([^"]+)"/);
+        const widthMatch = trimmed.match(/width="(\d+)"/);
+        const heightMatch = trimmed.match(/height="(\d+)"/);
+        if (srcMatch) {
+            const w = widthMatch ? parseInt(widthMatch[1]) : null;
+            const h = heightMatch ? parseInt(heightMatch[1]) : null;
+            return {
+                src: srcMatch[1],
+                type: 'generic',
+                ratio: w && h ? `${w}/${h}` : '16/9',
+                maxWidth: w ? `${Math.min(w, 900)}px` : '100%',
+            };
+        }
+    }
+
+    return null;
+}
+
+// ─── Embed Dialog ─────────────────────────────────────────────────────────────
+
+interface EmbedDialogProps {
+    onInsert: (params: EmbedParams) => void;
+}
+
+function EmbedDialog({ onInsert }: EmbedDialogProps) {
+    const [open, setOpen] = useState(false);
+    const [url, setUrl] = useState('');
+    const platform = detectPlatform(url);
+    const info = platform ? platformInfo[platform] : null;
+
+    const handleInsert = () => {
+        const embed = buildEmbed(url, platform);
+        if (embed) {
+            onInsert(embed);
+            setOpen(false);
+            setUrl('');
+        }
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+        setUrl('');
+    };
+
+    return (
+        <>
+            <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2 gap-1"
+                title="Embed YouTube / Facebook / X"
+                onClick={() => setOpen(true)}
+                type="button"
+            >
+                <Share2 className="h-4 w-4" />
+                <span className="text-xs hidden sm:inline">Embed</span>
+            </Button>
+
+            <Dialog open={open} onOpenChange={setOpen}>
+                <DialogContent className="sm:max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle>Embed Media</DialogTitle>
+                    </DialogHeader>
+
+                    <div className="space-y-4 py-1">
+                        <div className="space-y-2">
+                            <Label htmlFor="embed-url">URL or embed code</Label>
+                            <Input
+                                id="embed-url"
+                                placeholder="Paste YouTube / Facebook / X link or <iframe> code…"
+                                value={url}
+                                onChange={e => setUrl(e.target.value)}
+                                onKeyDown={e => { if (e.key === 'Enter') handleInsert(); }}
+                                autoFocus
+                            />
+                        </div>
+
+                        {/* Detection result */}
+                        {info && (
+                            <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm">
+                                <span className="font-semibold" style={{ color: info.color }}>
+                                    {info.label}
+                                </span>
+                                <span className="text-gray-400">·</span>
+                                <span className="text-gray-500">{info.hint}</span>
+                            </div>
+                        )}
+                        {!info && url.trim() && (
+                            <p className="text-sm text-amber-600">
+                                Platform not recognized. Paste a full URL or &lt;iframe&gt; code.
+                            </p>
+                        )}
+
+                        {/* Platform guide */}
+                        <div className="rounded-md bg-gray-50 px-3 py-2 text-xs text-gray-500 space-y-1">
+                            <p className="font-medium text-gray-700 mb-1">Supported sources:</p>
+                            <p>
+                                <span className="font-medium" style={{ color: '#dc2626' }}>YouTube</span>
+                                {' '}— video or Shorts URL
+                            </p>
+                            <p>
+                                <span className="font-medium" style={{ color: '#0ea5e9' }}>X (Twitter)</span>
+                                {' '}— tweet URL (twitter.com or x.com)
+                            </p>
+                            <p>
+                                <span className="font-medium" style={{ color: '#2563eb' }}>Facebook</span>
+                                {' '}— post, video, or reel URL
+                            </p>
+                            <p>
+                                <span className="font-medium text-gray-600">Custom</span>
+                                {' '}— paste the full &lt;iframe&gt; embed code
+                            </p>
+                        </div>
+                    </div>
+
+                    <DialogFooter>
+                        <Button variant="outline" onClick={handleClose} type="button">
+                            Cancel
+                        </Button>
+                        <Button onClick={handleInsert} disabled={!info} type="button">
+                            Insert Embed
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
+    );
+}
+
+// ─── Toolbar ──────────────────────────────────────────────────────────────────
+
+const MenuBar = ({ editor }: { editor: any }) => {
+    if (!editor) return null;
 
     return (
         <div className="border border-b-0 rounded-t-md bg-gray-50 p-2 flex flex-wrap gap-2 items-center">
-            {/* ... existing buttons ... */}
             <Toggle
                 size="sm"
                 pressed={editor.isActive('bold')}
@@ -49,11 +297,17 @@ const MenuBar = ({ editor }: { editor: any }) => {
 
             <div className="w-px h-6 bg-gray-300 mx-1" />
 
-            <Select value={editor.isActive('heading', { level: 1 }) ? 'h1' : editor.isActive('heading', { level: 2 }) ? 'h2' : 'p'}
+            <Select
+                value={
+                    editor.isActive('heading', { level: 1 }) ? 'h1' :
+                    editor.isActive('heading', { level: 2 }) ? 'h2' :
+                    editor.isActive('heading', { level: 3 }) ? 'h3' : 'p'
+                }
                 onValueChange={(val) => {
                     if (val === 'p') editor.chain().focus().setParagraph().run();
                     else editor.chain().focus().toggleHeading({ level: parseInt(val.replace('h', '')) }).run();
-                }}>
+                }}
+            >
                 <SelectTrigger className="w-[100px] h-8">
                     <SelectValue placeholder="Style" />
                 </SelectTrigger>
@@ -133,62 +387,14 @@ const MenuBar = ({ editor }: { editor: any }) => {
 
             <div className="w-px h-6 bg-gray-300 mx-1" />
 
-            <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                    const input = window.prompt('Paste Media URL (YouTube, FB) or Embed Code (iframe)');
-                    if (input) {
-                        let src = input;
-                        let ratio = '16/9';
-                        let maxWidth = '100%';
-                        
-                        // Detect aspect ratio based on URL/Code hints
-                        const lowInput = input.toLowerCase();
-
-                        // Extract src, width, height if user pasted full code
-                        const srcMatch = input.match(/src="([^"]+)"/);
-                        const widthMatch = input.match(/width="(\d+)"/);
-                        const heightMatch = input.match(/height="(\d+)"/);
-
-                        if (srcMatch) {
-                            src = srcMatch[1];
-                            if (widthMatch && heightMatch) {
-                                const w = parseInt(widthMatch[1]);
-                                const h = parseInt(heightMatch[1]);
-                                ratio = `${w} / ${h}`;
-                                // Use the source width as a max-width hint, capped at a reasonable value for desktop
-                                maxWidth = w > 900 ? '900px' : `${w}px`;
-                            } else if (lowInput.includes('reel') || lowInput.includes('short') || lowInput.includes('tiktok')) {
-                                ratio = '9/16';
-                                maxWidth = '450px';
-                            }
-                        } else if (input.includes('youtube.com/watch?v=')) {
-                            const videoId = input.split('v=')[1]?.split('&')[0];
-                            if (videoId) src = `https://www.youtube.com/embed/${videoId}`;
-                        } else if (input.includes('youtu.be/')) {
-                            const videoId = input.split('/').pop()?.split('?')[0];
-                            if (videoId) src = `https://www.youtube.com/embed/${videoId}`;
-                        } else if (input.includes('facebook.com')) {
-                            src = `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(input)}&show_text=false&t=0`;
-                            if (lowInput.includes('reel')) {
-                                ratio = '9/16';
-                                maxWidth = '450px';
-                            }
-                        }
-
-                        editor.commands.setMediaEmbed({ src, ratio, maxWidth });
-                    }
-                }}
-                className="h-8 w-8 p-0"
-                title="Embed Media (YouTube, FB, X, etc.)"
-            >
-                <Share2 className="h-4 w-4" />
-            </Button>
-
+            <EmbedDialog
+                onInsert={(params) => editor.commands.setMediaEmbed(params)}
+            />
         </div>
     );
 };
+
+// ─── Editor ───────────────────────────────────────────────────────────────────
 
 interface TipTapEditorProps {
     content: string;

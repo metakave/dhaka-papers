@@ -1,4 +1,4 @@
-import { Node, mergeAttributes } from '@tiptap/core'
+import { Node } from '@tiptap/core'
 
 export interface MediaEmbedOptions {
   HTMLAttributes: Record<string, any>,
@@ -7,10 +7,13 @@ export interface MediaEmbedOptions {
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     mediaEmbed: {
-      /**
-       * Insert a media embed (YouTube, Facebook, etc.)
-       */
-      setMediaEmbed: (options: { src: string }) => ReturnType,
+      setMediaEmbed: (options: {
+        src: string;
+        type?: string;
+        ratio?: string;
+        maxWidth?: string;
+        embedHeight?: string;
+      }) => ReturnType,
     }
   }
 }
@@ -19,68 +22,91 @@ export const MediaEmbed = Node.create<MediaEmbedOptions>({
   name: 'mediaEmbed',
 
   addOptions() {
-    return {
-      HTMLAttributes: {
-        'data-media-embed': '',
-      },
-    }
+    return { HTMLAttributes: {} }
   },
 
   group: 'block',
-
   atom: true,
-
   draggable: true,
 
   addAttributes() {
     return {
       src: {
         default: null,
+        parseHTML: element => element.querySelector('iframe')?.getAttribute('src'),
+      },
+      type: {
+        default: 'generic',
+        parseHTML: element => element.getAttribute('data-embed-type') || 'generic',
       },
       ratio: {
         default: '16/9',
         parseHTML: element => element.getAttribute('data-ratio'),
-        renderHTML: attributes => ({ 'data-ratio': attributes.ratio }),
       },
       maxWidth: {
         default: '100%',
         parseHTML: element => element.getAttribute('data-max-width'),
-        renderHTML: attributes => ({ 'data-max-width': attributes.maxWidth }),
+      },
+      embedHeight: {
+        default: null,
+        parseHTML: element => element.getAttribute('data-embed-height'),
       },
     }
   },
 
   parseHTML() {
-    return [
-      {
-        tag: 'div[data-media-embed] iframe',
-      },
-    ]
+    return [{ tag: 'div[data-media-embed]' }]
   },
 
-  renderHTML({ HTMLAttributes }) {
-    const { ratio, maxWidth, ...attrs } = HTMLAttributes
+  renderHTML({ node }) {
+    const { type, ratio, maxWidth, embedHeight, src } = node.attrs
 
-    return [
-      'div',
-      mergeAttributes(this.options.HTMLAttributes, {
-        'data-ratio': ratio,
-        'data-max-width': maxWidth,
-        style: `aspect-ratio: ${ratio}; max-width: ${maxWidth};`,
-      }),
-      [
-        'iframe',
-        mergeAttributes(attrs, {
-          width: '100%',
-          height: '100%',
-          allowfullscreen: 'true',
-          frameborder: '0',
-          scrolling: 'no',
-          loading: 'lazy',
-          allow: 'autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share',
-        }),
-      ],
-    ]
+    const isFixedSize = type === 'twitter' || type === 'facebook-post'
+
+    let containerStyle: string
+    const iframeAttrs: Record<string, any> = {
+      src,
+      frameborder: '0',
+      allowfullscreen: 'true',
+      loading: 'lazy',
+      allow: 'autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share',
+    }
+
+    if (type === 'twitter') {
+      // Twitter: fixed width 550px, height set by embedHeight (default 550)
+      containerStyle = `max-width: ${maxWidth || '550px'};`
+      iframeAttrs.width = '550'
+      iframeAttrs.height = embedHeight || '550'
+      iframeAttrs.scrolling = 'yes'
+    } else if (type === 'facebook-post') {
+      // Facebook Post: fixed width 500px, taller height for post content
+      containerStyle = `max-width: ${maxWidth || '500px'};`
+      iframeAttrs.width = '500'
+      iframeAttrs.height = embedHeight || '700'
+      iframeAttrs.scrolling = 'no'
+      iframeAttrs.style = 'border: none; overflow: hidden;'
+    } else {
+      // Aspect-ratio types: youtube, facebook-video, generic
+      const aspectRatio = ratio || '16/9'
+      containerStyle = `aspect-ratio: ${aspectRatio}; max-width: ${maxWidth || '100%'};`
+      iframeAttrs.width = '100%'
+      iframeAttrs.height = '100%'
+      iframeAttrs.scrolling = 'no'
+    }
+
+    const containerAttrs: Record<string, any> = {
+      'data-media-embed': '',
+      'data-embed-type': type || 'generic',
+      'data-ratio': ratio,
+      'data-max-width': maxWidth,
+      style: containerStyle,
+    }
+
+    if (embedHeight) {
+      containerAttrs['data-embed-height'] = embedHeight
+    }
+
+    return ['div', containerAttrs, ['iframe', iframeAttrs]]
   },
 
   addCommands() {
