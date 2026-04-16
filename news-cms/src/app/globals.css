@@ -184,13 +184,14 @@
   div[data-media-embed]:not([data-embed-type="twitter"]):not([data-embed-type="facebook-post"]):not([data-embed-type="facebook-reel"]) {
     @apply relative my-6 mx-auto bg-black/5 rounded-sm overflow-hidden;
     width: 100%;
+    max-width: 900px; /* Cap giant full-width players on desktop */
   }
 
   /* Specific sizing for Reels to keep them centered and vertical */
   div[data-embed-type="facebook-reel"] {
     @apply relative my-6 mx-auto bg-black rounded-sm overflow-hidden;
     width: 100%;
-    max-width: 315px; /* Default reel width */
+    max-width: 350px; /* Refined reel width */
     aspect-ratio: 9 / 16;
   }
 

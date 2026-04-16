@@ -155,8 +155,8 @@ function buildEmbed(input: string, platform: EmbedPlatform): EmbedParams | null 
         if (srcMatch) {
             const widthMatch = trimmed.match(/width="(\d+)"/);
             const heightMatch = trimmed.match(/height="(\d+)"/);
-            const w = widthMatch ? parseInt(widthMatch[1]) : 560;
-            const h = heightMatch ? parseInt(heightMatch[1]) : 315;
+            const w = widthMatch ? parseInt(widthMatch[1]) : 750;
+            const h = heightMatch ? parseInt(heightMatch[1]) : 422;
             return {
                 src: srcMatch[1],
                 type: 'facebook-video',
@@ -169,7 +169,7 @@ function buildEmbed(input: string, platform: EmbedPlatform): EmbedParams | null 
             src: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(trimmed)}&show_text=false&t=0`,
             type: 'facebook-video',
             ratio: '16/9',
-            maxWidth: '100%',
+            maxWidth: '750px', // Prevent "YouTube size" full-width
         };
     }
 

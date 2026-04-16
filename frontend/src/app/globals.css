@@ -124,7 +124,7 @@
 .tiptap div[data-embed-type="facebook-reel"] {
   @apply relative my-12 mx-auto bg-black rounded-sm overflow-hidden;
   width: 100%;
-  max-width: 315px;
+  max-width: 350px;
   aspect-ratio: 9 / 16;
 }
 
