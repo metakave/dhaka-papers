@@ -37,6 +37,15 @@ const nextConfig: NextConfig = {
     },
   },
   basePath: '/admin',
+  async headers() {
+    return [
+      {
+        // Prevent browsers from caching HTML pages — Server Action IDs change on every deploy
+        source: '/((?!_next/static|_next/image|favicon).*)',
+        headers: [{ key: 'Cache-Control', value: 'no-store' }],
+      },
+    ];
+  },
   async redirects() {
     return [
       {
