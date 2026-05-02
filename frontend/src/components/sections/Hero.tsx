@@ -48,7 +48,7 @@ export default function Hero({ featured, latest, isLoading }: HeroProps) {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-6">
                 <div className="lg:col-span-7 lg:pr-6 lg:border-r lg:border-gray-200 mb-8 lg:mb-0">
                     {featured ? (
-                        <Card article={featured} variant="featured" />
+                        <Card article={featured} variant="featured" hideTime />
                     ) : (
                         <div className="aspect-video bg-gray-50 flex items-center justify-center text-gray-300 italic">
                             {locale === 'bn' ? 'no featured' : 'No featured news'}
@@ -59,7 +59,7 @@ export default function Hero({ featured, latest, isLoading }: HeroProps) {
                 <div className="lg:col-span-5">
                     <div className="grid grid-cols-2 gap-x-4 gap-y-6">
                         {rightArticles.map(article => (
-                            <Card key={article.id} article={article} variant="grid" />
+                            <Card key={article.id} article={article} variant="grid" hideTime />
                         ))}
                     </div>
                 </div>

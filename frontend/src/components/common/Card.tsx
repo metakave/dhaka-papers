@@ -10,9 +10,10 @@ import { getRelativeTimeBengali } from '@/utils/dateUtils';
 interface CardProps {
     article: News;
     variant?: 'featured' | 'grid' | 'hero-side' | 'large' | 'medium' | 'small' | 'list';
+    hideTime?: boolean;
 }
 
-const Card = memo(({ article, variant = 'grid' }: CardProps) => {
+const Card = memo(({ article, variant = 'grid', hideTime = false }: CardProps) => {
     const params = useParams();
     const locale = (params.locale as string) || 'bn';
     const timeAgo = getRelativeTimeBengali(article.published_at, locale);
@@ -56,7 +57,7 @@ const Card = memo(({ article, variant = 'grid' }: CardProps) => {
                         {article.excerpt}
                     </p>
                 )}
-                <span className="text-gray-400 text-xs">{timeAgo}</span>
+                {!hideTime && <span className="text-gray-400 text-xs">{timeAgo}</span>}
             </article>
         );
     }
@@ -83,7 +84,7 @@ const Card = memo(({ article, variant = 'grid' }: CardProps) => {
                             {article.title}
                         </h3>
                     </Link>
-                    <span className="text-gray-400 text-xs">{timeAgo}</span>
+                    {!hideTime && <span className="text-gray-400 text-xs">{timeAgo}</span>}
                 </div>
             </article>
         );
@@ -110,7 +111,7 @@ const Card = memo(({ article, variant = 'grid' }: CardProps) => {
                     {article.title}
                 </h2>
             </Link>
-            <span className="text-gray-400 text-xs">{timeAgo}</span>
+            {!hideTime && <span className="text-gray-400 text-xs">{timeAgo}</span>}
         </article>
     );
 });

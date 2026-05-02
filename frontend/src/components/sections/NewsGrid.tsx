@@ -36,7 +36,7 @@ export default function NewsGrid({ news, isLoading }: NewsGridProps) {
         <section>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-x-5 gap-y-8">
                 {news.map(article => (
-                    <Card key={article.id} article={article} variant="grid" />
+                    <Card key={article.id} article={article} variant="grid" hideTime />
                 ))}
             </div>
             <div className="mt-10 flex justify-center">
