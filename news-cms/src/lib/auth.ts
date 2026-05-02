@@ -9,7 +9,7 @@ export async function setAuthToken(token: string) {
     cookieStore.set(AUTH_COOKIE, token, {
         httpOnly: true,
         secure: isSecure,
-        sameSite: 'strict',
+        sameSite: 'lax',
         path: '/',
         // Set expiry to matches JWT expiry (e.g., 7 days) or session
         maxAge: 60 * 60 * 24 * 7,

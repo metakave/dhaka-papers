@@ -34,6 +34,15 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: '20mb',
+      // Allow Server Actions from all domains the CMS is served under.
+      // Without this, Next.js CSRF check fails when Origin != Host (different www/apex/beta variants).
+      allowedOrigins: [
+        'dhakapapers.com',
+        'www.dhakapapers.com',
+        'beta.dhakapapers.com',
+        'dhakapaper.com',
+        'www.dhakapaper.com',
+      ],
     },
   },
   basePath: '/admin',
