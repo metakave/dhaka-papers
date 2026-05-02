@@ -5,6 +5,14 @@ import { User } from '@/types';
 import { revalidatePath } from 'next/cache';
 import { getAuthToken } from '@/lib/auth';
 
+export async function getAuthTokenForClient(): Promise<string | undefined> {
+    return await getAuthToken();
+}
+
+export async function revalidateUsers(): Promise<void> {
+    revalidatePath('/users');
+}
+
 export async function getUsers(): Promise<User[]> {
     try {
         const token = await getAuthToken();

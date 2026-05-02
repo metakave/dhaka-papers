@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { User } from '@/types';
 import { Plus, Key, ShieldCheck, Edit2, Upload, User as UserIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { updateUser } from '@/app/(dashboard)/users/actions';
+import { updateUser, getAuthTokenForClient, revalidateUsers } from '@/app/(dashboard)/users/actions';
 import {
     Dialog,
     DialogContent,
@@ -91,26 +91,45 @@ export function UserTable({ users }: UserTableProps) {
         if (!selectedUser) return;
 
         setIsLoading(true);
-        const submitData = new FormData();
-        submitData.append('name', editFormData.name);
-        submitData.append('name_en', editFormData.name_en);
-        submitData.append('email', editFormData.email);
-        submitData.append('password', editFormData.password);
-        submitData.append('hide_profile_image', editFormData.hide_profile_image.toString());
-        submitData.append('profile_image', editFormData.profile_image);
+        try {
+            const submitData = new FormData();
+            submitData.append('name', editFormData.name);
+            submitData.append('name_en', editFormData.name_en);
+            submitData.append('email', editFormData.email);
+            submitData.append('password', editFormData.password);
+            submitData.append('hide_profile_image', editFormData.hide_profile_image.toString());
+            submitData.append('profile_image', editFormData.profile_image);
 
-        if (selectedFile) {
-            submitData.append('profile_image_file', selectedFile);
-        }
+            if (selectedFile) {
+                submitData.append('profile_image_file', selectedFile);
+            }
 
-        const result = await updateUser(selectedUser.id, submitData);
-        setIsLoading(false);
-        if (result.success) {
+            if (selectedFile) {
+                const token = await getAuthTokenForClient();
+                const response = await fetch(`/api/v1/users/${selectedUser.id}`, {
+                    method: 'PUT',
+                    headers: { Authorization: `Bearer ${token}` },
+                    body: submitData,
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || 'Failed to update user');
+                }
+                await revalidateUsers();
+            } else {
+                const result = await updateUser(selectedUser.id, submitData);
+                if (!result.success) {
+                    throw new Error(result.error || 'Failed to update user');
+                }
+            }
+
             toast.success("User updated successfully");
             setIsEditOpen(false);
             window.location.reload();
-        } else {
-            toast.error(result.error || "Failed to update user");
+        } catch (error: any) {
+            toast.error(error.message || "Failed to update user");
+        } finally {
+            setIsLoading(false);
         }
     };
 
