@@ -20,6 +20,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { TipTapEditor } from '@/components/custom/TipTapEditor';
 import { Category, News } from '@/types';
 import { toast } from 'sonner';
+import { getAuthTokenForClient } from '@/app/(dashboard)/users/actions';
+import { revalidateNewsPath } from '@/app/(dashboard)/news/create/actions';
 import { format } from 'date-fns';
 import { toZonedTime, fromZonedTime } from 'date-fns-tz';
 import { CalendarIcon, Loader2 } from 'lucide-react';
@@ -51,10 +53,9 @@ const formSchema = z.object({
 interface NewsFormProps {
     categories: Category[];
     initialData?: News;
-    action: (prevState: any, formData: FormData) => Promise<any>;
 }
 
-export function NewsForm({ categories, initialData, action: serverAction }: NewsFormProps) {
+export function NewsForm({ categories, initialData }: NewsFormProps) {
     const [uploading, setUploading] = useState(false);
     const [isPending, setIsPending] = useState(false);
     const [tagInput, setTagInput] = useState('');
@@ -113,7 +114,6 @@ export function NewsForm({ categories, initialData, action: serverAction }: News
             setIsPending(true);
             const formData = new FormData();
 
-            // Append all fields to FormData
             formData.append('title', values.title);
             formData.append('title_en', values.title_en);
             formData.append('category_id', values.category_id);
@@ -128,30 +128,33 @@ export function NewsForm({ categories, initialData, action: serverAction }: News
                 values.tags.forEach(tag => formData.append('tags', tag));
             }
 
-            // Convert BST from UI back to UTC before sending to server
             const utcDate = fromZonedTime(values.published_at, TIMEZONE);
             formData.append('published_at', utcDate.toISOString());
 
-            // Thumbnail can be a File (new) or string (existing)
             if ((values.thumbnail as any) instanceof File) {
                 formData.append('thumbnail', values.thumbnail);
             } else if (typeof values.thumbnail === 'string') {
                 formData.append('thumbnail', values.thumbnail);
             }
 
-            const result = await serverAction(null, formData);
+            const token = await getAuthTokenForClient();
+            const apiPath = initialData ? `/api/v1/news/${initialData.id}` : '/api/v1/news';
+            const response = await fetch(apiPath, {
+                method: initialData ? 'PUT' : 'POST',
+                headers: { Authorization: `Bearer ${token}` },
+                body: formData,
+            });
 
-            if (result?.error) {
-                toast.error(result.error);
-            } else if (result?.success) {
-                toast.success(initialData ? 'News updated successfully' : 'News published successfully');
-                // Navigate to news list after short delay
-                setTimeout(() => {
-                    router.push('/news');
-                }, 500);
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'Failed to submit');
             }
-        } catch (error) {
-            toast.error('Submission failed. Please check your network.');
+
+            await revalidateNewsPath();
+            toast.success(initialData ? 'News updated successfully' : 'News published successfully');
+            setTimeout(() => router.push('/news'), 500);
+        } catch (error: any) {
+            toast.error(error.message || 'Submission failed. Please check your network.');
         } finally {
             setIsPending(false);
         }
