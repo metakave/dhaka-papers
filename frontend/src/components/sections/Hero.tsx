@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import Card from '@/components/common/Card';
 import { News } from '@/types/news';
 import { useParams } from 'next/navigation';
@@ -11,56 +10,58 @@ interface HeroProps {
     isLoading: boolean;
 }
 
-export default function Hero({ featured: mainArticle, latest, isLoading }: HeroProps) {
+export default function Hero({ featured, latest, isLoading }: HeroProps) {
     const params = useParams();
-    const locale = params.locale as string || "bn";
+    const locale = (params.locale as string) || 'bn';
 
     if (isLoading) {
-        return <div className="py-20 text-center text-gray-400 font-bold italic">{locale === "bn" ? "সংবাদ লোড হচ্ছে..." : "Loading news..."}</div>;
+        return (
+            <section className="pb-8 border-b border-gray-200">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div className="lg:col-span-7 animate-pulse space-y-3">
+                        <div className="aspect-video bg-gray-100" />
+                        <div className="h-3 bg-gray-100 w-20" />
+                        <div className="h-7 bg-gray-100" />
+                        <div className="h-7 bg-gray-100 w-4/5" />
+                        <div className="h-4 bg-gray-100 w-full" />
+                        <div className="h-4 bg-gray-100 w-3/4" />
+                    </div>
+                    <div className="lg:col-span-5 grid grid-cols-2 gap-4">
+                        {[...Array(4)].map((_, i) => (
+                            <div key={i} className="animate-pulse space-y-2">
+                                <div className="aspect-video bg-gray-100" />
+                                <div className="h-3 bg-gray-100 w-16" />
+                                <div className="h-4 bg-gray-100" />
+                                <div className="h-4 bg-gray-100 w-4/5" />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+        );
     }
 
-    // Hero uses first 3 for side list (right) and next 2 for secondary (under main)
-    // latest list from props is already filtered by backend
-    const sideArticles = latest.slice(0, 3);
-    const secondaryArticles = latest.slice(3, 5);
+    const rightArticles = latest.slice(0, 4);
 
     return (
-        <section className="py-8 md:py-12">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                {/* Main Impactful Story */}
-                <div className="lg:col-span-8 border-r border-transparent lg:border-gray-100 lg:pr-10">
-                    {mainArticle ? (
-                        <div className="flex flex-col gap-6">
-                            <Card article={mainArticle} variant="large" />
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4 border-t border-gray-100 pt-8">
-                                {secondaryArticles.map(article => (
-                                    <Card key={article.id} article={article} variant="medium" />
-                                ))}
-                            </div>
-                        </div>
+        <section className="pb-8 border-b border-gray-200">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-6">
+                <div className="lg:col-span-7 lg:pr-6 lg:border-r lg:border-gray-200 mb-8 lg:mb-0">
+                    {featured ? (
+                        <Card article={featured} variant="featured" />
                     ) : (
-                        <div className="h-[400px] flex items-center justify-center bg-gray-50 text-gray-400 italic">
-                            {locale === "bn" ? "কোনো বিশেষ খবর পাওয়া যায়নি" : "No featured news found"}
+                        <div className="aspect-video bg-gray-50 flex items-center justify-center text-gray-300 italic">
+                            {locale === 'bn' ? 'no featured' : 'No featured news'}
                         </div>
                     )}
                 </div>
 
-                {/* Side High-Density List */}
-                <div className="lg:col-span-4 flex flex-col gap-6">
-                    <div className="bg-gray-50 p-4 border-l-4 border-primary">
-                        <h3 className={`${locale === "en" ? "text-[18px]" : "text-xl"} font-black uppercase tracking-tighter`}>
-                            {locale === "bn" ? "সর্বশেষ খবর" : "Latest News"}
-                        </h3>
-                    </div>
-                    <div className="flex flex-col gap-4">
-                        {sideArticles.map(article => (
-                            <Card key={article.id} article={article} variant="hero-side" />
+                <div className="lg:col-span-5">
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-6">
+                        {rightArticles.map(article => (
+                            <Card key={article.id} article={article} variant="grid" />
                         ))}
                     </div>
-
-                    <Link href={`/news`} className="text-center py-3 border border-gray-200 font-bold text-sm hover:bg-gray-50 transition-colors uppercase tracking-widest mt-2">
-                        {locale === "bn" ? "সকল সংবাদ দেখুন" : "View All News"}
-                    </Link>
                 </div>
             </div>
         </section>

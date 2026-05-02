@@ -12,32 +12,36 @@ interface NewsGridProps {
 
 export default function NewsGrid({ news, isLoading }: NewsGridProps) {
     const params = useParams();
-    const locale = params.locale as string || "bn";
+    const locale = (params.locale as string) || 'bn';
+
     if (isLoading) {
         return (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-12 gap-y-20">
-                {[...Array(6)].map((_, i) => (
-                    <div key={i} className="animate-pulse flex flex-col gap-4">
-                        <div className="bg-gray-100 aspect-video rounded-sm" />
-                        <div className="h-6 bg-gray-100 w-3/4" />
-                        <div className="h-20 bg-gray-100 w-full" />
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-x-5 gap-y-8">
+                {[...Array(9)].map((_, i) => (
+                    <div key={i} className="animate-pulse space-y-2">
+                        <div className="aspect-video bg-gray-100" />
+                        <div className="h-3 bg-gray-100 w-20" />
+                        <div className="h-4 bg-gray-100" />
+                        <div className="h-4 bg-gray-100 w-4/5" />
+                        <div className="h-3 bg-gray-100 w-16" />
                     </div>
                 ))}
             </div>
         );
     }
 
+    if (news.length === 0) return null;
+
     return (
-        <section className="py-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-12 gap-y-20">
-                {news.map((article) => (
-                    <Card key={article.id} article={article} variant="medium" />
+        <section>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-x-5 gap-y-8">
+                {news.map(article => (
+                    <Card key={article.id} article={article} variant="grid" />
                 ))}
             </div>
-
-            <div className="mt-24 flex justify-center">
-                <Link href={`/news`} className="px-16 py-5 bg-gray-900 text-white font-black hover:bg-primary transition-all duration-300 rounded-sm uppercase tracking-[0.3em] text-sm shadow-xl hover:shadow-primary/20">
-                    {locale === "bn" ? "আরও খবর পড়ুন" : "Read More News"}
+            <div className="mt-10 flex justify-center">
+                <Link href="/news" className="px-8 py-3 border border-gray-300 text-sm font-bold hover:bg-gray-50 transition-colors uppercase tracking-widest">
+                    {locale === 'bn' ? 'আরও খবর পড়ুন' : 'Read More News'}
                 </Link>
             </div>
         </section>
