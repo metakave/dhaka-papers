@@ -38,11 +38,12 @@ export async function generateMetadata(
             : `${baseUrl}${article.thumbnail}`
         : `${baseUrl}/placeholder-news.jpg`;
 
-    // Excerpt fallback: strip any HTML, truncate to 200 chars
-    const description = (article.excerpt || article.title)
-        .replace(/<[^>]*>/g, '')
-        .trim()
-        .slice(0, 200);
+    // Build description: excerpt → first 200 chars of content → title
+    const rawDescription = article.excerpt
+        || (article.content
+            ? article.content.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().slice(0, 200)
+            : article.title);
+    const description = rawDescription.trim().slice(0, 200);
 
     return {
         title: `${title} | ${siteName}`,
