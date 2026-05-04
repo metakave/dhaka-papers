@@ -23,35 +23,60 @@ export async function generateMetadata(
     if (!article) return { title: 'Not Found' };
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://dhakapapers.com';
-    const ogImage = article.thumbnail || `${baseUrl}/placeholder-news.jpg`;
-    const title = (isBn || !article.title_en) ? article.title : article.title_en;
+    const enBaseUrl = baseUrl.replace(/^(https?:\/\/)(www\.)?/, '$1en.');
+    const canonicalUrl = `${isBn ? baseUrl : enBaseUrl}/news/${slug}`;
+
+    // article.title is the actual display title (English for en articles, Bengali for bn)
+    // article.title_en is only a SEO slug source field — never use it for OG
+    const title = article.title;
+    const siteName = isBn ? 'ঢাকা পেপারস' : 'Dhaka Papers';
+
+    // Ensure image URL is absolute
+    const ogImage = article.thumbnail
+        ? article.thumbnail.startsWith('http')
+            ? article.thumbnail
+            : `${baseUrl}${article.thumbnail}`
+        : `${baseUrl}/placeholder-news.jpg`;
+
+    // Excerpt fallback: strip any HTML, truncate to 200 chars
+    const description = (article.excerpt || article.title)
+        .replace(/<[^>]*>/g, '')
+        .trim()
+        .slice(0, 200);
 
     return {
-        title: `${title} | ${isBn ? 'ঢাকা পেপারস' : 'Dhaka Papers'}`,
-        description: article.excerpt,
+        title: `${title} | ${siteName}`,
+        description,
+        metadataBase: new URL(isBn ? baseUrl : enBaseUrl),
+        alternates: {
+            canonical: canonicalUrl,
+        },
         openGraph: {
-            title: title,
-            description: article.excerpt,
-            url: `${locale === 'en' ? baseUrl.replace(/(\/\/)(www\.)?/i, '$1en.') : baseUrl}/news/${slug}`,
-            siteName: isBn ? 'ঢাকা পেপারস' : 'Dhaka Papers',
+            title,
+            description,
+            url: canonicalUrl,
+            siteName,
             images: [
                 {
                     url: ogImage,
                     width: 1200,
                     height: 630,
-                    alt: article.title,
+                    alt: title,
                 },
             ],
             locale: isBn ? 'bn_BD' : 'en_US',
             type: 'article',
             publishedTime: article.published_at,
-            authors: [article.author_name || 'Dhaka Papers'],
+            modifiedTime: article.updated_at,
+            authors: [article.author_name || siteName],
+            tags: article.tags || [],
         },
         twitter: {
             card: 'summary_large_image',
-            title: title,
-            description: article.excerpt,
+            title,
+            description,
             images: [ogImage],
+            site: isBn ? '@dhakapapers' : '@dhakapapers',
         },
     };
 }
