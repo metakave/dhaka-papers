@@ -1,4 +1,37 @@
 import QueryProvider from "@/providers/QueryProvider";
+import { Metadata } from 'next';
+
+export async function generateMetadata(
+    { params }: { params: Promise<{ locale: string }> }
+): Promise<Metadata> {
+    const { locale } = await params;
+    const isBn = locale === 'bn';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://dhakapapers.com';
+    const enBaseUrl = baseUrl.replace(/^(https?:\/\/)(www\.)?/, '$1en.');
+    const siteName = isBn ? 'ঢাকা পেপারস' : 'Dhaka Papers';
+    const description = isBn
+        ? 'বাংলাদেশ ও বিশ্বের সর্বশেষ খবর, বিশ্লেষণ এবং অনুসন্ধানী প্রতিবেদন।'
+        : 'Latest news, analysis and investigative reporting from Bangladesh and around the world.';
+    const ogImage = `${baseUrl}/og-default.jpg`;
+    return {
+        title: { default: siteName, template: `%s | ${siteName}` },
+        description,
+        metadataBase: new URL(isBn ? baseUrl : enBaseUrl),
+        openGraph: {
+            siteName,
+            description,
+            type: 'website',
+            locale: isBn ? 'bn_BD' : 'en_US',
+            images: [{ url: ogImage, width: 1200, height: 630, alt: siteName }],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            site: '@dhakapapers',
+            description,
+            images: [ogImage],
+        },
+    };
+}
 
 export default async function LocaleLayout({
   children,

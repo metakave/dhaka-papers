@@ -1,6 +1,7 @@
 'use client';
 
 import Card from '@/components/common/Card';
+import NewsBriefs from '@/components/sections/NewsBriefs';
 import { News } from '@/types/news';
 import { useParams } from 'next/navigation';
 
@@ -18,7 +19,7 @@ export default function Hero({ featured, latest, isLoading }: HeroProps) {
         return (
             <section className="pb-8 border-b border-gray-200">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    <div className="lg:col-span-7 animate-pulse space-y-3">
+                    <div className="lg:col-span-6 animate-pulse space-y-3">
                         <div className="aspect-video bg-gray-100" />
                         <div className="h-3 bg-gray-100 w-20" />
                         <div className="h-7 bg-gray-100" />
@@ -26,8 +27,8 @@ export default function Hero({ featured, latest, isLoading }: HeroProps) {
                         <div className="h-4 bg-gray-100 w-full" />
                         <div className="h-4 bg-gray-100 w-3/4" />
                     </div>
-                    <div className="lg:col-span-5 grid grid-cols-2 gap-4">
-                        {[...Array(4)].map((_, i) => (
+                    <div className="lg:col-span-3 grid grid-cols-1 gap-4">
+                        {[...Array(2)].map((_, i) => (
                             <div key={i} className="animate-pulse space-y-2">
                                 <div className="aspect-video bg-gray-100" />
                                 <div className="h-3 bg-gray-100 w-16" />
@@ -36,17 +37,23 @@ export default function Hero({ featured, latest, isLoading }: HeroProps) {
                             </div>
                         ))}
                     </div>
+                    <div className="lg:col-span-3">
+                        <div className="h-[400px] w-full bg-gray-100 animate-pulse" />
+                    </div>
                 </div>
             </section>
         );
     }
 
-    const rightArticles = latest.slice(0, 4);
+    const midArticles = latest.slice(0, 2);
+    // News for the sticky box (showing 5 items as requested)
+    const briefsNews = latest.slice(2, 7); 
 
     return (
         <section className="pb-8 border-b border-gray-200">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-6">
-                <div className="lg:col-span-7 lg:pr-6 lg:border-r lg:border-gray-200 mb-8 lg:mb-0">
+            <div className="flex flex-col lg:grid lg:grid-cols-12 gap-0 lg:gap-6">
+                {/* Lead News */}
+                <div className="lg:col-span-6 lg:pr-6 lg:border-r lg:border-gray-200 mb-8 lg:mb-0 order-1">
                     {featured ? (
                         <Card article={featured} variant="featured" hideTime />
                     ) : (
@@ -56,9 +63,17 @@ export default function Hero({ featured, latest, isLoading }: HeroProps) {
                     )}
                 </div>
 
-                <div className="lg:col-span-5">
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-6">
-                        {rightArticles.map(article => (
+                {/* News Briefs Box (Sticky top right) */}
+                <div className="lg:col-span-3 mb-8 lg:mb-0 order-2 lg:order-3 relative">
+                    <div className="sticky top-[100px]">
+                        <NewsBriefs news={briefsNews} />
+                    </div>
+                </div>
+
+                {/* Middle Grid */}
+                <div className="lg:col-span-3 lg:pr-6 lg:border-r lg:border-gray-200 order-3 lg:order-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-x-4 gap-y-6">
+                        {midArticles.map(article => (
                             <Card key={article.id} article={article} variant="grid" hideTime />
                         ))}
                     </div>
