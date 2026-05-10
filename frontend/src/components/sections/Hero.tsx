@@ -46,8 +46,8 @@ export default function Hero({ featured, latest, isLoading }: HeroProps) {
     }
 
     const midArticles = latest.slice(0, 2);
-    // News for the sticky box (showing 5 items as requested)
-    const briefsNews = latest.slice(2, 7); 
+    // News for the sticky box (unlimited scroll)
+    const briefsNews = latest.slice(2); 
 
     return (
         <section className="pb-8 border-b border-gray-200">

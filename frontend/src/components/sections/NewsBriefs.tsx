@@ -16,7 +16,7 @@ export default function NewsBriefs({ news }: NewsBriefsProps) {
     return (
         <div className="border border-gray-200 bg-white flex flex-col h-[400px]">
             {/* Header */}
-            <div className="flex text-center bg-[#b91c1c] text-yellow-300 font-bold text-lg">
+            <div className="flex text-center bg-[#b91c1c] text-white font-bold text-lg">
                 <div className="py-2 px-4 flex-1">
                     {locale === 'bn' ? 'সংবাদ সংক্ষেপ' : 'News Briefs'}
                 </div>
@@ -47,8 +47,8 @@ export default function NewsBriefs({ news }: NewsBriefsProps) {
 
             {/* Footer button */}
             <Link
-                href="/latest"
-                className="bg-[#b91c1c] text-yellow-300 text-center py-2 font-bold text-lg hover:bg-red-800 transition-colors"
+                href="/news"
+                className="bg-[#b91c1c] text-white text-center py-2 font-bold text-lg hover:bg-red-800 transition-colors"
             >
                 {locale === 'bn' ? 'সব খবর' : 'All News'}
             </Link>
