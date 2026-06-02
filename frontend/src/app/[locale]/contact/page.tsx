@@ -16,22 +16,8 @@ export default function ContactPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20">
                     <div className="space-y-10">
                         <div className="bg-gray-50 p-8 border-l-8 border-primary shadow-sm">
-                            <address className="not-italic text-lg text-gray-700 leading-relaxed font-bold">
-                                {isBn ? "ঢাকা পেপারস" : "Dhaka Papers"}<br />
-                                {isBn ? "হাউজ ৭৭ (লেভেল-১), রোড ৯, ব্লক – সি, নিকেতন," : "House 77 (Level-1), Road 9, Block - C, Niketan,"}<br />
-                                {isBn ? "গুলশান-১, ঢাকা - ১২১২, বাংলাদেশ" : "Gulshan-1, Dhaka - 1212, Bangladesh"}
-                            </address>
-                        </div>
-
-                        <div className="space-y-6">
-                            <div>
-                                <h3 className="text-lg font-black text-primary uppercase tracking-widest mb-2">{isBn ? "ইমেইল" : "Email"}</h3>
-                                <p className="text-xl font-bold text-gray-900 border-b-2 border-gray-100 pb-1">info@dhakapapers.com</p>
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-black text-primary uppercase tracking-widest mb-2">{isBn ? "ফোন" : "Phone"}</h3>
-                                <p className="text-xl font-bold text-gray-900 border-b-2 border-gray-100 pb-1">{isBn ? "+৮৮০২ ৪৮৮-১৫০২১" : "+8802 488-15021"}</p>
-                            </div>
+                            <h3 className="text-lg font-black text-primary uppercase tracking-widest mb-2">{isBn ? "ইমেইল" : "Email"}</h3>
+                            <p className="text-2xl font-bold text-gray-900">info@dhakapapers.com</p>
                         </div>
                     </div>
 
