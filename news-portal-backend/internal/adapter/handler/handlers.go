@@ -223,6 +223,7 @@ func (h *NewsHandler) CreateNews(w http.ResponseWriter, r *http.Request) {
 	excerpt := r.FormValue("excerpt")
 	content := r.FormValue("content")
 	isFeatured := r.FormValue("is_featured") == "true"
+	isBrief := r.FormValue("is_brief") == "true"
 	thumbnailCaption := r.FormValue("thumbnail_caption")
 	lang := r.FormValue("lang")
 	if lang == "" {
@@ -299,7 +300,7 @@ func (h *NewsHandler) CreateNews(w http.ResponseWriter, r *http.Request) {
 		publishedAt = time.Now()
 	}
 
-	news, err := h.svc.CreateNews(r.Context(), authorID, categoryID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption, tags, isFeatured, status, publishedAt, lang)
+	news, err := h.svc.CreateNews(r.Context(), authorID, categoryID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption, tags, isFeatured, isBrief, status, publishedAt, lang)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -331,6 +332,7 @@ func (h *NewsHandler) UpdateNews(w http.ResponseWriter, r *http.Request) {
 	excerpt := r.FormValue("excerpt")
 	content := r.FormValue("content")
 	isFeatured := r.FormValue("is_featured") == "true"
+	isBrief := r.FormValue("is_brief") == "true"
 	thumbnailCaption := r.FormValue("thumbnail_caption")
 	lang := r.FormValue("lang")
 	if lang == "" {
@@ -394,7 +396,7 @@ func (h *NewsHandler) UpdateNews(w http.ResponseWriter, r *http.Request) {
 		publishedAt = time.Now()
 	}
 
-	if err := h.svc.UpdateNews(r.Context(), id, categoryID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption, tags, isFeatured, status, publishedAt, lang); err != nil {
+	if err := h.svc.UpdateNews(r.Context(), id, categoryID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption, tags, isFeatured, isBrief, status, publishedAt, lang); err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
 			http.Error(w, "News not found", http.StatusNotFound)
 			return
@@ -443,6 +445,19 @@ func (h *NewsHandler) ListNews(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	briefStr := r.URL.Query().Get("is_brief")
+	var isBrief *bool
+	if briefStr != "" {
+		b, err := strconv.ParseBool(briefStr)
+		if err == nil {
+			isBrief = &b
+		}
+	} else {
+		// Default to false for public lists so briefs don't leak into category/general pages
+		f := false
+		isBrief = &f
+	}
+
 	search := r.URL.Query().Get("search")
 	authorIDStr := r.URL.Query().Get("author_id")
 	tag := r.URL.Query().Get("tag")
@@ -455,7 +470,7 @@ func (h *NewsHandler) ListNews(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	newsList, total, err := h.svc.ListNews(r.Context(), int32(page), int32(limit), category, authorID, sort, isFeatured, search, "", tag, lang)
+	newsList, total, err := h.svc.ListNews(r.Context(), int32(page), int32(limit), category, authorID, sort, isFeatured, isBrief, search, "", tag, lang)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -483,6 +498,15 @@ func (h *NewsHandler) ListAdminNews(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	briefStr := r.URL.Query().Get("is_brief")
+	var isBrief *bool
+	if briefStr != "" {
+		b, err := strconv.ParseBool(briefStr)
+		if err == nil {
+			isBrief = &b
+		}
+	}
+
 	search := r.URL.Query().Get("search")
 	authorIDStr := r.URL.Query().Get("author_id")
 	tag := r.URL.Query().Get("tag")
@@ -497,7 +521,7 @@ func (h *NewsHandler) ListAdminNews(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Status Filter: "all" for admin to see everything
-	newsList, total, err := h.svc.ListNews(r.Context(), int32(page), int32(limit), category, authorID, sort, isFeatured, search, "all", tag, lang)
+	newsList, total, err := h.svc.ListNews(r.Context(), int32(page), int32(limit), category, authorID, sort, isFeatured, isBrief, search, "all", tag, lang)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

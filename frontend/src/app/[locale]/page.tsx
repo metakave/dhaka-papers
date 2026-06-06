@@ -13,15 +13,16 @@ export default function Home() {
     const locale = (params.locale as string) || 'bn';
     const { data, isLoading } = useHomepage(locale);
 
-    // Hero: featured + latest[0..3] right grid
-    // Grid section: latest[4..]
-    const gridItems = data?.latest?.slice(4) || [];
+    // Hero: featured + latest[0..1] middle grid
+    // Grid section: latest[2..]
+    const gridItems = data?.latest?.slice(2) || [];
 
     return (
         <Layout>
             <Hero
                 featured={data?.featured || null}
                 latest={data?.latest || []}
+                briefs={data?.briefs || []}
                 isLoading={isLoading}
             />
 

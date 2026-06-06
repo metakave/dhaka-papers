@@ -10,6 +10,7 @@ export interface News {
     slug: string;
     status: string;
     is_featured: boolean;
+    is_brief?: boolean;
     views_count: number;
     published_at: string;
     created_at: string;

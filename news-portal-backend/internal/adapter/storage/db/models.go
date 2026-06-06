@@ -41,6 +41,7 @@ type News struct {
 	ThumbnailCaption pgtype.Text
 	Tags             []string
 	Lang             string
+	IsBrief          bool
 }
 
 type Owner struct {

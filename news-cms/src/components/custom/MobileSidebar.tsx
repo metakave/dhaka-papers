@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Newspaper, Layers, Users } from 'lucide-react';
+import { LayoutDashboard, Newspaper, Layers, Users, BookOpen } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
@@ -12,6 +12,7 @@ import { useState } from 'react';
 const sidebarItems = [
     { title: 'Overview', href: '/', icon: LayoutDashboard },
     { title: 'News', href: '/news', icon: Newspaper },
+    { title: 'সংবাদ সংক্ষেপ', href: '/briefs', icon: BookOpen },
     { title: 'Categories', href: '/categories', icon: Layers },
     { title: 'Users', href: '/users', icon: Users },
 ];

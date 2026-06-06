@@ -49,10 +49,13 @@ func NewNewsService(repo port.NewsRepository, categoryRepo port.CategoryReposito
 	}
 }
 
-func (s *NewsService) CreateNews(ctx context.Context, authorID, categoryID uuid.UUID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption string, tags []string, isFeatured bool, status string, publishedAt time.Time, lang string) (*domain.News, error) {
+func (s *NewsService) CreateNews(ctx context.Context, authorID, categoryID uuid.UUID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption string, tags []string, isFeatured bool, isBrief bool, status string, publishedAt time.Time, lang string) (*domain.News, error) {
 	// Use English Title for Slug generation
 	slug := generateUniqueSlug(titleEn)
-	sanitizedContent := s.p.Sanitize(content)
+	sanitizedContent := content
+	if !isBrief {
+		sanitizedContent = s.p.Sanitize(content)
+	}
 
 	news := &domain.News{
 		AuthorID:    authorID,
@@ -66,6 +69,7 @@ func (s *NewsService) CreateNews(ctx context.Context, authorID, categoryID uuid.
 		Tags:             tags,
 		Slug:             slug,
 		IsFeatured:       isFeatured,
+		IsBrief:          isBrief,
 		Status:           status,
 		PublishedAt:      publishedAt,
 		Lang:             lang,
@@ -73,8 +77,11 @@ func (s *NewsService) CreateNews(ctx context.Context, authorID, categoryID uuid.
 	return s.repo.CreateNews(ctx, news)
 }
 
-func (s *NewsService) UpdateNews(ctx context.Context, id uuid.UUID, categoryID uuid.UUID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption string, tags []string, isFeatured bool, status string, publishedAt time.Time, lang string) error {
-	sanitizedContent := s.p.Sanitize(content)
+func (s *NewsService) UpdateNews(ctx context.Context, id uuid.UUID, categoryID uuid.UUID, title, titleEn, excerpt, content, thumbnail, thumbnailCaption string, tags []string, isFeatured bool, isBrief bool, status string, publishedAt time.Time, lang string) error {
+	sanitizedContent := content
+	if !isBrief {
+		sanitizedContent = s.p.Sanitize(content)
+	}
 	news := &domain.News{
 		ID:          id,
 		CategoryID:  categoryID,
@@ -86,6 +93,7 @@ func (s *NewsService) UpdateNews(ctx context.Context, id uuid.UUID, categoryID u
 		ThumbnailCaption: &thumbnailCaption,
 		Tags:             tags,
 		IsFeatured:       isFeatured,
+		IsBrief:          isBrief,
 		Status:           status,
 		PublishedAt:      publishedAt,
 		Lang:             lang,
@@ -110,7 +118,7 @@ func (s *NewsService) GetNewsBySlug(ctx context.Context, slug string, lang strin
 	}
 	return news, nil
 }
-func (s *NewsService) ListNews(ctx context.Context, page, limit int32, categorySlug string, authorID *uuid.UUID, sortBy string, isFeatured *bool, search string, statusFilter string, tag string, lang string) ([]*domain.News, int64, error) {
+func (s *NewsService) ListNews(ctx context.Context, page, limit int32, categorySlug string, authorID *uuid.UUID, sortBy string, isFeatured *bool, isBrief *bool, search string, statusFilter string, tag string, lang string) ([]*domain.News, int64, error) {
 	if page < 1 {
 		page = 1
 	}
@@ -145,13 +153,13 @@ func (s *NewsService) ListNews(ctx context.Context, page, limit int32, categoryS
 		langPtr = &lang
 	}
 
-	news, err := s.repo.ListNews(ctx, limit, offset, categoryID, authorID, sortBy, isFeatured, searchPtr, statusFilter, tagPtr, langPtr)
+	news, err := s.repo.ListNews(ctx, limit, offset, categoryID, authorID, sortBy, isFeatured, isBrief, searchPtr, statusFilter, tagPtr, langPtr)
 	if err != nil {
 		return nil, 0, err
 	}
 
 	// Get total count with filters applied
-	total, err := s.repo.CountNews(ctx, categoryID, authorID, isFeatured, search, statusFilter, tagPtr, langPtr)
+	total, err := s.repo.CountNews(ctx, categoryID, authorID, isFeatured, isBrief, search, statusFilter, tagPtr, langPtr)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -169,9 +177,11 @@ func (s *NewsService) GetHomepageData(ctx context.Context, lang string) (*port.H
 		langPtr = &lang
 	}
 
+	isBriefFalse := false
+
 	// 1. Fetch Featured News (Limit 1)
 	isFeatured := true
-	featuredList, err := s.repo.ListNews(ctx, 1, 0, nil, nil, "latest", &isFeatured, nil, "", nil, langPtr)
+	featuredList, err := s.repo.ListNews(ctx, 1, 0, nil, nil, "latest", &isFeatured, &isBriefFalse, nil, "", nil, langPtr)
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +194,7 @@ func (s *NewsService) GetHomepageData(ctx context.Context, lang string) (*port.H
 	}
 
 	// 2. Fetch Latest News (Limit 21 - fetching one extra in case we filter out featured)
-	latestList, err := s.repo.ListNews(ctx, 21, 0, nil, nil, "latest", nil, nil, "", nil, langPtr)
+	latestList, err := s.repo.ListNews(ctx, 21, 0, nil, nil, "latest", nil, &isBriefFalse, nil, "", nil, langPtr)
 	if err != nil {
 		return nil, err
 	}
@@ -203,15 +213,34 @@ func (s *NewsService) GetHomepageData(ctx context.Context, lang string) (*port.H
 	}
 
 	// 3. Fetch Popular News (Limit 5)
-	popularList, err := s.repo.ListNews(ctx, 5, 0, nil, nil, "popular", nil, nil, "", nil, langPtr)
+	popularList, err := s.repo.ListNews(ctx, 5, 0, nil, nil, "popular", nil, &isBriefFalse, nil, "", nil, langPtr)
 	if err != nil {
 		return nil, err
+	}
+
+	// 4. Fetch Briefs News (Limit 1)
+	isBrief := true
+	briefsList, err := s.repo.ListNews(ctx, 1, 0, nil, nil, "latest", nil, &isBrief, nil, "", nil, langPtr)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(briefsList) > 0 {
+		langStr := ""
+		if langPtr != nil {
+			langStr = *langPtr
+		}
+		fullBrief, err := s.repo.GetNewsBySlug(ctx, briefsList[0].Slug, langStr)
+		if err == nil && fullBrief != nil {
+			briefsList[0].Content = fullBrief.Content
+		}
 	}
 
 	return &port.HomepageData{
 		Featured: featured,
 		Latest:   latest,
 		Popular:  popularList,
+		Briefs:   briefsList,
 	}, nil
 }
 

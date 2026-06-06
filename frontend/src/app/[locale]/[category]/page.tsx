@@ -32,7 +32,7 @@ export default function CategoryPage() {
                     </h1>
                 </div>
 
-                <InfiniteNewsList category={categorySlug} />
+                <InfiniteNewsList category={categorySlug} isBrief={categorySlug === 'news-briefs'} />
             </div>
         </Layout>
     );

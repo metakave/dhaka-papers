@@ -69,7 +69,7 @@ func (h *SeedHandler) SEED_CreateNews(w http.ResponseWriter, r *http.Request) {
 		titleEn = req.Title // Fallback for seeds
 	}
 
-	news, err := h.svc.CreateNews(r.Context(), authorID, categoryID, req.Title, titleEn, req.Excerpt, req.Content, req.ThumbnailURL, "", []string{}, req.IsFeatured, "published", time.Now(), "bn")
+	news, err := h.svc.CreateNews(r.Context(), authorID, categoryID, req.Title, titleEn, req.Excerpt, req.Content, req.ThumbnailURL, "", []string{}, req.IsFeatured, false, "published", time.Now(), "bn")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -175,6 +175,9 @@ export function NewsTable({ data, totalPages, currentPage, currentSort, currentL
                                         {article.is_featured && (
                                             <Badge variant="secondary" className="ml-2 text-xs">Featured</Badge>
                                         )}
+                                        {article.is_brief && (
+                                            <Badge variant="outline" className="ml-2 text-xs bg-amber-50 text-amber-700 border-amber-200">Brief</Badge>
+                                        )}
                                     </TableCell>
                                     <TableCell>{article.category_name || '-'}</TableCell>
                                     <TableCell>

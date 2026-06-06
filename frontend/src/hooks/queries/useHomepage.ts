@@ -6,6 +6,7 @@ export interface HomepageData {
     featured: News;
     latest: News[];
     popular: News[];
+    briefs: News[];
 }
 
 export const useHomepage = (lang?: string) => {

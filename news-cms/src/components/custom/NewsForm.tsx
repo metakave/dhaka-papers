@@ -42,6 +42,7 @@ const formSchema = z.object({
     excerpt: z.string().min(10, 'Excerpt must be at least 10 characters'),
     content: z.string().min(20, 'Content must be at least 20 characters'),
     is_featured: z.boolean(),
+    is_brief: z.boolean(),
     thumbnail: z.any().refine((val) => val && (val instanceof File || typeof val === 'string' && val.length > 0), 'Thumbnail is required'),
     thumbnail_caption: z.string().optional(),
     tags: z.array(z.string()).optional(),
@@ -72,6 +73,7 @@ export function NewsForm({ categories, initialData }: NewsFormProps) {
             excerpt: initialData?.excerpt || '',
             content: initialData?.content || '',
             is_featured: initialData ? initialData.is_featured : false,
+            is_brief: initialData ? !!initialData.is_brief : false,
             thumbnail: initialData?.thumbnail || '',
             thumbnail_caption: initialData?.thumbnail_caption || '',
             tags: initialData?.tags || [],
@@ -120,6 +122,7 @@ export function NewsForm({ categories, initialData }: NewsFormProps) {
             formData.append('excerpt', values.excerpt);
             formData.append('content', values.content);
             formData.append('is_featured', String(values.is_featured));
+            formData.append('is_brief', String(values.is_brief));
             formData.append('status', values.status);
             formData.append('lang', values.lang);
             formData.append('thumbnail_caption', values.thumbnail_caption || '');
@@ -330,11 +333,13 @@ export function NewsForm({ categories, initialData }: NewsFormProps) {
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                        {categories.map((category) => (
-                                            <SelectItem key={category.id} value={category.id}>
-                                                {category.name}
-                                            </SelectItem>
-                                        ))}
+                                        {categories
+                                            .filter((c) => c.slug !== 'news-briefs')
+                                            .map((category) => (
+                                                <SelectItem key={category.id} value={category.id}>
+                                                    {category.name}
+                                                </SelectItem>
+                                            ))}
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -423,6 +428,8 @@ export function NewsForm({ categories, initialData }: NewsFormProps) {
                             </FormItem>
                         )}
                     />
+
+{/* is_brief removed — use dedicated সংবাদ সংক্ষেপ section in the sidebar */}
                 </div>
 
                 <FormField

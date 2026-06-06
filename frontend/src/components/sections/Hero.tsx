@@ -8,10 +8,11 @@ import { useParams } from 'next/navigation';
 interface HeroProps {
     featured: News | null;
     latest: News[];
+    briefs: News[];
     isLoading: boolean;
 }
 
-export default function Hero({ featured, latest, isLoading }: HeroProps) {
+export default function Hero({ featured, latest, briefs, isLoading }: HeroProps) {
     const params = useParams();
     const locale = (params.locale as string) || 'bn';
 
@@ -46,8 +47,6 @@ export default function Hero({ featured, latest, isLoading }: HeroProps) {
     }
 
     const midArticles = latest.slice(0, 2);
-    // News for the sticky box (unlimited scroll)
-    const briefsNews = latest.slice(2); 
 
     return (
         <section className="pb-8 border-b border-gray-200">
@@ -63,10 +62,13 @@ export default function Hero({ featured, latest, isLoading }: HeroProps) {
                     )}
                 </div>
 
-                {/* News Briefs Box (Sticky top right) */}
+                {/* News Briefs Box (Matches grid row height) */}
                 <div className="lg:col-span-3 mb-8 lg:mb-0 order-2 lg:order-3 relative">
-                    <div className="sticky top-[100px]">
-                        <NewsBriefs news={briefsNews} />
+                    <div className="hidden lg:block absolute inset-0">
+                        <NewsBriefs news={briefs} />
+                    </div>
+                    <div className="block lg:hidden">
+                        <NewsBriefs news={briefs} />
                     </div>
                 </div>
 

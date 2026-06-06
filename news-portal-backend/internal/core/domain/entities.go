@@ -42,6 +42,7 @@ type News struct {
 	Slug             string    `json:"slug"`
 	Status          string    `json:"status"`
 	IsFeatured      bool      `json:"is_featured"`
+	IsBrief         bool      `json:"is_brief"`
 	MetaTitle       *string   `json:"meta_title"`
 	MetaDescription *string   `json:"meta_description"`
 	ViewsCount      int64     `json:"views_count"`

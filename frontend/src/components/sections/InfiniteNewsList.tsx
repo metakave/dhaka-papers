@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useParams } from 'next/navigation';
 import Card from '@/components/common/Card';
+import { BriefCard } from '@/components/sections/NewsBriefs';
 import { useInfiniteNews } from '@/hooks/queries/useNews';
 
 interface InfiniteNewsListProps {
@@ -12,14 +13,15 @@ interface InfiniteNewsListProps {
     sort?: string;
     search?: string;
     tag?: string;
+    isBrief?: boolean;
 }
 
-export default function InfiniteNewsList({ category, authorId, sort, search, tag }: InfiniteNewsListProps) {
+export default function InfiniteNewsList({ category, authorId, sort, search, tag, isBrief }: InfiniteNewsListProps) {
     const params = useParams();
     const locale = (params.locale as string) || 'bn';
     const { ref, inView } = useInView();
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } =
-        useInfiniteNews({ limit: 12, category, authorId, sort, search, tag, lang: locale });
+        useInfiniteNews({ limit: 12, category, authorId, sort, search, tag, isBrief, lang: locale });
 
     useEffect(() => {
         if (inView && hasNextPage && !isFetchingNextPage) fetchNextPage();
@@ -61,9 +63,16 @@ export default function InfiniteNewsList({ category, authorId, sort, search, tag
 
     return (
         <section>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-x-5 gap-y-8">
+            <div className={isBrief 
+                ? "grid grid-cols-1 md:grid-cols-2 gap-8" 
+                : "grid grid-cols-2 md:grid-cols-3 gap-x-5 gap-y-8"
+            }>
                 {allNews.map(article => (
-                    <Card key={article.id} article={article} variant="grid" />
+                    isBrief ? (
+                        <BriefCard key={article.id} brief={article} />
+                    ) : (
+                        <Card key={article.id} article={article} variant="grid" />
+                    )
                 ))}
             </div>
 

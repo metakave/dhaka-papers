@@ -13,6 +13,7 @@ export interface News {
     tags?: string[];
     status: string;
     is_featured: boolean;
+    is_brief?: boolean;
     published_at: string;
     created_at: string;
     views_count: number;

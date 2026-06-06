@@ -26,16 +26,16 @@ func (s *StatsService) GetDashboardStats(ctx context.Context) (*port.DashboardSt
 	en := "en"
 
 	// 1. Total News
-	totalNews, err := s.newsRepo.CountNews(ctx, nil, nil, nil, "", "all", nil, nil)
+	totalNews, err := s.newsRepo.CountNews(ctx, nil, nil, nil, nil, "", "all", nil, nil)
 	if err != nil {
 		log.Printf("Error counting total news: %v", err)
 		return nil, err
 	}
-	totalNewsBN, errBN := s.newsRepo.CountNews(ctx, nil, nil, nil, "", "all", nil, &bn)
+	totalNewsBN, errBN := s.newsRepo.CountNews(ctx, nil, nil, nil, nil, "", "all", nil, &bn)
 	if errBN != nil {
 		log.Printf("Error counting total news BN: %v", errBN)
 	}
-	totalNewsEN, errEN := s.newsRepo.CountNews(ctx, nil, nil, nil, "", "all", nil, &en)
+	totalNewsEN, errEN := s.newsRepo.CountNews(ctx, nil, nil, nil, nil, "", "all", nil, &en)
 	if errEN != nil {
 		log.Printf("Error counting total news EN: %v", errEN)
 	}

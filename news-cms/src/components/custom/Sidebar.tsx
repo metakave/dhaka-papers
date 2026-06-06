@@ -3,11 +3,12 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Newspaper, Layers, Users, FileText } from 'lucide-react';
+import { LayoutDashboard, Newspaper, Layers, Users, FileText, BookOpen } from 'lucide-react';
 
 const sidebarItems = [
     { title: 'Overview', href: '/', icon: LayoutDashboard },
     { title: 'News', href: '/news', icon: Newspaper },
+    { title: 'সংবাদ সংক্ষেপ', href: '/briefs', icon: BookOpen },
     { title: 'Categories', href: '/categories', icon: Layers },
     { title: 'Special Reports', href: '/special-reports', icon: FileText },
     { title: 'Users', href: '/users', icon: Users },

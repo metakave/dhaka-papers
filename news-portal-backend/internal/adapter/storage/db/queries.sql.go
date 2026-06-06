@@ -78,13 +78,13 @@ func (q *Queries) CreateCategory(ctx context.Context, arg CreateCategoryParams) 
 const createNews = `-- name: CreateNews :one
 INSERT INTO news (
     author_id, category_id, title, title_en, excerpt, content, thumbnail, thumbnail_caption, slug, 
-    published_at, status, meta_title, meta_description, tags, lang
+    published_at, status, meta_title, meta_description, tags, lang, is_brief
 )
 VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9,
-    NOW(), 'published', $3, $5, $10, $11
+    NOW(), 'published', $3, $5, $10, $11, $12
 )
-RETURNING id, author_id, category_id, title, slug, content, thumbnail, meta_title, meta_description, keywords, status, views_count, published_at, created_at, updated_at, excerpt, is_featured, title_en, thumbnail_caption, tags, lang
+RETURNING id, author_id, category_id, title, slug, content, thumbnail, meta_title, meta_description, keywords, status, views_count, published_at, created_at, updated_at, excerpt, is_featured, title_en, thumbnail_caption, tags, lang, is_brief
 `
 
 type CreateNewsParams struct {
@@ -99,6 +99,7 @@ type CreateNewsParams struct {
 	Slug             string
 	Tags             []string
 	Lang             string
+	IsBrief          bool
 }
 
 func (q *Queries) CreateNews(ctx context.Context, arg CreateNewsParams) (News, error) {
@@ -114,6 +115,7 @@ func (q *Queries) CreateNews(ctx context.Context, arg CreateNewsParams) (News, e
 		arg.Slug,
 		arg.Tags,
 		arg.Lang,
+		arg.IsBrief,
 	)
 	var i News
 	err := row.Scan(
@@ -138,6 +140,7 @@ func (q *Queries) CreateNews(ctx context.Context, arg CreateNewsParams) (News, e
 		&i.ThumbnailCaption,
 		&i.Tags,
 		&i.Lang,
+		&i.IsBrief,
 	)
 	return i, err
 }
@@ -218,6 +221,7 @@ SELECT
     COALESCE(n.meta_title, '') as meta_title,
     COALESCE(n.meta_description, '') as meta_description,
     n.tags, n.published_at, n.created_at, n.updated_at,
+    n.is_featured, n.is_brief,
     c.name as category_name, c.slug as category_slug, o.name as author_name,
     COALESCE(o.name_en, '') as author_name_en,
     o.profile_image as author_profile_image,
@@ -253,6 +257,8 @@ type GetNewsRow struct {
 	PublishedAt            pgtype.Timestamptz
 	CreatedAt              pgtype.Timestamptz
 	UpdatedAt              pgtype.Timestamptz
+	IsFeatured             pgtype.Bool
+	IsBrief                bool
 	CategoryName           pgtype.Text
 	CategorySlug           pgtype.Text
 	AuthorName             pgtype.Text
@@ -284,6 +290,8 @@ func (q *Queries) GetNews(ctx context.Context, arg GetNewsParams) (GetNewsRow, e
 		&i.PublishedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.IsFeatured,
+		&i.IsBrief,
 		&i.CategoryName,
 		&i.CategorySlug,
 		&i.AuthorName,
@@ -392,6 +400,7 @@ SELECT
     n.thumbnail, 
     COALESCE(n.thumbnail_caption, '') as thumbnail_caption,
     n.slug, n.status, n.views_count, n.published_at, n.created_at, n.updated_at, n.lang,
+    n.is_featured, n.is_brief,
     c.name as category_name, c.slug as category_slug, o.name as author_name,
     COALESCE(o.name_en, '') as author_name_en,
     o.profile_image as author_profile_image,
@@ -431,6 +440,8 @@ type ListNewsRow struct {
 	CreatedAt              pgtype.Timestamptz
 	UpdatedAt              pgtype.Timestamptz
 	Lang                   string
+	IsFeatured             pgtype.Bool
+	IsBrief                bool
 	CategoryName           pgtype.Text
 	CategorySlug           pgtype.Text
 	AuthorName             pgtype.Text
@@ -468,6 +479,8 @@ func (q *Queries) ListNews(ctx context.Context, arg ListNewsParams) ([]ListNewsR
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Lang,
+			&i.IsFeatured,
+			&i.IsBrief,
 			&i.CategoryName,
 			&i.CategorySlug,
 			&i.AuthorName,
@@ -533,6 +546,7 @@ SET
     thumbnail_caption = $8,
     tags = $9,
     lang = $10,
+    is_brief = $11,
     updated_at = NOW()
 WHERE id = $1
 `
@@ -548,6 +562,7 @@ type UpdateNewsParams struct {
 	ThumbnailCaption pgtype.Text
 	Tags             []string
 	Lang             string
+	IsBrief          bool
 }
 
 func (q *Queries) UpdateNews(ctx context.Context, arg UpdateNewsParams) (pgconn.CommandTag, error) {
@@ -562,6 +577,7 @@ func (q *Queries) UpdateNews(ctx context.Context, arg UpdateNewsParams) (pgconn.
 		arg.ThumbnailCaption,
 		arg.Tags,
 		arg.Lang,
+		arg.IsBrief,
 	)
 }
 

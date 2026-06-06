@@ -26,11 +26,11 @@ WHERE id = $1;
 -- name: CreateNews :one
 INSERT INTO news (
     author_id, category_id, title, title_en, excerpt, content, thumbnail, thumbnail_caption, slug, 
-    published_at, status, meta_title, meta_description, tags, lang
+    published_at, status, meta_title, meta_description, tags, lang, is_brief
 )
 VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9,
-    NOW(), 'published', $3, $5, $10, $11
+    NOW(), 'published', $3, $5, $10, $11, $12
 )
 RETURNING *;
 
@@ -45,6 +45,7 @@ SELECT
     COALESCE(n.meta_title, '') as meta_title,
     COALESCE(n.meta_description, '') as meta_description,
     n.tags, n.published_at, n.created_at, n.updated_at,
+    n.is_featured, n.is_brief,
     c.name as category_name, c.slug as category_slug, o.name as author_name,
     COALESCE(o.name_en, '') as author_name_en,
     o.profile_image as author_profile_image,
@@ -64,6 +65,7 @@ SELECT
     n.thumbnail, 
     COALESCE(n.thumbnail_caption, '') as thumbnail_caption,
     n.slug, n.status, n.views_count, n.published_at, n.created_at, n.updated_at, n.lang,
+    n.is_featured, n.is_brief,
     c.name as category_name, c.slug as category_slug, o.name as author_name,
     COALESCE(o.name_en, '') as author_name_en,
     o.profile_image as author_profile_image,
@@ -92,6 +94,7 @@ SET
     thumbnail_caption = $8,
     tags = $9,
     lang = $10,
+    is_brief = $11,
     updated_at = NOW()
 WHERE id = $1;
 
