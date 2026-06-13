@@ -17,6 +17,7 @@ import (
 	"news-portal-backend/internal/adapter/handler"
 	"news-portal-backend/internal/adapter/storage"
 	"news-portal-backend/internal/core/port"
+	"news-portal-backend/internal/core/port"
 	"news-portal-backend/internal/core/service"
 )
 
@@ -115,7 +116,7 @@ func main() {
 	authService := service.NewAuthService(store, jwtSecret)
 	categoryService := service.NewCategoryService(store)
 	newsService := service.NewNewsService(store, store)
-	specialReportService := service.NewSpecialReportService(store)
+	menuService := service.NewMenuService(store)
 
 	// File Service (R2 Enforced)
 	r2AccountID := os.Getenv("R2_ACCOUNT_ID")
@@ -138,26 +139,26 @@ func main() {
 	logger.Info("Using Cloudflare R2 Storage", "bucket", r2Bucket)
 
 	// Handlers
-	authHandler := handler.NewAuthHandler(authService, fileService)
+	authHandler := handler.NewAuthHandler(authService)
 	categoryHandler := handler.NewCategoryHandler(categoryService)
 	newsHandler := handler.NewNewsHandler(newsService, fileService)
 	seedHandler := handler.NewSeedHandler(newsService)
 	statsService := service.NewStatsService(store, store, store)
 	statsHandler := handler.NewStatsHandler(statsService)
-	specialReportHandler := handler.NewSpecialReportHandler(specialReportService)
+	menuHandler := handler.NewMenuHandler(menuService)
 
 	// 5. Router Setup
 	router := NewRouter(RouterConfig{
-		AllowedOrigins:       allowedOrigins,
-		RPS:                  rps,
-		Burst:                burst,
-		JWTSecret:            jwtSecret,
-		AuthHandler:          authHandler,
-		CategoryHandler:      categoryHandler,
-		NewsHandler:          newsHandler,
-		StatsHandler:         statsHandler,
-		SeedHandler:          seedHandler,
-		SpecialReportHandler: specialReportHandler,
+		AllowedOrigins:  allowedOrigins,
+		RPS:             rps,
+		Burst:           burst,
+		JWTSecret:       jwtSecret,
+		AuthHandler:     authHandler,
+		CategoryHandler: categoryHandler,
+		NewsHandler:     newsHandler,
+		StatsHandler:    statsHandler,
+		SeedHandler:     seedHandler,
+		MenuHandler:     menuHandler,
 	})
 
 	// 6. Graceful Shutdown Setup

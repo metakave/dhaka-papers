@@ -13,16 +13,16 @@ import (
 )
 
 type RouterConfig struct {
-	AllowedOrigins       []string
-	RPS                  float64
-	Burst                int
-	JWTSecret            string
-	AuthHandler          *handler.AuthHandler
-	CategoryHandler      *handler.CategoryHandler
-	NewsHandler          *handler.NewsHandler
-	StatsHandler         *handler.StatsHandler
-	SeedHandler          *handler.SeedHandler
-	SpecialReportHandler *handler.SpecialReportHandler
+	AllowedOrigins  []string
+	RPS             float64
+	Burst           int
+	JWTSecret       string
+	AuthHandler     *handler.AuthHandler
+	CategoryHandler *handler.CategoryHandler
+	NewsHandler     *handler.NewsHandler
+	StatsHandler    *handler.StatsHandler
+	SeedHandler     *handler.SeedHandler
+	MenuHandler     *handler.MenuHandler
 }
 
 func NewRouter(cfg RouterConfig) http.Handler {
@@ -70,16 +70,13 @@ func NewRouter(cfg RouterConfig) http.Handler {
 		r.Get("/news/homepage", cfg.NewsHandler.GetHomepage)
 		r.Get("/news/check-slug", cfg.NewsHandler.CheckSlug)
 		r.Get("/news/{slug}", cfg.NewsHandler.GetNews)
-
-		r.Get("/special-reports", cfg.SpecialReportHandler.ListReports)
-		r.Get("/special-reports/{slug}", cfg.SpecialReportHandler.GetReport)
+		r.Get("/stats", cfg.StatsHandler.GetStats)
+		r.Get("/menus", cfg.MenuHandler.ListMenus)
 
 		r.Group(func(r chi.Router) {
 			r.Use(handler.AuthMiddleware(cfg.JWTSecret))
 
 			r.Post("/news", cfg.NewsHandler.CreateNews)
-			r.Get("/news/admin", cfg.NewsHandler.ListAdminNews)
-			r.Get("/stats", cfg.StatsHandler.GetStats)
 			r.Put("/news/{id}", cfg.NewsHandler.UpdateNews)
 			r.Delete("/news/{id}", cfg.NewsHandler.DeleteNews)
 
@@ -87,17 +84,16 @@ func NewRouter(cfg RouterConfig) http.Handler {
 			r.Put("/categories/{id}", cfg.CategoryHandler.UpdateCategory)
 			r.Delete("/categories/{id}", cfg.CategoryHandler.DeleteCategory)
 
+			r.Post("/menus", cfg.MenuHandler.CreateMenu)
+			r.Put("/menus/reorder", cfg.MenuHandler.ReorderMenus)
+			r.Put("/menus/{id}", cfg.MenuHandler.UpdateMenu)
+			r.Delete("/menus/{id}", cfg.MenuHandler.DeleteMenu)
+
 			r.Get("/users", cfg.AuthHandler.ListUsers)
 			r.Post("/users", cfg.AuthHandler.Register)
-			r.Put("/users/{id}", cfg.AuthHandler.UpdateUser)
 			r.Post("/users/change-password", cfg.AuthHandler.ChangePassword)
 
 			r.Post("/SEED_news", cfg.SeedHandler.SEED_CreateNews)
-
-			r.Post("/special-reports", cfg.SpecialReportHandler.CreateReport)
-			r.Put("/special-reports/{id}", cfg.SpecialReportHandler.UpdateReport)
-			r.Delete("/special-reports/{id}", cfg.SpecialReportHandler.DeleteReport)
-			r.Post("/special-reports/{reportId}/items", cfg.SpecialReportHandler.UpsertItems)
 		})
 	})
 
