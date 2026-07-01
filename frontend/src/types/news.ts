@@ -28,4 +28,5 @@ export interface News {
 
 export interface NewsListResponse {
     newsList: News[];
+    total?: number;
 }
