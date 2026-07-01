@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname, useParams } from 'next/navigation';
 import { useNews } from '@/hooks/queries/useNews';
 import { BriefCard } from '@/components/sections/NewsBriefs';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -9,7 +9,8 @@ export default function PaginatedNewsBriefsList() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
-    const locale = pathname.split('/')[1] || 'bn';
+    const params = useParams();
+    const locale = (params?.locale as string) || 'bn';
 
     const pageParam = searchParams.get('page');
     const currentPage = pageParam ? parseInt(pageParam, 10) || 1 : 1;
