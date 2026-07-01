@@ -10,7 +10,10 @@ import { Suspense } from 'react';
 export default function CategoryPage() {
     const params = useParams();
     const locale = params.locale as string || "bn";
-    const categorySlug = params?.category as string;
+    const categoryParam = params?.category;
+    const categorySlug = Array.isArray(categoryParam)
+        ? categoryParam.join('/')
+        : (categoryParam as string || '');
 
     const { data: categories, isLoading: isCatsLoading } = useCategories();
 
