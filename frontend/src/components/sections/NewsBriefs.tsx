@@ -4,6 +4,7 @@
 
 import { News } from '@/types/news';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 
 interface BriefItem {
     title: string;
@@ -74,7 +75,7 @@ export function BriefCard({ brief, isScrollable = false }: { brief: News; isScro
                 {items && items.length > 0 ? (
                     <div className="space-y-6">
                         {items.map((item, idx) => (
-                            <div key={idx} className="group">
+                            <div key={idx} className={`group ${idx >= 10 ? 'hidden md:block' : ''}`}>
                                 {/* Title with subtle dot */}
                                 <div className="flex gap-3 mb-2">
                                     <span className="flex-shrink-0 mt-2 w-1.5 h-1.5 bg-[#b91c1c] rounded-full group-hover:scale-125 transition-transform" />
@@ -90,6 +91,18 @@ export function BriefCard({ brief, isScrollable = false }: { brief: News; isScro
                                 )}
                             </div>
                         ))}
+                        
+                        {/* Mobile "See all / সব দেখুন" button */}
+                        {items.length > 10 && (
+                            <div className="block md:hidden text-center pt-4 border-t border-gray-100 mt-6">
+                                <Link 
+                                    href="/news-briefs" 
+                                    className="inline-block px-6 py-2.5 text-sm font-bold text-white bg-[#b91c1c] hover:bg-[#991b1b] rounded-full transition-colors shadow-sm"
+                                >
+                                    {locale === 'en' ? 'See all' : 'সব দেখুন'}
+                                </Link>
+                            </div>
+                        )}
                     </div>
                 ) : brief?.content ? (
                     <div
