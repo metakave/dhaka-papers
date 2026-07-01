@@ -13,7 +13,9 @@ export default function AuthorPage() {
     // We use the same hook to get the first page of news so we can extract the author name
     const { data } = useInfiniteNews({ limit: 1, authorId, lang: locale });
     const author = data?.pages[0]?.newsList[0];
-    const authorName = author?.author_name || (locale === "bn" ? "লেখক" : "Author");
+    const authorName = locale === "en" 
+        ? (author?.author_name_en || author?.author_name || "Author") 
+        : (author?.author_name || "লেখক");
     const authorProfileImage = author?.author_profile_image;
     const authorHideProfileImage = author?.author_hide_profile_image;
 
