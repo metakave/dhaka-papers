@@ -28,6 +28,32 @@ export default function Footer() {
                 ? "আমরা সংবাদের সত্যতায় বিশ্বাসী। আধুনিক সাংবাদিকতার মাধ্যমে আপনার কাছে পৌঁছাতে চাই প্রতিদিন।" 
                 : "We believe in the power of truth and the integrity of journalism. Our mission is to deliver accurate, fast, and unbiased news to our readers every single day."}
             </p>
+
+            {/* Category Links Row */}
+            <div className="mt-12 pt-8 border-t border-gray-800/30">
+              <div className="flex flex-col sm:flex-row sm:flex-wrap lg:flex-nowrap justify-between items-center gap-6 lg:gap-4 w-full">
+                {[
+                  { href: "/politics", label_bn: "রাজনীতি", label_en: "Politics" },
+                  { href: "/economics", label_bn: "অর্থনীতি", label_en: "Economics" },
+                  { href: "/science", label_bn: "বিজ্ঞান", label_en: "Science" },
+                  { href: "/news-briefs", label_bn: "সংবাদ সংক্ষেপ", label_en: "News Brief" },
+                  { href: "/international", label_bn: "আন্তর্জাতিক", label_en: "International" },
+                  { href: "/investigation", label_bn: "অনুসন্ধান", label_en: "Investigation" },
+                  { href: "/literature-lifestyle", label_bn: "সাহিত্য ও জীবনযাপন", label_en: "Literature & Lifestyle" },
+                  { href: "/opinion", label_bn: "মতামত", label_en: "Opinions" },
+                ].map((link, idx) => (
+                  <Link
+                    key={idx}
+                    href={link.href}
+                    className={`text-gray-400 hover:text-primary transition-all duration-300 font-bold hover:scale-105 select-none text-center whitespace-nowrap ${
+                      locale === "en" ? "text-sm uppercase tracking-wider" : "text-lg"
+                    }`}
+                  >
+                    {locale === "bn" ? link.label_bn : link.label_en}
+                  </Link>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
