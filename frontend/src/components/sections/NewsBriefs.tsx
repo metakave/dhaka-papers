@@ -75,7 +75,7 @@ export function BriefCard({ brief, isScrollable = false }: { brief: News; isScro
                 {items && items.length > 0 ? (
                     <div className="space-y-6">
                         {items.map((item, idx) => (
-                            <div key={idx} className={`group ${idx >= 10 ? 'hidden md:block' : ''}`}>
+                            <div key={idx} className={`group ${isScrollable && idx >= 10 ? 'hidden md:block' : ''}`}>
                                 {/* Title with subtle dot */}
                                 <div className="flex gap-3 mb-2">
                                     <span className="flex-shrink-0 mt-2 w-1.5 h-1.5 bg-[#b91c1c] rounded-full group-hover:scale-125 transition-transform" />
@@ -93,7 +93,7 @@ export function BriefCard({ brief, isScrollable = false }: { brief: News; isScro
                         ))}
                         
                         {/* Mobile "See all / সব দেখুন" button */}
-                        {items.length > 10 && (
+                        {isScrollable && items.length > 10 && (
                             <div className="block md:hidden text-center pt-4 border-t border-gray-100 mt-6">
                                 <Link 
                                     href="/news-briefs" 
