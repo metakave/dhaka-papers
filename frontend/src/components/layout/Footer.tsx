@@ -15,23 +15,18 @@ export default function Footer() {
       
       <div className="container px-4 relative z-10">
         <div className="max-w-[1200px] mx-auto">
-          {/* 1. Header Section: Logo & Brand Description */}
+          {/* 1. Header Section: Logo & Category Links */}
           <div className="flex flex-col justify-between items-start mb-16">
             <div className="w-full">
               <Link
                 href="/"
-                className="inline-block mb-10 transition-transform hover:scale-105 duration-500"
+                className="inline-block mb-8 transition-transform hover:scale-105 duration-500"
               >
                 <Image src={locale === "en" ? "/images/logo-footer-en-v2.png" : "/images/logo-footer-bn-v2.png"} alt={locale === "en" ? "Dhaka Papers" : "ঢাকা পেপারস"} width={500} height={120} className="h-20 w-auto object-contain select-none" priority />
               </Link>
-              <p className={`text-gray-300 ${locale === "en" ? "text-sm tracking-wide leading-loose" : "text-base leading-relaxed"} max-w-none font-light`}>
-                {locale === "bn" 
-                  ? "আমরা সংবাদের সত্যতায় বিশ্বাসী। আধুনিক সাংবাদিকতার মাধ্যমে আপনার কাছে পৌঁছাতে চাই প্রতিদিন।" 
-                  : "We believe in the power of truth and the integrity of journalism. Our mission is to deliver accurate, fast, and unbiased news to our readers every single day."}
-              </p>
 
               {/* Category Links Row */}
-              <div className="mt-12 pt-8 border-t border-gray-800/30">
+              <div className="pt-6 border-t border-gray-800/30">
                 <div className="flex flex-col sm:flex-row sm:flex-wrap lg:flex-nowrap justify-between items-center gap-6 lg:gap-4 w-full">
                   {[
                     { href: "/politics", label_bn: "রাজনীতি", label_en: "Politics" },
