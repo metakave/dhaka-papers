@@ -22,6 +22,9 @@ export interface News {
     category_name?: string;
     category_name_bn?: string;
     category_slug?: string;
+    sub_category_name?: string;
+    sub_category_name_bn?: string;
+    sub_category_slug?: string;
     tags?: string[];
     title_en?: string;
 }
