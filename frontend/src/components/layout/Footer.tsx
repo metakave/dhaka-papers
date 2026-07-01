@@ -23,7 +23,7 @@ export default function Footer() {
             >
               <Image src={locale === "en" ? "/images/logo-footer-en-v2.png" : "/images/logo-footer-bn-v2.png"} alt={locale === "en" ? "Dhaka Papers" : "ঢাকা পেপারস"} width={500} height={120} className="h-20 w-auto object-contain select-none" priority />
             </Link>
-            <p className={`text-gray-300 ${locale === "en" ? "text-lg tracking-wide leading-loose" : "text-xl leading-relaxed"} max-w-none font-light`}>
+            <p className={`text-gray-300 ${locale === "en" ? "text-sm tracking-wide leading-loose" : "text-base leading-relaxed"} max-w-none font-light`}>
               {locale === "bn" 
                 ? "আমরা সংবাদের সত্যতায় বিশ্বাসী। আধুনিক সাংবাদিকতার মাধ্যমে আপনার কাছে পৌঁছাতে চাই প্রতিদিন।" 
                 : "We believe in the power of truth and the integrity of journalism. Our mission is to deliver accurate, fast, and unbiased news to our readers every single day."}
@@ -46,7 +46,7 @@ export default function Footer() {
                     key={idx}
                     href={link.href}
                     className={`text-gray-400 hover:text-primary transition-all duration-300 font-bold hover:scale-105 select-none text-center whitespace-nowrap ${
-                      locale === "en" ? "text-sm uppercase tracking-wider" : "text-lg"
+                      locale === "en" ? "text-xs uppercase tracking-wider" : "text-sm"
                     }`}
                   >
                     {locale === "bn" ? link.label_bn : link.label_en}
