@@ -15,15 +15,15 @@ export default function Footer() {
       
       <div className="container px-4 relative z-10">
         {/* 1. Header Section: Logo & Brand Description */}
-        <div className="flex flex-col md:flex-row justify-between items-start gap-12 mb-16">
-          <div className="md:w-3/5">
+        <div className="flex flex-col justify-between items-start mb-16">
+          <div className="w-full">
             <Link
               href="/"
               className="inline-block mb-10 transition-transform hover:scale-105 duration-500"
             >
               <Image src={locale === "en" ? "/images/logo-footer-en-v2.png" : "/images/logo-footer-bn-v2.png"} alt={locale === "en" ? "Dhaka Papers" : "ঢাকা পেপারস"} width={500} height={120} className="h-20 w-auto object-contain select-none" priority />
             </Link>
-            <p className={`text-gray-300 ${locale === "en" ? "text-lg tracking-wide leading-loose" : "text-xl leading-relaxed"} max-w-2xl font-light`}>
+            <p className={`text-gray-300 ${locale === "en" ? "text-lg tracking-wide leading-loose" : "text-xl leading-relaxed"} max-w-none font-light`}>
               {locale === "bn" 
                 ? "আমরা সংবাদের সত্যতায় বিশ্বাসী। আধুনিক সাংবাদিকতার মাধ্যমে আপনার কাছে পৌঁছাতে চাই প্রতিদিন।" 
                 : "We believe in the power of truth and the integrity of journalism. Our mission is to deliver accurate, fast, and unbiased news to our readers every single day."}
