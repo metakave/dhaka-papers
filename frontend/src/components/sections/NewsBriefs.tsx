@@ -59,7 +59,8 @@ function parseBriefItems(content: string): BriefItem[] | null {
 export function BriefCard({ brief, isScrollable = false }: { brief: News; isScrollable?: boolean }) {
     const params = useParams();
     const locale = (params.locale as string) || 'bn';
-    const items = brief?.content ? parseBriefItems(brief.content) : null;
+    const rawItems = brief?.content ? parseBriefItems(brief.content) : null;
+    const items = rawItems ? [...rawItems].reverse() : null;
 
     return (
         <div className="bg-white border-t-4 border-[#b91c1c] shadow-sm hover:shadow-md transition-shadow flex flex-col h-full min-h-[300px]">
